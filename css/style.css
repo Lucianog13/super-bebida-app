@@ -526,6 +526,19 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
 /* El atributo hidden siempre gana (evita que display:flex/block lo pise) */
 [hidden] { display: none !important; }
 
+/* ── Header: botón administrar ── */
+.topbar-der { display: flex; gap: 10px; align-items: center; }
+.btn-admin-header {
+  display: inline-flex; align-items: center; gap: 6px; background: transparent;
+  border: 1px solid var(--border-dark); color: var(--navy-700); padding: 8px 14px;
+  border-radius: 8px; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase;
+  cursor: pointer; font-family: inherit; font-weight: 600;
+}
+.btn-admin-header:hover { background: var(--navy-50); }
+.head-acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.head-acciones .seccion-info { margin-right: 4px; }
+.admin-error { color: var(--red); font-size: 0.8rem; margin: 0; }
+
 /* ── Administración ── */
 .admin-ayuda { font-size: 0.8rem; color: var(--muted); margin: 10px 0 14px; }
 .lista-admin { display: flex; flex-direction: column; gap: 10px; }

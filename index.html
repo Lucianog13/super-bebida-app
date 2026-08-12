@@ -16,11 +16,17 @@
           <span class="marca-sub">Distribuidora de bebidas</span>
         </div>
       </div>
-      <button id="btn-carrito" class="btn-carrito">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.4"/><circle cx="19" cy="21" r="1.4"/><path d="M2.5 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.3a2 2 0 0 0 2-1.6L22 7H6"/></svg>
-        <span class="btn-carrito-texto">Mi carrito</span>
-        <span id="contador-carrito" class="contador">0</span>
-      </button>
+      <div class="topbar-der">
+        <button id="btn-admin" class="btn-admin-header" title="Modo administrador">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <span class="btn-admin-texto">Administrar</span>
+        </button>
+        <button id="btn-carrito" class="btn-carrito">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.4"/><circle cx="19" cy="21" r="1.4"/><path d="M2.5 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.3a2 2 0 0 0 2-1.6L22 7H6"/></svg>
+          <span class="btn-carrito-texto">Mi carrito</span>
+          <span id="contador-carrito" class="contador">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -126,7 +132,11 @@
     <section id="vista-admin" class="vista" hidden>
       <div class="seccion-head">
         <h2 class="seccion-label">Administración</h2>
-        <button id="btn-admin-salir" class="btn secondary small">← Volver al catálogo</button>
+        <div class="head-acciones">
+          <span id="admin-quien" class="seccion-info"></span>
+          <button id="btn-admin-salir" class="btn secondary small">← Volver al catálogo</button>
+          <button id="btn-admin-cerrar" class="btn small outline">Cerrar sesión</button>
+        </div>
       </div>
       <div class="search-bar">
         <svg class="icon icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -143,7 +153,6 @@
         <span class="footer-razon">El Super de la Bebida S.R.L.</span>
         <span class="footer-datos">CUIT: XX-XXXXXXXX-X · Migue David 2119 · Tel: 343 518-2883</span>
         <span id="estado-catalogo" class="footer-estado">● Iniciando…</span>
-        <button id="btn-admin" class="footer-admin" type="button">Administración</button>
       </div>
       <div class="footer-legal">
         © 2026 El Super de la Bebida S.R.L. · Prohibida la venta de bebidas alcohólicas a menores de 18 años. Beber con moderación.
@@ -151,14 +160,16 @@
     </div>
   </footer>
 
-  <div id="modal-pin" class="modal" hidden>
+  <div id="modal-admin" class="modal" hidden>
     <div class="modal-caja">
-      <h3>Administración</h3>
-      <p class="modal-sub">Ingresá el PIN para editar precios y fotos.</p>
-      <input type="password" id="pin-input" inputmode="numeric" placeholder="PIN" autocomplete="off">
+      <h3>Modo administrador</h3>
+      <p class="modal-sub">Ingresá con tu usuario y contraseña.</p>
+      <input type="email" id="admin-email" placeholder="usuario@correo" autocomplete="username">
+      <input type="password" id="admin-pass" placeholder="Contraseña" autocomplete="current-password">
+      <p id="admin-error" class="admin-error" hidden></p>
       <div class="acciones">
-        <button id="btn-pin-cancelar" class="btn secondary">Cancelar</button>
-        <button id="btn-pin-ok" class="btn primary">Entrar</button>
+        <button id="btn-admin-cancelar" class="btn secondary">Cancelar</button>
+        <button id="btn-admin-login" class="btn primary">Entrar</button>
       </div>
     </div>
   </div>
@@ -169,6 +180,7 @@
   <script src="js/core/cart.js"></script>
   <script src="js/core/order.js"></script>
   <script src="js/core/storage.js"></script>
+  <script src="js/core/auth.js"></script>
   <script src="js/config.js"></script>
   <script src="js/ui/catalog.js"></script>
   <script src="js/ui/cartView.js"></script>

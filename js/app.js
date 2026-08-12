@@ -298,12 +298,11 @@
       : "<li>Sin pedidos registrados.</li>";
   }
 
-  // ── Administración (PIN) ──
-  const ADMIN_PIN = (window.APP_CONFIG && window.APP_CONFIG.adminPin) || "2026";
-
+  // ── Modo administrador (login real con Supabase Auth) ──
   function entrarAdmin() {
-    $("modal-pin").hidden = true;
-    sessionStorage.setItem("admin_ok", "1");
+    $("modal-admin").hidden = true;
+    $("admin-error").hidden = true;
+    $("admin-quien").textContent = "Conectado como " + (Auth.email() || "");
     showVista("vista-admin");
     AdminUI.cargar()
       .then(() => AdminUI.render(""))
@@ -311,24 +310,48 @@
   }
 
   $("btn-admin").addEventListener("click", () => {
-    if (sessionStorage.getItem("admin_ok") === "1") {
+    if (Auth.getSession()) {
       entrarAdmin();
       return;
     }
-    $("modal-pin").hidden = false;
-    $("pin-input").value = "";
-    $("pin-input").focus();
+    $("admin-error").hidden = true;
+    $("admin-pass").value = "";
+    $("modal-admin").hidden = false;
+    $("admin-email").focus();
   });
-  $("btn-pin-ok").addEventListener("click", () => {
-    if ($("pin-input").value === ADMIN_PIN) entrarAdmin();
-    else toast("PIN incorrecto");
-  });
-  $("btn-pin-cancelar").addEventListener("click", () => ($("modal-pin").hidden = true));
-  $("pin-input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") $("btn-pin-ok").click();
+
+  async function intentarLogin() {
+    const email = $("admin-email").value.trim();
+    const pass = $("admin-pass").value;
+    if (!email || !pass) return;
+    $("admin-error").hidden = true;
+    const r = await Auth.login(email, pass);
+    if (!r.ok) {
+      $("admin-error").textContent = r.error;
+      $("admin-error").hidden = false;
+      return;
+    }
+    $("admin-pass").value = "";
+    entrarAdmin();
+  }
+  $("btn-admin-login").addEventListener("click", intentarLogin);
+  ["admin-email", "admin-pass"].forEach((id) =>
+    $(id).addEventListener("keydown", (e) => {
+      if (e.key === "Enter") intentarLogin();
+    })
+  );
+  $("btn-admin-cancelar").addEventListener("click", () => {
+    $("modal-admin").hidden = true;
+    $("admin-error").hidden = true;
   });
 
   AdminUI.init({ lista: $("lista-admin"), busqueda: $("admin-busqueda"), toast });
+
+  $("btn-admin-cerrar").addEventListener("click", () => {
+    Auth.logout();
+    toast("Sesión cerrada");
+    showVista("vista-catalogo");
+  });
 
   $("btn-admin-salir").addEventListener("click", async () => {
     showVista("vista-catalogo");

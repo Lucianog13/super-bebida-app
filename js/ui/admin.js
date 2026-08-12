@@ -15,7 +15,7 @@
     const cfg = API();
     const res = await fetch(
       `${cfg.supabaseUrl}/rest/v1/productos?select=*&order=nombre.asc`,
-      { headers: { apikey: cfg.supabaseKey, Authorization: "Bearer " + cfg.supabaseKey } }
+      { headers: await headersAuth(false) }
     );
     if (!res.ok) throw new Error("HTTP " + res.status);
     productos = await res.json();
@@ -69,21 +69,25 @@
       return;
     }
     const cfg = API();
+    const h = await headersAuth(true);
+    if (!h.Authorization) {
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
+      return;
+    }
     const res = await fetch(
       `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
       {
         method: "PATCH",
-        headers: {
-          apikey: cfg.supabaseKey,
-          Authorization: "Bearer " + cfg.supabaseKey,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
+        headers: { ...h, Prefer: "return=minimal" },
         body: JSON.stringify({ precio, en_promo: enPromo, precio_anterior: precioAnterior }),
       }
     );
     if (!res.ok) {
-      toastFn("Error al guardar (HTTP " + res.status + ")");
+      toastFn(
+        res.status === 401 || res.status === 403
+          ? "No autorizado — cerrá sesión y volvé a entrar"
+          : "Error al guardar (HTTP " + res.status + ")"
+      );
       return;
     }
     p.precio = precio;
@@ -101,6 +105,11 @@
       return;
     }
     const cfg = API();
+    const h = await headersAuth(false);
+    if (!h.Authorization) {
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
+      return;
+    }
     const nombre = pid + "-" + Date.now() + "." + ext;
     toastFn("Subiendo foto…");
     let res;
@@ -108,8 +117,7 @@
       res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/fotos/${nombre}`, {
         method: "POST",
         headers: {
-          apikey: cfg.supabaseKey,
-          Authorization: "Bearer " + cfg.supabaseKey,
+          ...h,
           "Content-Type": file.type || "image/" + ext,
           "x-upsert": "true",
         },
@@ -128,12 +136,7 @@
       `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
       {
         method: "PATCH",
-        headers: {
-          apikey: cfg.supabaseKey,
-          Authorization: "Bearer " + cfg.supabaseKey,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
+        headers: { ...h, "Content-Type": "application/json", Prefer: "return=minimal" },
         body: JSON.stringify({ imagen: url }),
       }
     );
@@ -144,6 +147,14 @@
     p.imagen = url;
     toastFn("Foto actualizada ✔");
     render(filtro);
+  }
+
+  async function headersAuth(conJson) {
+    const h = { apikey: API().supabaseKey };
+    const t = await window.Auth.token();
+    if (t) h.Authorization = "Bearer " + t;
+    if (conJson) h["Content-Type"] = "application/json";
+    return h;
   }
 
   function init(o) {
