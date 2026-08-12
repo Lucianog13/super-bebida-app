@@ -523,6 +523,9 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
   .pedido-hoja { border: 0; box-shadow: none; padding: 0; }
 }
 
+/* El atributo hidden siempre gana (evita que display:flex/block lo pise) */
+[hidden] { display: none !important; }
+
 /* ── Administración ── */
 .admin-ayuda { font-size: 0.8rem; color: var(--muted); margin: 10px 0 14px; }
 .lista-admin { display: flex; flex-direction: column; gap: 10px; }
