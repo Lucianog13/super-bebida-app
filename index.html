@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El Super de la Bebida S.R.L. — Pedidos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="topbar-inner">
+      <div class="marca">
+        <img class="logo" src="assets/logo.png" alt="Logo" onerror="this.style.display='none'">
+        <div class="marca-texto">
+          <span class="marca-nombre">El Super de la Bebida</span>
+          <span class="marca-sub">Distribuidora de bebidas</span>
+        </div>
+      </div>
+      <button id="btn-carrito" class="btn-carrito">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.4"/><circle cx="19" cy="21" r="1.4"/><path d="M2.5 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.3a2 2 0 0 0 2-1.6L22 7H6"/></svg>
+        <span class="btn-carrito-texto">Mi carrito</span>
+        <span id="contador-carrito" class="contador">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── Vista: Catálogo ── -->
+    <section id="vista-catalogo" class="vista">
+      <div class="seccion-head">
+        <h2 class="seccion-label">Catálogo de productos</h2>
+        <span id="resultados-catalogo" class="seccion-info"></span>
+      </div>
+      <div class="search-bar">
+        <svg class="icon icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="busqueda" placeholder="Buscar producto, marca...">
+      </div>
+      <div class="chips" id="chips-categorias"></div>
+      <div id="grilla-productos" class="grilla"></div>
+    </section>
+
+    <!-- ── Vista: Carrito ── -->
+    <section id="vista-carrito" class="vista" hidden>
+      <div class="seccion-head">
+        <h2 class="seccion-label">Mi carrito</h2>
+        <span class="seccion-info">Revisá cantidades antes de confirmar</span>
+      </div>
+      <div id="items-carrito"></div>
+      <div id="total-carrito" class="total-box"></div>
+      <div class="acciones">
+        <button id="btn-seguir-comprando" class="btn secondary">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+          Seguir comprando
+        </button>
+        <button id="btn-confirmar" class="btn primary">
+          Confirmar pedido
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Vista: Checkout ── -->
+    <section id="vista-checkout" class="vista" hidden>
+      <div class="seccion-head">
+        <h2 class="seccion-label">Datos del cliente</h2>
+      </div>
+      <form id="form-cliente" class="form panel">
+        <label>Nombre del cliente *
+          <input id="cliente-nombre" required autocomplete="off" placeholder="Ej. Juan Pérez">
+        </label>
+        <label>Teléfono (WhatsApp)
+          <input id="cliente-telefono" inputmode="tel" placeholder="Ej. 11 5555-1234">
+        </label>
+        <label>Dirección
+          <input id="cliente-direccion" placeholder="Ej. Av. Siempre Viva 123">
+        </label>
+        <p id="aviso-repetir" class="aviso" hidden>
+          El cliente tiene pedidos anteriores.
+          <button type="button" id="btn-repetir" class="btn small outline">Repetir último pedido</button>
+        </p>
+        <div class="acciones">
+          <button type="button" id="btn-volver-carrito" class="btn secondary">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+            Volver al carrito
+          </button>
+          <button type="submit" id="btn-generar" class="btn primary">
+            Generar pedido
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── Vista: Pedido final ── -->
+    <section id="vista-pedido" class="vista" hidden>
+      <div class="seccion-head no-print">
+        <h2 class="seccion-label">Pedido generado</h2>
+        <span class="seccion-info">Enviá el pedido por WhatsApp o imprimilo</span>
+      </div>
+      <div id="resumen-pedido" class="pedido-hoja"></div>
+      <div class="acciones no-print">
+        <button id="btn-copiar" class="btn primary">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar para WhatsApp
+        </button>
+        <a id="btn-wa" class="btn whatsapp" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.2 0-.4 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 1.9 2.9 4.6 4 .6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.4-.3Z"/></svg>
+          Enviar por WhatsApp
+        </a>
+        <button id="btn-imprimir" class="btn secondary">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>
+          Imprimir / PDF
+        </button>
+        <button id="btn-nuevo-pedido" class="btn secondary">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo pedido
+        </button>
+      </div>
+      <div class="historial no-print">
+        <h3 class="seccion-label">Historial de pedidos</h3>
+        <ul id="lista-historial"></ul>
+      </div>
+    </section>
+
+    <!-- ── Vista: Administración ── -->
+    <section id="vista-admin" class="vista" hidden>
+      <div class="seccion-head">
+        <h2 class="seccion-label">Administración</h2>
+        <button id="btn-admin-salir" class="btn secondary small">← Volver al catálogo</button>
+      </div>
+      <div class="search-bar">
+        <svg class="icon icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="admin-busqueda" placeholder="Buscar producto para editar…" autocomplete="off">
+      </div>
+      <p class="admin-ayuda">Editá precio, promos o foto y tocá «Guardar». Los cambios se guardan en la nube y los ven todos los dispositivos.</p>
+      <div id="lista-admin" class="lista-admin"></div>
+    </section>
+  </main>
+
+  <footer class="footer no-print">
+    <div class="footer-inner">
+      <div class="footer-marca">
+        <span class="footer-razon">El Super de la Bebida S.R.L.</span>
+        <span class="footer-datos">CUIT: XX-XXXXXXXX-X · Migue David 2119 · Tel: 343 518-2883</span>
+        <span id="estado-catalogo" class="footer-estado">● Iniciando…</span>
+        <button id="btn-admin" class="footer-admin" type="button">Administración</button>
+      </div>
+      <div class="footer-legal">
+        © 2026 El Super de la Bebida S.R.L. · Prohibida la venta de bebidas alcohólicas a menores de 18 años. Beber con moderación.
+      </div>
+    </div>
+  </footer>
+
+  <div id="modal-pin" class="modal" hidden>
+    <div class="modal-caja">
+      <h3>Administración</h3>
+      <p class="modal-sub">Ingresá el PIN para editar precios y fotos.</p>
+      <input type="password" id="pin-input" inputmode="numeric" placeholder="PIN" autocomplete="off">
+      <div class="acciones">
+        <button id="btn-pin-cancelar" class="btn secondary">Cancelar</button>
+        <button id="btn-pin-ok" class="btn primary">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast no-print" hidden></div>
+
+  <script src="js/data/products.js"></script>
+  <script src="js/core/cart.js"></script>
+  <script src="js/core/order.js"></script>
+  <script src="js/core/storage.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/ui/catalog.js"></script>
+  <script src="js/ui/cartView.js"></script>
+  <script src="js/ui/checkout.js"></script>
+  <script src="js/ui/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
