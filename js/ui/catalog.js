@@ -55,12 +55,14 @@
       ? `<span class="badge-promo">Promo</span>
          <div class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</div>`
       : "";
+    const desc = p.descripcion ? `<div class="descripcion">${p.descripcion}</div>` : "";
     return `
       <article class="card" data-id="${p.id}">
         ${foto}
         <div class="card-cuerpo">
           <div class="nombre">${p.nombre}</div>
           <div class="detalle">${p.presentacion} · ${p.unidad}</div>
+          ${desc}
           ${promo}
           <div class="precio">${Order.formatMoney(p.precio)}</div>
           <button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>

@@ -195,6 +195,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
 .card-cuerpo { padding: 12px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
 .card .nombre { font-weight: 600; font-size: 0.92rem; line-height: 1.25; }
 .card .detalle { color: var(--muted); font-size: 0.78rem; }
+.card .descripcion { color: var(--muted); font-size: 0.76rem; line-height: 1.35; }
 .card .precio { font-weight: 700; font-size: 1.08rem; color: var(--navy-700); font-variant-numeric: tabular-nums; }
 .card .precio-anterior { text-decoration: line-through; color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
 .badge-promo {
