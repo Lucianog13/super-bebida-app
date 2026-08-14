@@ -542,6 +542,20 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
 
 /* ── Administración ── */
 .admin-ayuda { font-size: 0.8rem; color: var(--muted); margin: 10px 0 14px; }
+.admin-nuevo { margin-bottom: 14px; }
+.form-nuevo {
+  margin-top: 10px; padding: 14px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px;
+}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px 14px; }
+.form-nuevo .campo { display: flex; flex-direction: column; align-items: stretch; gap: 4px; text-transform: none; letter-spacing: 0; font-size: 0.75rem; color: var(--muted); }
+.form-nuevo .campo input, .form-nuevo .campo select {
+  padding: 8px; border: 1px solid var(--border-dark); border-radius: 6px;
+  font-size: 0.9rem; font-family: inherit; color: var(--ink); background: #fff; width: 100%;
+}
+.form-nuevo .campo input[type="file"] { padding: 6px; font-size: 0.8rem; }
+.form-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
 .lista-admin { display: flex; flex-direction: column; gap: 10px; }
 .fila-admin {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);

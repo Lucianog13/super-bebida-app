@@ -157,10 +157,100 @@
     return h;
   }
 
+  async function crearProducto(e) {
+    e.preventDefault();
+    const form = document.getElementById("form-admin-nuevo");
+    const get = (id) => document.getElementById(id).value.trim();
+    const nombre = get("nuevo-nombre");
+    const marca = get("nuevo-marca");
+    const categoria = get("nuevo-categoria");
+    const presentacion = get("nuevo-presentacion");
+    const unidad = get("nuevo-unidad") || "unidad";
+    const precio = parseInt(get("nuevo-precio"), 10);
+    const fotoInput = document.getElementById("nuevo-foto");
+    if (!nombre || !Number.isFinite(precio) || precio <= 0) {
+      toastFn("Completá nombre y precio");
+      return;
+    }
+    const cfg = API();
+    const h = await headersAuth(true);
+    if (!h.Authorization) {
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
+      return;
+    }
+    // id único: slug del nombre + timestamp corto
+    const slug = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "producto";
+    const id = slug + "-" + Date.now().toString(36);
+
+    let imagen = "";
+    if (fotoInput.files && fotoInput.files[0]) {
+      const file = fotoInput.files[0];
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      if (!["png", "jpg", "jpeg", "webp"].includes(ext)) {
+        toastFn("Formato de foto no soportado (PNG, JPG o WEBP)");
+        return;
+      }
+      toastFn("Subiendo foto…");
+      const fotoNombre = id + "." + ext;
+      let res;
+      try {
+        res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/fotos/${fotoNombre}`, {
+          method: "POST",
+          headers: { ...h, "Content-Type": file.type || "image/" + ext, "x-upsert": "true" },
+          body: file,
+        });
+      } catch {
+        toastFn("Error de red al subir la foto");
+        return;
+      }
+      if (!res.ok) {
+        toastFn("Error al subir la foto (HTTP " + res.status + ")");
+        return;
+      }
+      imagen = `${cfg.supabaseUrl}/storage/v1/object/public/fotos/${fotoNombre}`;
+    }
+
+    const payload = {
+      id, nombre, marca, categoria, presentacion,
+      unidad, precio, en_promo: false, precio_anterior: null,
+      retornable: false, emoji: "", imagen, descripcion: "",
+    };
+    const res = await fetch(`${cfg.supabaseUrl}/rest/v1/productos`, {
+      method: "POST",
+      headers: { ...h, Prefer: "return=minimal" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      toastFn(
+        res.status === 401 || res.status === 403
+          ? "No autorizado — cerrá sesión y volvé a entrar"
+          : "Error al crear (HTTP " + res.status + ")"
+      );
+      return;
+    }
+    form.reset();
+    form.hidden = true;
+    toastFn("Producto creado ✔ — visible para todos los dispositivos");
+    await cargar();
+    render(filtro);
+  }
+
   function init(o) {
     listaEl = o.lista;
     toastFn = o.toast || toastFn;
     o.busqueda.addEventListener("input", (e) => render(e.target.value));
+    // Formulario de producto nuevo
+    const formNuevo = document.getElementById("form-admin-nuevo");
+    document.getElementById("btn-admin-nuevo").addEventListener("click", () => {
+      formNuevo.hidden = !formNuevo.hidden;
+      if (!formNuevo.hidden) formNuevo.querySelector("input").focus();
+    });
+    document.getElementById("btn-admin-nuevo-cancelar").addEventListener("click", () => {
+      formNuevo.hidden = true;
+      formNuevo.reset();
+    });
+    formNuevo.addEventListener("submit", crearProducto);
     listaEl.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-accion]");
       if (!btn) return;

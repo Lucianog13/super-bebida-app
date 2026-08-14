@@ -143,6 +143,42 @@
         <input type="search" id="admin-busqueda" placeholder="Buscar producto para editar…" autocomplete="off">
       </div>
       <p class="admin-ayuda">Editá precio, promos o foto y tocá «Guardar». Los cambios se guardan en la nube y los ven todos los dispositivos.</p>
+      <div class="admin-nuevo">
+        <button id="btn-admin-nuevo" class="btn primary small">＋ Agregar producto nuevo</button>
+        <form id="form-admin-nuevo" class="form-nuevo" hidden>
+          <div class="form-grid">
+            <label class="campo">Nombre *<input type="text" id="nuevo-nombre" placeholder="Ej: Cerveza Andes Roja" required></label>
+            <label class="campo">Marca<input type="text" id="nuevo-marca" placeholder="Ej: Andes"></label>
+            <label class="campo">Categoría
+              <select id="nuevo-categoria">
+                <option value="cervezas">Cervezas</option>
+                <option value="gaseosas">Gaseosas</option>
+                <option value="aguas">Aguas</option>
+                <option value="jugos">Jugos</option>
+                <option value="vinos">Vinos</option>
+                <option value="espumantes">Espumantes</option>
+                <option value="aperitivos">Aperitivos</option>
+                <option value="snacks">Snacks</option>
+                <option value="galletitas">Galletitas</option>
+                <option value="golosinas">Golosinas</option>
+                <option value="almacen">Almacén</option>
+                <option value="limpieza">Limpieza</option>
+                <option value="kiosco">Kiosco</option>
+                <option value="mascotas">Mascotas</option>
+                <option value="farmacia">Farmacia</option>
+              </select>
+            </label>
+            <label class="campo">Presentación<input type="text" id="nuevo-presentacion" placeholder="Ej: 1LT"></label>
+            <label class="campo">Unidad de venta<input type="text" id="nuevo-unidad" placeholder="Ej: pack x6, cajón x8, unidad"></label>
+            <label class="campo">Precio $ *<input type="number" id="nuevo-precio" min="1" step="100" placeholder="Ej: 15000" required></label>
+          </div>
+          <label class="campo">Foto del producto<input type="file" id="nuevo-foto" accept="image/png,image/jpeg,image/webp"></label>
+          <div class="form-acciones">
+            <button type="submit" class="btn primary small">Crear producto</button>
+            <button type="button" id="btn-admin-nuevo-cancelar" class="btn secondary small">Cancelar</button>
+          </div>
+        </form>
+      </div>
       <div id="lista-admin" class="lista-admin"></div>
     </section>
   </main>
