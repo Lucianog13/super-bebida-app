@@ -29,7 +29,11 @@
 body {
   margin: 0;
   font-family: var(--sans);
-  background: linear-gradient(180deg, #f8f9fb 0%, var(--bg) 260px);
+  background:
+    radial-gradient(900px 500px at 88% -8%, rgba(201, 138, 27, 0.09) 0%, transparent 60%),
+    radial-gradient(900px 600px at -8% 108%, rgba(22, 50, 74, 0.09) 0%, transparent 60%),
+    linear-gradient(180deg, #eaeef4 0%, #e3e9f1 100%);
+  background-attachment: fixed;
   color: var(--ink);
   display: flex;
   flex-direction: column;
@@ -146,6 +150,145 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
   flex: 0 0 auto;
 }
 .seccion-info { font-size: 0.78rem; color: var(--muted); }
+
+/* ── Carrusel de promociones (apartado destacado) ── */
+.promos {
+  position: relative;
+  margin: 0 0 16px;
+  padding: 14px 0;
+  border-radius: var(--radius);
+  border: 1px solid rgba(201, 138, 27, 0.5);
+  background:
+    radial-gradient(130% 150% at 12% 0%, rgba(255, 209, 102, 0.14) 0%, transparent 45%),
+    radial-gradient(130% 150% at 88% 100%, rgba(201, 138, 27, 0.12) 0%, transparent 50%),
+    linear-gradient(160deg, #11283e 0%, #0e2233 60%, #133047 100%);
+  box-shadow: 0 0 18px rgba(201, 138, 27, 0.18), 0 14px 34px rgba(14, 34, 51, 0.32);
+  overflow: hidden;
+}
+.promos::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ffd166 25%, var(--gold) 50%, #ffd166 75%, transparent);
+  background-size: 200% 100%;
+  animation: promo-linea 4s linear infinite;
+}
+@keyframes promo-linea {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.promos-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 16px 10px;
+}
+.promos-titulo {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ffd166;
+  text-shadow: 0 0 10px rgba(255, 209, 102, 0.6), 0 0 26px rgba(201, 138, 27, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.promos-titulo::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(255, 209, 102, 0.9);
+  animation: promo-punto 1.8s ease-in-out infinite;
+  flex: 0 0 auto;
+}
+@keyframes promo-punto {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 209, 102, 0.5); }
+  50% { box-shadow: 0 0 14px rgba(255, 209, 102, 1); }
+}
+.promos-sub { font-size: 0.7rem; letter-spacing: 0.08em; color: #9fb4c7; }
+.carrusel-promos {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 8px 16px 12px;
+  perspective: 1000px;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+.carrusel-promos::-webkit-scrollbar { display: none; }
+.promo-card {
+  flex: 0 0 auto;
+  width: 158px;
+  scroll-snap-align: center;
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf3e0 100%);
+  border: 1px solid rgba(201, 138, 27, 0.6);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  box-shadow: 0 0 14px rgba(201, 138, 27, 0.28), 0 10px 22px rgba(14, 34, 51, 0.38);
+  transition: transform 0.16s ease-out, box-shadow 0.2s ease, border-color 0.2s ease;
+  will-change: transform;
+}
+.promo-card:hover {
+  border-color: #ffd166;
+  box-shadow: 0 0 24px rgba(255, 209, 102, 0.55), 0 14px 28px rgba(14, 34, 51, 0.42);
+}
+.promo-foto {
+  aspect-ratio: 1 / 0.85;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.promo-foto img { max-width: 92%; max-height: 92%; object-fit: contain; }
+.promo-foto .emoji-fallback { font-size: 2.6rem; }
+.promo-card .badge-promo {
+  top: 14px;
+  left: 14px;
+  background: linear-gradient(180deg, #e5484d, var(--red));
+  box-shadow: 0 0 10px rgba(229, 72, 77, 0.75);
+  animation: promo-pulso 2.2s ease-in-out infinite;
+}
+@keyframes promo-pulso {
+  0%, 100% { box-shadow: 0 0 5px rgba(229, 72, 77, 0.5); }
+  50% { box-shadow: 0 0 16px rgba(229, 72, 77, 1); }
+}
+.promo-ahorro {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  background: linear-gradient(180deg, #ffd166, var(--gold));
+  color: var(--navy-900);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(14, 34, 51, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+.promo-cuerpo { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.promo-nombre { font-weight: 700; font-size: 0.84rem; line-height: 1.2; color: var(--ink); min-height: 2.4em; }
+.promo-precios { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.promo-precio { font-weight: 800; font-size: 1.14rem; color: var(--navy-700); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) {
+  .promos::before,
+  .promos-titulo::before,
+  .promo-card .badge-promo { animation: none; }
+}
 
 /* ── Búsqueda y chips ── */
 .search-bar { position: relative; margin-bottom: 4px; }
@@ -603,9 +746,10 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
   .btn-admin-header { padding: 8px 10px; font-size: 0.7rem; }
   .btn-carrito { padding: 8px 10px; }
 }
-@media (max-width: 400px) {
+@media (max-width: 640px) {
+  /* botón Administrar: solo el candado, imposible que se amontone */
   .btn-admin-texto { display: none; }
-  .btn-admin-header { gap: 0; }
+  .btn-admin-header { gap: 0; padding: 8px; }
 }
 .head-acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .head-acciones .seccion-info { margin-right: 4px; }

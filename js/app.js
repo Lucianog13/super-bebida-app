@@ -145,6 +145,8 @@
       searchInput: $("busqueda"),
       chips: $("chips-categorias"),
       resultados: $("resultados-catalogo"),
+      promos: $("seccion-promos"),
+      carruselPromos: $("carrusel-promos"),
       productos,
       onAdd(producto) {
         carrito = Cart.addItem(carrito, producto);

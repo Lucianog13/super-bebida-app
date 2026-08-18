@@ -30,6 +30,7 @@
   const state = { query: "", categoria: "todas" };
   let opts = null;
   let bound = false;
+  let tiltPromos = null; // efecto 3D del carrusel (se define en bind)
 
   function normalize(s) {
     return (s || "")
@@ -69,6 +70,32 @@
       </article>`;
   }
 
+  function descuentoPromo(precio, precioAnterior) {
+    if (!precioAnterior || !precio || precioAnterior <= precio) return null;
+    return Math.max(1, Math.round((1 - precio / precioAnterior) * 100));
+  }
+
+  function promoCardHTML(p) {
+    const ahorro = descuentoPromo(p.precio, p.precioAnterior);
+    const foto = p.imagen
+      ? `<div class="promo-foto"><img src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.remove();this.parentElement.querySelector('.emoji-fallback').hidden=false"><span class="emoji-fallback" hidden>${p.emoji || "📦"}</span></div>`
+      : `<div class="promo-foto"><span class="emoji-fallback">${p.emoji || "📦"}</span></div>`;
+    const anterior = p.precioAnterior
+      ? `<span class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</span>`
+      : "";
+    return `
+      <article class="promo-card" data-id="${p.id}">
+        ${foto}
+        <span class="badge-promo">Promo</span>
+        ${ahorro ? `<span class="promo-ahorro">−${ahorro}%</span>` : ""}
+        <div class="promo-cuerpo">
+          <div class="promo-nombre">${p.nombre}</div>
+          <div class="promo-precios">${anterior}<span class="promo-precio">${Order.formatMoney(p.precio)}</span></div>
+          <button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>
+        </div>
+      </article>`;
+  }
+
   function categoriasDisponibles() {
     return ["todas"].concat([...new Set(opts.productos.map((p) => p.categoria))]);
   }
@@ -84,6 +111,14 @@
       .join("");
   }
 
+  function renderPromos() {
+    if (!opts.promos || !opts.carruselPromos) return;
+    const promos = opts.productos.filter((p) => p.enPromo);
+    opts.promos.hidden = promos.length === 0;
+    opts.carruselPromos.innerHTML = promos.map(promoCardHTML).join("");
+    if (tiltPromos && typeof requestAnimationFrame !== "undefined") requestAnimationFrame(tiltPromos);
+  }
+
   function render() {
     const lista = filtrar(opts.productos, state.query, state.categoria);
     opts.grid.innerHTML = lista.length
@@ -92,6 +127,7 @@
     if (opts.resultados) {
       opts.resultados.textContent = `${lista.length} producto${lista.length === 1 ? "" : "s"}`;
     }
+    renderPromos();
   }
 
   function bind() {
@@ -113,6 +149,64 @@
       const producto = opts.productos.find((p) => p.id === card.dataset.id);
       if (producto) opts.onAdd(producto);
     });
+
+    // ── Carrusel de promos: agregar al carrito, efecto 3D y auto-avance ──
+    if (opts.carruselPromos) {
+      const carr = opts.carruselPromos;
+      carr.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-accion='agregar']");
+        if (!btn) return;
+        const card = btn.closest("[data-id]");
+        const producto = opts.productos.find((p) => p.id === card.dataset.id);
+        if (producto) opts.onAdd(producto);
+      });
+      const tilt = () => {
+        const rect = carr.getBoundingClientRect();
+        if (!rect.width) return;
+        const centro = rect.left + rect.width / 2;
+        carr.querySelectorAll(".promo-card").forEach((c) => {
+          const cr = c.getBoundingClientRect();
+          const delta = (cr.left + cr.width / 2 - centro) / (rect.width / 2);
+          c.style.transform = `rotateY(${(delta * -8).toFixed(2)}deg)`;
+        });
+      };
+      tiltPromos = tilt;
+      let raf = null;
+      carr.addEventListener(
+        "scroll",
+        () => {
+          if (raf) return;
+          raf = requestAnimationFrame(() => {
+            raf = null;
+            tilt();
+          });
+        },
+        { passive: true }
+      );
+      const avanzar = () => {
+        const card = carr.querySelector(".promo-card");
+        if (!card) return;
+        const paso = card.offsetWidth + 14;
+        const maxScroll = carr.scrollWidth - carr.clientWidth;
+        if (carr.scrollLeft >= maxScroll - 10) carr.scrollTo({ left: 0, behavior: "smooth" });
+        else carr.scrollBy({ left: paso, behavior: "smooth" });
+      };
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        // sin animación automática para usuarios que la desactivaron
+      } else {
+        let timer = setInterval(avanzar, 4500);
+        const pausar = () => clearInterval(timer);
+        const reanudar = () => {
+          clearInterval(timer);
+          timer = setInterval(avanzar, 4500);
+        };
+        carr.addEventListener("pointerenter", pausar);
+        carr.addEventListener("pointerleave", reanudar);
+        carr.addEventListener("touchstart", pausar, { passive: true });
+        carr.addEventListener("touchend", reanudar, { passive: true });
+      }
+      tilt();
+    }
   }
 
   function init(o) {
@@ -132,5 +226,5 @@
     render();
   }
 
-  return { init, refresh, filtrar, normalize };
+  return { init, refresh, filtrar, normalize, descuentoPromo };
 });
