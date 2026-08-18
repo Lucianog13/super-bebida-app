@@ -61,7 +61,6 @@
         ${foto}
         <div class="card-cuerpo">
           <div class="nombre">${p.nombre}</div>
-          <div class="detalle">${p.presentacion} · ${p.unidad}</div>
           ${desc}
           ${promo}
           <div class="precio">${Order.formatMoney(p.precio)}</div>
