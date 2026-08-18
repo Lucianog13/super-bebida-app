@@ -228,6 +228,23 @@
     </div>
   </div>
 
+  <div id="modal-editar" class="modal" hidden>
+    <div class="modal-caja modal-editar">
+      <h3>✏️ Editar producto</h3>
+      <p id="editar-producto-actual" class="modal-sub"></p>
+      <label class="campo-editar">Nombre
+        <input type="text" id="editar-nombre" placeholder="Nombre del producto">
+      </label>
+      <label class="campo-editar">Descripción
+        <textarea id="editar-descripcion" rows="3" placeholder="Descripción breve que ven los clientes"></textarea>
+      </label>
+      <div class="acciones">
+        <button id="btn-editar-cancelar" class="btn secondary">Cancelar</button>
+        <button id="btn-editar-guardar" class="btn primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast no-print" hidden></div>
 
   <script src="js/data/products.js"></script>
