@@ -591,3 +591,13 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
 .modal-sub { font-size: 0.82rem; color: var(--muted); margin: 0; }
 .modal-caja > input { padding: 11px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 1.1rem; letter-spacing: 0.25em; text-align: center; font-family: inherit; }
 .modal-caja .acciones { margin-top: 4px; }
+
+/* Modal de edición de producto */
+.modal-editar { max-width: 460px; }
+.modal-editar .campo-editar { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--muted); }
+.modal-editar .campo-editar input,
+.modal-editar .campo-editar textarea {
+  padding: 10px; border: 1px solid var(--border-dark); border-radius: 6px;
+  font-size: 0.95rem; font-family: inherit; color: var(--ink); width: 100%; background: #fff;
+}
+.modal-editar textarea { resize: vertical; min-height: 72px; }

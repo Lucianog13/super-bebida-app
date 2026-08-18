@@ -8,6 +8,7 @@
   let listaEl = null;
   let toastFn = () => {};
   let filtro = "";
+  let editandoPid = null;
 
   const API = () => window.APP_CONFIG;
 
@@ -40,6 +41,7 @@
       <div class="acciones">
         <button class="btn small primary" data-accion="guardar">Guardar</button>
         <button class="btn small secondary" data-accion="foto">Cambiar foto</button>
+        <button class="btn small outline" data-accion="editar">✏️ Editar</button>
         <input type="file" class="in-foto" accept="image/png,image/jpeg,image/webp" hidden>
       </div>
     </div>`;
@@ -149,6 +151,59 @@
     render(filtro);
   }
 
+  function abrirEditar(pid) {
+    const p = productos.find((x) => x.id === pid);
+    if (!p) return;
+    editandoPid = pid;
+    document.getElementById("editar-producto-actual").textContent = p.nombre;
+    document.getElementById("editar-nombre").value = p.nombre;
+    document.getElementById("editar-descripcion").value = p.descripcion || "";
+    document.getElementById("modal-editar").hidden = false;
+    document.getElementById("editar-nombre").focus();
+  }
+
+  function cerrarEditar() {
+    editandoPid = null;
+    document.getElementById("modal-editar").hidden = true;
+  }
+
+  async function guardarEdicion() {
+    if (!editandoPid) return;
+    const nombre = document.getElementById("editar-nombre").value.trim();
+    const descripcion = document.getElementById("editar-descripcion").value.trim();
+    if (!nombre) {
+      toastFn("El nombre no puede quedar vacío");
+      return;
+    }
+    const cfg = API();
+    const h = await headersAuth(true);
+    if (!h.Authorization) {
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
+      return;
+    }
+    const res = await fetch(
+      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(editandoPid)}`,
+      {
+        method: "PATCH",
+        headers: { ...h, Prefer: "return=minimal" },
+        body: JSON.stringify({ nombre, descripcion }),
+      }
+    );
+    if (!res.ok) {
+      toastFn(
+        res.status === 401 || res.status === 403
+          ? "No autorizado — cerrá sesión y volvé a entrar"
+          : "Error al guardar (HTTP " + res.status + ")"
+      );
+      return;
+    }
+    const p = productos.find((x) => x.id === editandoPid);
+    if (p) { p.nombre = nombre; p.descripcion = descripcion; }
+    cerrarEditar();
+    render(filtro);
+    toastFn("Guardado ✔ — visible para todos los dispositivos");
+  }
+
   async function headersAuth(conJson) {
     const h = { apikey: API().supabaseKey };
     const t = await window.Auth.token();
@@ -239,6 +294,12 @@
   function init(o) {
     listaEl = o.lista;
     toastFn = o.toast || toastFn;
+    document.getElementById("btn-editar-cancelar").addEventListener("click", cerrarEditar);
+    document.getElementById("btn-editar-guardar").addEventListener("click", guardarEdicion);
+    const modalEditar = document.getElementById("modal-editar");
+    modalEditar.addEventListener("click", (e) => {
+      if (e.target === modalEditar) cerrarEditar();
+    });
     o.busqueda.addEventListener("input", (e) => render(e.target.value));
     // Formulario de producto nuevo
     const formNuevo = document.getElementById("form-admin-nuevo");
@@ -258,6 +319,7 @@
       const pid = fila.dataset.id;
       if (btn.dataset.accion === "guardar") guardar(pid);
       if (btn.dataset.accion === "foto") fila.querySelector(".in-foto").click();
+      if (btn.dataset.accion === "editar") abrirEditar(pid);
     });
     listaEl.addEventListener("change", (e) => {
       if (!e.target.classList.contains("in-foto")) return;
