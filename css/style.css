@@ -568,6 +568,8 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
 .campo { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
 .campo input[type="number"] { width: 110px; padding: 8px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
 .campo input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--navy-700); }
+.campo.campo-desc { grid-column: 1 / -1; width: 100%; text-transform: none; letter-spacing: 0; font-size: 0.72rem; gap: 8px; }
+.campo-desc input[type="text"] { flex: 1; width: 100%; padding: 8px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 0.85rem; font-family: inherit; }
 .fila-admin .acciones { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
 .btn.small { padding: 7px 12px; font-size: 0.78rem; }
 .btn.outline { background: transparent; border: 1px solid var(--navy-700); color: var(--navy-700); }

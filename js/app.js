@@ -60,6 +60,7 @@
       retornable: !!row.retornable,
       emoji: row.emoji || "📦",
       imagen: row.imagen || "",
+      descripcion: row.descripcion || "",
     };
   }
 

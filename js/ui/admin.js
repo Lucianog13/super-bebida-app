@@ -38,6 +38,7 @@
         <label class="campo promo-row"><input type="checkbox" class="in-promo" ${p.en_promo ? "checked" : ""}> Promo</label>
         <label class="campo">Anterior $<input type="number" class="in-anterior" value="${p.precio_anterior || ""}" min="0" step="100"></label>
       </div>
+      <label class="campo campo-desc">Descripción <input type="text" class="in-descripcion" value="${p.descripcion || ""}" placeholder="Ej: Sabores surtido, chocolate y vainilla"></label>
       <div class="acciones">
         <button class="btn small primary" data-accion="guardar">Guardar</button>
         <button class="btn small secondary" data-accion="foto">Cambiar foto</button>
@@ -66,6 +67,7 @@
     const enPromo = fila.querySelector(".in-promo").checked;
     const anteriorRaw = fila.querySelector(".in-anterior").value.trim();
     const precioAnterior = enPromo && anteriorRaw ? parseInt(anteriorRaw, 10) : null;
+    const descripcion = fila.querySelector(".in-descripcion").value.trim();
     if (!Number.isFinite(precio) || precio <= 0) {
       toastFn("Precio inválido");
       return;
@@ -81,7 +83,7 @@
       {
         method: "PATCH",
         headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify({ precio, en_promo: enPromo, precio_anterior: precioAnterior }),
+        body: JSON.stringify({ precio, en_promo: enPromo, precio_anterior: precioAnterior, descripcion }),
       }
     );
     if (!res.ok) {
@@ -95,6 +97,7 @@
     p.precio = precio;
     p.en_promo = enPromo;
     p.precio_anterior = precioAnterior;
+    p.descripcion = descripcion;
     toastFn("Guardado ✔ — visible para todos los dispositivos");
   }
 
@@ -269,7 +272,8 @@
     const payload = {
       id, nombre, marca, categoria, presentacion,
       unidad, precio, en_promo: false, precio_anterior: null,
-      retornable: false, emoji: "", imagen, descripcion: "",
+      retornable: false, emoji: "", imagen,
+      descripcion: get("nuevo-descripcion"),
     };
     const res = await fetch(`${cfg.supabaseUrl}/rest/v1/productos`, {
       method: "POST",
