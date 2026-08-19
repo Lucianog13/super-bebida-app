@@ -14,16 +14,6 @@
     tel: "Tel: 343 518-2883",
   };
 
-  // ── Banner de pedido mínimo (catálogo) ──
-  (function initAvisoMinimo() {
-    const el = $("aviso-pedido-minimo");
-    if (!el) return;
-    el.innerHTML =
-      '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>' +
-      ` Pedido mínimo: <strong>${Order.formatMoney(Order.MIN_PEDIDO)}</strong> — sumá productos hasta alcanzar ese monto.`;
-    el.hidden = false;
-  })();
-
   let carrito = Storage.loadCart();
   let pedidoActual = null;
   let modoCatalogo = "local"; // "nube" | "local"
