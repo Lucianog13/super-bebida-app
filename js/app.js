@@ -9,7 +9,7 @@
   const EMPRESA = {
     razonSocial: "EL SUPER DE LA BEBIDA S.R.L.",
     rubro: "Distribuidora de bebidas",
-    cuit: "CUIT: XX-XXXXXXXX-X",
+    cuit: "CUIT: 30-71782512-4",
     direccion: "Migue David 2119",
     tel: "Tel: 343 518-2883",
   };
