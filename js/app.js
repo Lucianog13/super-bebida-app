@@ -28,12 +28,13 @@
     window.scrollTo({ top: 0 });
   }
 
-  function toast(msg) {
+  function toast(msg, tipo) {
     const t = $("toast");
     t.textContent = msg;
+    t.className = "toast no-print" + (tipo === "error" ? " toast-error" : "");
     t.hidden = false;
     clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => (t.hidden = true), 2600);
+    toast._timer = setTimeout(() => (t.hidden = true), tipo === "error" ? 5000 : 3200);
   }
 
   function updateContador() {

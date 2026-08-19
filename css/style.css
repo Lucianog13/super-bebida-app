@@ -709,6 +709,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
   max-width: 90vw;
   text-align: center;
 }
+.toast-error { background: #b3261e; }
 
 /* ── Impresión: solo el remito ── */
 @media print {
@@ -785,7 +786,11 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
 .campo input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--navy-700); }
 .campo.campo-desc { grid-column: 1 / -1; width: 100%; text-transform: none; letter-spacing: 0; font-size: 0.72rem; gap: 8px; }
 .campo-desc input[type="text"] { flex: 1; width: 100%; padding: 8px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 0.85rem; font-family: inherit; }
-.fila-admin .acciones { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+.fila-admin .acciones { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.estado-fila { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+.estado-fila.ok { color: #1a7f37; }
+.estado-fila.error { color: #b3261e; }
+.estado-fila.pendiente { color: #b26a00; }
 .btn.small { padding: 7px 12px; font-size: 0.78rem; }
 .btn.outline { background: transparent; border: 1px solid var(--navy-700); color: var(--navy-700); }
 .btn.outline:hover { background: var(--navy-50); }

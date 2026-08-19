@@ -1,5 +1,7 @@
 // Panel de administración: editar precios/promos y subir fotos desde la app.
 // Los cambios se guardan en Supabase (los ven todos los dispositivos).
+// v2: estado visible por fila (✔/✘), fotos "pendientes" que se suben con "Guardar",
+// y avisos de error diferenciados.
 (function (root, factory) {
   if (typeof module !== "undefined" && module.exports) module.exports = factory();
   else root.AdminUI = factory();
@@ -9,6 +11,8 @@
   let toastFn = () => {};
   let filtro = "";
   let editandoPid = null;
+  // Fotos elegidas pero aún no guardadas: pid → File
+  const fotosPendientes = new Map();
 
   const API = () => window.APP_CONFIG;
 
@@ -26,6 +30,7 @@
     const foto = p.imagen
       ? `<img class="thumb" src="${p.imagen}" alt="" onerror="this.remove()">`
       : `<span class="thumb">${p.emoji || "📦"}</span>`;
+    const pendiente = fotosPendientes.has(p.id) ? "📷 foto lista — apretá Guardar" : "";
     return `
     <div class="fila-admin" data-id="${p.id}">
       ${foto}
@@ -40,6 +45,7 @@
       </div>
       <label class="campo campo-desc">Descripción <input type="text" class="in-descripcion" value="${p.descripcion || ""}" placeholder="Ej: Sabores surtido, chocolate y vainilla"></label>
       <div class="acciones">
+        <span class="estado-fila">${pendiente}</span>
         <button class="btn small primary" data-accion="guardar">Guardar</button>
         <button class="btn small secondary" data-accion="foto">Cambiar foto</button>
         <button class="btn small outline" data-accion="editar">✏️ Editar</button>
@@ -59,6 +65,17 @@
       : '<p class="carrito-vacio">Sin resultados.</p>';
   }
 
+  /** Muestra el estado de una fila: ✔ guardado / ✘ error / pendiente. */
+  function marcarEstado(pid, texto, tipo) {
+    const fila = listaEl && listaEl.querySelector(`[data-id="${CSS.escape(pid)}"]`);
+    if (!fila) return;
+    const el = fila.querySelector(".estado-fila");
+    if (el) {
+      el.textContent = texto;
+      el.className = "estado-fila " + (tipo || "");
+    }
+  }
+
   async function guardar(pid) {
     const p = productos.find((x) => x.id === pid);
     const fila = listaEl.querySelector(`[data-id="${CSS.escape(pid)}"]`);
@@ -69,15 +86,31 @@
     const precioAnterior = enPromo && anteriorRaw ? parseInt(anteriorRaw, 10) : null;
     const descripcion = fila.querySelector(".in-descripcion").value.trim();
     if (!Number.isFinite(precio) || precio <= 0) {
-      toastFn("Precio inválido");
+      marcarEstado(pid, "✘ precio inválido", "error");
+      toastFn("Precio inválido", "error");
       return;
     }
     const cfg = API();
     const h = await headersAuth(true);
     if (!h.Authorization) {
-      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
+      marcarEstado(pid, "✘ sesión vencida — volvé a entrar", "error");
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
+
+    // 1) Si hay una foto elegida pero sin subir, subirla primero.
+    if (fotosPendientes.has(pid)) {
+      marcarEstado(pid, "⏳ subiendo foto…", "pendiente");
+      const url = await subirFoto(pid, fotosPendientes.get(pid), h);
+      if (!url) {
+        marcarEstado(pid, "✘ no se pudo subir la foto", "error");
+        return;
+      }
+      p.imagen = url;
+      fotosPendientes.delete(pid);
+    }
+
+    // 2) Guardar precio/promo/descripción.
     const res = await fetch(
       `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
       {
@@ -87,36 +120,30 @@
       }
     );
     if (!res.ok) {
-      toastFn(
-        res.status === 401 || res.status === 403
-          ? "No autorizado — cerrá sesión y volvé a entrar"
-          : "Error al guardar (HTTP " + res.status + ")"
-      );
+      const noAuth = res.status === 401 || res.status === 403;
+      marcarEstado(pid, "✘ " + (noAuth ? "no autorizado" : "error " + res.status), "error");
+      toastFn(noAuth ? "No autorizado — cerrá sesión y volvé a entrar" : "Error al guardar (HTTP " + res.status + ")", "error");
       return;
     }
     p.precio = precio;
     p.en_promo = enPromo;
     p.precio_anterior = precioAnterior;
     p.descripcion = descripcion;
+    marcarEstado(pid, "✔ guardado", "ok");
     toastFn("Guardado ✔ — visible para todos los dispositivos");
   }
 
-  async function cambiarFoto(pid, file) {
+  /** Sube la foto al Storage y asocia la URL al producto. Devuelve la URL o null. */
+  async function subirFoto(pid, file, h) {
     const p = productos.find((x) => x.id === pid);
-    if (!p || !file) return;
+    if (!p || !file) return null;
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
     if (!["png", "jpg", "jpeg", "webp"].includes(ext)) {
-      toastFn("Formato no soportado (usá PNG, JPG o WEBP)");
-      return;
+      toastFn("Formato no soportado (usá PNG, JPG o WEBP)", "error");
+      return null;
     }
     const cfg = API();
-    const h = await headersAuth(false);
-    if (!h.Authorization) {
-      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
-      return;
-    }
     const nombre = pid + "-" + Date.now() + "." + ext;
-    toastFn("Subiendo foto…");
     let res;
     try {
       res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/fotos/${nombre}`, {
@@ -129,12 +156,12 @@
         body: file,
       });
     } catch {
-      toastFn("Error de red al subir la foto");
-      return;
+      toastFn("Error de red al subir la foto", "error");
+      return null;
     }
     if (!res.ok) {
-      toastFn("Error al subir la foto (HTTP " + res.status + ")");
-      return;
+      toastFn("Error al subir la foto (HTTP " + res.status + ")", "error");
+      return null;
     }
     const url = `${cfg.supabaseUrl}/storage/v1/object/public/fotos/${nombre}`;
     const res2 = await fetch(
@@ -146,12 +173,17 @@
       }
     );
     if (!res2.ok) {
-      toastFn("Foto subida, pero no se pudo asociar al producto");
-      return;
+      toastFn("Foto subida, pero no se pudo asociar al producto", "error");
+      return null;
     }
-    p.imagen = url;
-    toastFn("Foto actualizada ✔");
-    render(filtro);
+    return url;
+  }
+
+  /** Al elegir una foto NO se sube: queda pendiente hasta apretar "Guardar". */
+  function elegirFoto(pid, file) {
+    if (!file) return;
+    fotosPendientes.set(pid, file);
+    marcarEstado(pid, "📷 foto lista — apretá Guardar", "pendiente");
   }
 
   function abrirEditar(pid) {
@@ -175,13 +207,13 @@
     const nombre = document.getElementById("editar-nombre").value.trim();
     const descripcion = document.getElementById("editar-descripcion").value.trim();
     if (!nombre) {
-      toastFn("El nombre no puede quedar vacío");
+      toastFn("El nombre no puede quedar vacío", "error");
       return;
     }
     const cfg = API();
     const h = await headersAuth(true);
     if (!h.Authorization) {
-      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
     const res = await fetch(
@@ -196,7 +228,8 @@
       toastFn(
         res.status === 401 || res.status === 403
           ? "No autorizado — cerrá sesión y volvé a entrar"
-          : "Error al guardar (HTTP " + res.status + ")"
+          : "Error al guardar (HTTP " + res.status + ")",
+        "error"
       );
       return;
     }
@@ -204,6 +237,7 @@
     if (p) { p.nombre = nombre; p.descripcion = descripcion; }
     cerrarEditar();
     render(filtro);
+    marcarEstado(editandoPid, "✔ guardado", "ok");
     toastFn("Guardado ✔ — visible para todos los dispositivos");
   }
 
@@ -227,16 +261,15 @@
     const precio = parseInt(get("nuevo-precio"), 10);
     const fotoInput = document.getElementById("nuevo-foto");
     if (!nombre || !Number.isFinite(precio) || precio <= 0) {
-      toastFn("Completá nombre y precio");
+      toastFn("Completá nombre y precio", "error");
       return;
     }
     const cfg = API();
     const h = await headersAuth(true);
     if (!h.Authorization) {
-      toastFn("Sesión vencida — cerrá sesión y volvé a entrar");
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
-    // id único: slug del nombre + timestamp corto
     const slug = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "producto";
     const id = slug + "-" + Date.now().toString(36);
@@ -246,7 +279,7 @@
       const file = fotoInput.files[0];
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       if (!["png", "jpg", "jpeg", "webp"].includes(ext)) {
-        toastFn("Formato de foto no soportado (PNG, JPG o WEBP)");
+        toastFn("Formato de foto no soportado (PNG, JPG o WEBP)", "error");
         return;
       }
       toastFn("Subiendo foto…");
@@ -259,11 +292,11 @@
           body: file,
         });
       } catch {
-        toastFn("Error de red al subir la foto");
+        toastFn("Error de red al subir la foto", "error");
         return;
       }
       if (!res.ok) {
-        toastFn("Error al subir la foto (HTTP " + res.status + ")");
+        toastFn("Error al subir la foto (HTTP " + res.status + ")", "error");
         return;
       }
       imagen = `${cfg.supabaseUrl}/storage/v1/object/public/fotos/${fotoNombre}`;
@@ -284,7 +317,8 @@
       toastFn(
         res.status === 401 || res.status === 403
           ? "No autorizado — cerrá sesión y volvé a entrar"
-          : "Error al crear (HTTP " + res.status + ")"
+          : "Error al crear (HTTP " + res.status + ")",
+        "error"
       );
       return;
     }
@@ -305,7 +339,6 @@
       if (e.target === modalEditar) cerrarEditar();
     });
     o.busqueda.addEventListener("input", (e) => render(e.target.value));
-    // Formulario de producto nuevo
     const formNuevo = document.getElementById("form-admin-nuevo");
     document.getElementById("btn-admin-nuevo").addEventListener("click", () => {
       formNuevo.hidden = !formNuevo.hidden;
@@ -328,7 +361,7 @@
     listaEl.addEventListener("change", (e) => {
       if (!e.target.classList.contains("in-foto")) return;
       const fila = e.target.closest(".fila-admin");
-      if (e.target.files && e.target.files[0]) cambiarFoto(fila.dataset.id, e.target.files[0]);
+      if (e.target.files && e.target.files[0]) elegirFoto(fila.dataset.id, e.target.files[0]);
       e.target.value = "";
     });
   }
