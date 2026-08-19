@@ -7,6 +7,12 @@
   const ICONO_TACHO =
     '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
 
+  const ICONO_ALERTA =
+    '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+
+  const ICONO_CHECK =
+    '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
   function filaHTML(it) {
     const foto = it.imagen
       ? `<img class="thumb" src="${it.imagen}" alt="" loading="lazy" onerror="this.remove()">`
@@ -34,6 +40,15 @@
       </div>`;
   }
 
+  // Aviso de pedido mínimo (solo si el carrito tiene items)
+  function avisoMinimoHTML(items) {
+    if (!items.length) return "";
+    const falta = Order.faltanteMinimo(Cart.total(items));
+    return falta > 0
+      ? `<div class="aviso-minimo falta">${ICONO_ALERTA} Te faltan <strong>${Order.formatMoney(falta)}</strong> para llegar al pedido mínimo de ${Order.formatMoney(Order.MIN_PEDIDO)}</div>`
+      : `<div class="aviso-minimo ok">${ICONO_CHECK} Alcanzaste el pedido mínimo de ${Order.formatMoney(Order.MIN_PEDIDO)}</div>`;
+  }
+
   function render(itemsContainer, totalContainer, items, handlers) {
     itemsContainer.innerHTML = items.length
       ? items.map(filaHTML).join("")
@@ -43,7 +58,8 @@
       `<div class="resumen"><span>Total del pedido</span><span>${Cart.count(items)} ${
         Cart.count(items) === 1 ? "item" : "items"
       }</span></div>` +
-      `<span class="monto">${Order.formatMoney(Cart.total(items))}</span>`;
+      `<span class="monto">${Order.formatMoney(Cart.total(items))}</span>` +
+      avisoMinimoHTML(items);
 
     if (!itemsContainer._bound) {
       itemsContainer._bound = true;

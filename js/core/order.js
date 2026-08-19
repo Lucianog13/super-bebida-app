@@ -78,5 +78,22 @@
     );
   }
 
-  return { formatMoney, formatDate, generateId, envasesRetornables, toWhatsAppText, buildOrder, findLastOrder };
+  // ── Pedido mínimo ──
+  const MIN_PEDIDO = 80000; // $ARS — montos menores no califican como pedido
+
+  function faltanteMinimo(total) {
+    return Math.max(0, MIN_PEDIDO - (total || 0));
+  }
+
+  return {
+    formatMoney,
+    formatDate,
+    generateId,
+    envasesRetornables,
+    toWhatsAppText,
+    buildOrder,
+    findLastOrder,
+    MIN_PEDIDO,
+    faltanteMinimo,
+  };
 });
