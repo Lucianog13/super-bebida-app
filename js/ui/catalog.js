@@ -49,6 +49,7 @@
   }
 
   function cardHTML(p) {
+    const sinStock = p.activo === false;
     const foto = p.imagen
       ? `<div class="foto"><img src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.remove();this.parentElement.querySelector('.emoji-fallback').hidden=false"><span class="emoji-fallback" hidden>${p.emoji || "📦"}</span></div>`
       : `<div class="foto"><span class="emoji-fallback">${p.emoji || "📦"}</span></div>`;
@@ -57,15 +58,20 @@
          <div class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</div>`
       : "";
     const desc = p.descripcion ? `<div class="descripcion">${p.descripcion}</div>` : "";
+    const sinStockBadge = sinStock ? `<span class="badge-sin-stock">Sin stock</span>` : "";
+    const boton = sinStock
+      ? `<button class="btn-agregar" disabled>Sin stock</button>`
+      : `<button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>`;
     return `
-      <article class="card" data-id="${p.id}">
+      <article class="card${sinStock ? " sin-stock" : ""}" data-id="${p.id}">
         ${foto}
         <div class="card-cuerpo">
           <div class="nombre">${p.nombre}</div>
           ${desc}
           ${promo}
+          ${sinStockBadge}
           <div class="precio">${Order.formatMoney(p.precio)}</div>
-          <button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>
+          ${boton}
         </div>
       </article>`;
   }
@@ -113,7 +119,7 @@
 
   function renderPromos() {
     if (!opts.promos || !opts.carruselPromos) return;
-    const promos = opts.productos.filter((p) => p.enPromo);
+    const promos = opts.productos.filter((p) => p.enPromo && p.activo !== false);
     opts.promos.hidden = promos.length === 0;
     opts.carruselPromos.innerHTML = promos.map(promoCardHTML).join("");
     if (tiltPromos && typeof requestAnimationFrame !== "undefined") requestAnimationFrame(tiltPromos);

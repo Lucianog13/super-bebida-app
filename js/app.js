@@ -62,6 +62,7 @@
       emoji: row.emoji || "📦",
       imagen: row.imagen || "",
       descripcion: row.descripcion || "",
+      activo: row.activo !== false,
     };
   }
 
@@ -73,7 +74,7 @@
     const cacheKey = "catalogo_cache";
     try {
       const res = await fetch(
-        `${CFG.supabaseUrl}/rest/v1/productos?select=*&activo=eq.true&order=nombre.asc`,
+        `${CFG.supabaseUrl}/rest/v1/productos?select=*&order=nombre.asc`,
         { headers: { apikey: CFG.supabaseKey, Authorization: "Bearer " + CFG.supabaseKey } }
       );
       if (!res.ok) throw new Error("HTTP " + res.status);

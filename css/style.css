@@ -823,3 +823,31 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
   font-size: 0.95rem; font-family: inherit; color: var(--ink); width: 100%; background: #fff;
 }
 .modal-editar textarea { resize: vertical; min-height: 72px; }
+
+/* ── Productos sin stock (activo=false) ── */
+.card.sin-stock { opacity: 0.72; }
+.card.sin-stock .foto { filter: grayscale(1); }
+.card.sin-stock .nombre,
+.card.sin-stock .descripcion,
+.card.sin-stock .precio { color: var(--muted); }
+.badge-sin-stock {
+  display: inline-block;
+  background: #6b7280;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.btn-agregar:disabled,
+.btn-agregar[disabled] {
+  background: var(--border-dark);
+  color: var(--muted);
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+.fila-admin.inactiva { opacity: 0.55; }

@@ -31,8 +31,9 @@
       ? `<img class="thumb" src="${p.imagen}" alt="" onerror="this.remove()">`
       : `<span class="thumb">${p.emoji || "📦"}</span>`;
     const pendiente = fotosPendientes.has(p.id) ? "📷 foto lista — apretá Guardar" : "";
+    const inactivo = p.activo === false;
     return `
-    <div class="fila-admin" data-id="${p.id}">
+    <div class="fila-admin${inactivo ? " inactiva" : ""}" data-id="${p.id}">
       ${foto}
       <div class="info">
         <div class="nombre">${p.nombre}</div>
@@ -49,6 +50,7 @@
         <button class="btn small primary" data-accion="guardar">Guardar</button>
         <button class="btn small secondary" data-accion="foto">Cambiar foto</button>
         <button class="btn small outline" data-accion="editar">✏️ Editar</button>
+        <button class="btn small ${inactivo ? "primary" : "outline"}" data-accion="stock">${inactivo ? "✅ Activar" : "🚫 Sin stock"}</button>
         <input type="file" class="in-foto" accept="image/png,image/jpeg,image/webp" hidden>
       </div>
     </div>`;
@@ -131,6 +133,37 @@
     p.descripcion = descripcion;
     marcarEstado(pid, "✔ guardado", "ok");
     toastFn("Guardado ✔ — visible para todos los dispositivos");
+  }
+
+  /** Activa/desactiva un producto (stock). PATCH a productos.activo. */
+  async function toggleStock(pid) {
+    const p = productos.find((x) => x.id === pid);
+    if (!p) return;
+    const activar = p.activo === false; // está desactivado → pasarlo a activo
+    const cfg = API();
+    const h = await headersAuth(true);
+    if (!h.Authorization) {
+      marcarEstado(pid, "✘ sesión vencida — volvé a entrar", "error");
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
+      return;
+    }
+    const res = await fetch(
+      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
+      {
+        method: "PATCH",
+        headers: { ...h, Prefer: "return=minimal" },
+        body: JSON.stringify({ activo: activar }),
+      }
+    );
+    if (!res.ok) {
+      const noAuth = res.status === 401 || res.status === 403;
+      marcarEstado(pid, "✘ " + (noAuth ? "no autorizado" : "error " + res.status), "error");
+      toastFn(noAuth ? "No autorizado — cerrá sesión y volvé a entrar" : "Error al guardar (HTTP " + res.status + ")", "error");
+      return;
+    }
+    p.activo = activar;
+    render(filtro);
+    toastFn(activar ? "Producto activado ✔ — ya se puede pedir" : "Producto desactivado — sin stock, no se puede pedir");
   }
 
   /** Sube la foto al Storage y asocia la URL al producto. Devuelve la URL o null. */
@@ -357,6 +390,7 @@
       if (btn.dataset.accion === "guardar") guardar(pid);
       if (btn.dataset.accion === "foto") fila.querySelector(".in-foto").click();
       if (btn.dataset.accion === "editar") abrirEditar(pid);
+      if (btn.dataset.accion === "stock") toggleStock(pid);
     });
     listaEl.addEventListener("change", (e) => {
       if (!e.target.classList.contains("in-foto")) return;
