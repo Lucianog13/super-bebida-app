@@ -34,6 +34,7 @@
     VISTAS.forEach((v) => ($(v).hidden = v !== id));
     if (id === "vista-carrito") {
       CartUI.render($("items-carrito"), $("total-carrito"), carrito, cartHandlers);
+      actualizarBotonConfirmar();
     }
     window.scrollTo({ top: 0 });
   }
@@ -137,15 +138,31 @@
     }
   }
 
+  // Botón "Confirmar pedido": solo se habilita cuando se alcanza el pedido mínimo
+  function actualizarBotonConfirmar() {
+    const btn = $("btn-confirmar");
+    if (!btn) return;
+    const falta = Order.faltanteMinimo(Cart.total(carrito));
+    btn.disabled = falta > 0;
+    btn.title = falta > 0
+      ? `Te faltan ${Order.formatMoney(falta)} para el pedido mínimo de ${Order.formatMoney(Order.MIN_PEDIDO)}`
+      : "";
+  }
+
   const cartHandlers = {
     onUpdate(items) {
       carrito = items;
       Storage.saveCart(carrito);
       CartUI.render($("items-carrito"), $("total-carrito"), carrito, cartHandlers);
       updateContador();
+      actualizarBotonConfirmar();
     },
     onConfirm() {
       if (!carrito.length) return toast("El carrito está vacío");
+      const falta = Order.faltanteMinimo(Cart.total(carrito));
+      if (falta > 0) {
+        return toast(`Te faltan ${Order.formatMoney(falta)} para llegar al pedido mínimo de ${Order.formatMoney(Order.MIN_PEDIDO)}`);
+      }
       showVista("vista-checkout");
     },
   };
