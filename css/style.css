@@ -18,6 +18,8 @@
   --red: #b3261e;
   --red-soft: #f9e8e6;
   --wa: #128c7e;
+  --green: #2e7d32;
+  --green-soft: #e6f4ea;
   --radius: 10px;
   --radius-sm: 8px;
   --shadow: 0 1px 3px rgba(14, 34, 51, 0.07), 0 4px 14px rgba(14, 34, 51, 0.05);
@@ -496,6 +498,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
   padding: 16px;
   margin: 6px 0 4px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
@@ -512,6 +515,61 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 40px; 
   font-weight: 600;
 }
 .total-box .monto { font-size: 1.5rem; font-weight: 700; color: var(--navy-700); font-variant-numeric: tabular-nums; }
+
+/* ── Aviso de pedido mínimo ── */
+.aviso-minimo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 4px 0 12px;
+}
+.aviso-minimo .icon { width: 16px; height: 16px; flex: 0 0 auto; }
+.aviso-minimo.info { background: var(--navy-50); border: 1px solid var(--border-dark); color: var(--navy-700); }
+.aviso-minimo.falta { background: var(--gold-soft); border: 1px solid var(--gold); color: var(--navy-900); }
+.aviso-minimo.ok { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
+.total-box .aviso-minimo { flex: 1 1 100%; margin: 2px 0 0; padding: 8px 12px; font-size: 0.85rem; }
+
+/* Banner destacado del catálogo — franja dorada con badge circular navy */
+.aviso-minimo.destacado-v2 {
+  border: 1px solid rgba(14, 34, 51, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  line-height: 1.55;
+  text-wrap: balance;
+  color: var(--navy-900);
+  background: linear-gradient(180deg, #ffd166 0%, var(--gold) 100%);
+  box-shadow: 0 2px 10px rgba(201, 138, 27, 0.35);
+}
+.aviso-minimo.destacado-v2 .icon {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #1d3d58, var(--navy-700));
+  color: #ffd166;
+  box-shadow: 0 2px 6px rgba(14, 34, 51, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+.aviso-minimo.destacado-v2 strong {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+/* Mobile: más aire entre el badge y el texto, líneas cómodas */
+@media (max-width: 560px) {
+  .aviso-minimo.destacado-v2 {
+    gap: 12px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+  }
+  .aviso-minimo.destacado-v2 .icon {
+    width: 26px;
+    height: 26px;
+    padding: 5px;
+  }
+}
 
 /* ── Botones ── */
 .acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
