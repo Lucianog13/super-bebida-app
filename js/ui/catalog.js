@@ -48,6 +48,12 @@
     });
   }
 
+  // Solo se muestra la unidad cuando aporta info (pack x10, cajón x1…).
+  // "unidad" a secas es redundante y no se renderiza.
+  function unidadTexto(p) {
+    return p.unidad && p.unidad !== "unidad" ? p.unidad : "";
+  }
+
   function cardHTML(p) {
     const sinStock = p.activo === false;
     const foto = p.imagen
@@ -58,6 +64,7 @@
          <div class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</div>`
       : "";
     const desc = p.descripcion ? `<div class="descripcion">${p.descripcion}</div>` : "";
+    const unidad = unidadTexto(p) ? `<div class="detalle">${unidadTexto(p)}</div>` : "";
     const sinStockBadge = sinStock ? `<span class="badge-sin-stock">Sin stock</span>` : "";
     const boton = sinStock
       ? `<button class="btn-agregar" disabled>Sin stock</button>`
@@ -67,6 +74,7 @@
         ${foto}
         <div class="card-cuerpo">
           <div class="nombre">${p.nombre}</div>
+          ${unidad}
           ${desc}
           ${promo}
           ${sinStockBadge}
@@ -232,5 +240,5 @@
     render();
   }
 
-  return { init, refresh, filtrar, normalize, descuentoPromo };
+  return { init, refresh, filtrar, normalize, descuentoPromo, unidadTexto };
 });
