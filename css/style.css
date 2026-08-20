@@ -160,7 +160,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   position: relative;
   overflow: hidden;
   margin: 0 0 16px;
-  padding: 52px 24px 60px;
+  padding: 36px 24px 44px;
   border-radius: var(--radius);
   /* Fondo: focos de luz dorados + degradado negro-navy */
   background:
@@ -206,7 +206,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   position: relative;
   z-index: 1;
   text-align: center;
-  margin-bottom: 38px;
+  margin-bottom: 26px;
 }
 
 .promos-titulo {
@@ -217,7 +217,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   margin: 0;
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 800;
-  font-size: clamp(2.1rem, 4.5vw, 3.1rem);
+  font-size: clamp(1.55rem, 3.2vw, 2.2rem);
   line-height: 1.12;
   letter-spacing: 0.02em;
   text-transform: none;
@@ -243,16 +243,17 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .promos-titulo::before { background: linear-gradient(90deg, transparent, rgba(255, 209, 102, 0.75)); }
 .promos-titulo::after { background: linear-gradient(90deg, rgba(255, 209, 102, 0.75), transparent); }
 
-/* Subtítulo en versalitas espaciadas, tinta dorada atenuada */
+/* Subtítulo en versalitas espaciadas, dorado que resalta */
 .promos-sub {
   display: block;
   margin-top: 10px;
   font-family: "Cinzel", serif;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: rgba(240, 220, 170, 0.58);
+  color: #ffd166;
+  text-shadow: 0 0 14px rgba(255, 209, 102, 0.45);
 }
 
 @keyframes brillo-oro {
@@ -273,7 +274,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 22px;
+  gap: 16px;
 }
 
 /* Polvo de brillo dorado disperso detrás de las tarjetas */
@@ -355,7 +356,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
+  padding: 14px;
   background: radial-gradient(90% 80% at 50% 0%, #14304f 0%, #0a1830 72%);
 }
 
@@ -387,8 +388,8 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   top: 12px;
   left: 12px;
   z-index: 5;
-  width: 64px;
-  height: 64px;
+  width: 52px;
+  height: 52px;
   padding: 0;
   border-radius: 50%;
   display: flex;
@@ -396,7 +397,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   justify-content: center;
   text-align: center;
   font-family: "Cinzel", serif;
-  font-size: 10.5px;
+  font-size: 9px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.12em;
@@ -456,18 +457,18 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   z-index: 3;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 15px 17px 18px;
+  gap: 8px;
+  padding: 12px 14px 15px;
 }
 
 .promo-nombre {
   font-family: "Playfair Display", Georgia, serif;
-  font-size: 16.5px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.35;
   color: #eef4fa;
   text-wrap: pretty;
-  min-height: 2.7em; /* alinea los precios entre tarjetas de distinta altura */
+  min-height: 2.4em; /* alinea los precios entre tarjetas de distinta altura */
 }
 
 .promo-precios {
@@ -490,7 +491,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 /* Precio actual: serif grabada con efecto metálico dorado */
 .promo-card .promo-precio {
   font-family: "Cinzel", "Playfair Display", serif;
-  font-size: 1.35rem;
+  font-size: 1.18rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   font-variant-numeric: lining-nums;
@@ -507,7 +508,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .promo-card .btn-agregar {
   margin-top: auto;
   width: 100%;
-  min-height: 44px; /* target táctil accesible */
+  min-height: 40px; /* target táctil cómodo */
   position: relative;
   overflow: hidden;
   border-radius: 8px;
@@ -558,19 +559,32 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 }
 
 @media (max-width: 500px) {
-  .promos { padding: 44px 16px 56px; }
+  .promos { padding: 30px 0 38px; }
   .promos-titulo::before,
   .promos-titulo::after { display: none; } /* sin filetes en pantallas angostas */
-  .carrusel-promos { grid-template-columns: 1fr; }
-  .promo-card .badge-promo { width: 54px; height: 54px; font-size: 9.5px; top: 10px; left: 10px; }
+  /* Carrusel horizontal con snap + efecto 3D (el JS de la app lo anima solo) */
+  .carrusel-promos {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 14px;
+    padding: 4px 16px 10px;
+    perspective: 1000px;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  }
+  .carrusel-promos::-webkit-scrollbar { display: none; }
+  .promo-card { flex: 0 0 78%; scroll-snap-align: center; }
+  .promo-card .badge-promo { width: 48px; height: 48px; font-size: 8.5px; top: 10px; left: 10px; }
   .promo-card .promo-ahorro { top: 12px; right: 12px; }
-  .promo-card .promo-precio { font-size: 1.25rem; }
+  .promo-card .promo-precio { font-size: 1.2rem; }
 }
 
 /* Ajuste fino para 375px (iPhone SE / Android chico) */
 @media (max-width: 375px) {
-  .promos { padding: 34px 12px 44px; }
-  .promos-titulo { font-size: 1.9rem; }
+  .promos { padding: 26px 0 34px; }
+  .promos-titulo { font-size: 1.7rem; }
   .promos-sub { font-size: 11px; letter-spacing: 0.24em; }
   .carrusel-promos { gap: 14px; }
   .promo-nombre { font-size: 15.5px; }
