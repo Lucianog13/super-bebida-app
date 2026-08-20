@@ -153,143 +153,441 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 }
 .seccion-info { font-size: 0.78rem; color: var(--muted); }
 
-/* ── Carrusel de promociones (apartado destacado) ── */
+/* ── Promociones — LUJO DORADO PREMIUM (black & gold, casino) ──
+   Diseño aprobado por Lucho (2026-08-19). Fuentes: Playfair Display + Cinzel
+   (link en index.html). Clases scoped a .promo-card para no afectar el resto. */
 .promos {
   position: relative;
-  margin: 0 0 16px;
-  padding: 14px 0;
-  border-radius: var(--radius);
-  border: 1px solid rgba(201, 138, 27, 0.5);
-  background:
-    radial-gradient(130% 150% at 12% 0%, rgba(255, 209, 102, 0.14) 0%, transparent 45%),
-    radial-gradient(130% 150% at 88% 100%, rgba(201, 138, 27, 0.12) 0%, transparent 50%),
-    linear-gradient(160deg, #11283e 0%, #0e2233 60%, #133047 100%);
-  box-shadow: 0 0 18px rgba(201, 138, 27, 0.18), 0 14px 34px rgba(14, 34, 51, 0.32);
   overflow: hidden;
+  margin: 0 0 16px;
+  padding: 52px 24px 60px;
+  border-radius: var(--radius);
+  /* Fondo: focos de luz dorados + degradado negro-navy */
+  background:
+    radial-gradient(90% 70% at 50% -8%, rgba(255, 209, 102, 0.09), transparent 62%),
+    radial-gradient(120% 90% at 50% 118%, rgba(201, 138, 27, 0.16), transparent 58%),
+    radial-gradient(60% 55% at 12% 85%, rgba(22, 50, 74, 0.5), transparent 70%),
+    linear-gradient(180deg, #0a1728 0%, #070f1c 55%, #0a1626 100%);
+  border-top: 1px solid rgba(255, 209, 102, 0.2);
+  border-bottom: 1px solid rgba(255, 209, 102, 0.2);
+  box-shadow: 0 14px 34px rgba(14, 34, 51, 0.32);
 }
+
+/* Rayos de luz sutiles que nacen arriba-centro (efecto reflector de casino) */
 .promos::before {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #ffd166 25%, var(--gold) 50%, #ffd166 75%, transparent);
-  background-size: 200% 100%;
-  animation: promo-linea 4s linear infinite;
+  inset: 0;
+  background: repeating-conic-gradient(
+    from 0deg at 50% -10%,
+    rgba(255, 214, 130, 0.07) 0deg 2.5deg,
+    rgba(255, 214, 130, 0) 2.5deg 16deg
+  );
+  -webkit-mask-image: radial-gradient(120% 80% at 50% -10%, #000 20%, transparent 72%);
+  mask-image: radial-gradient(120% 80% at 50% -10%, #000 20%, transparent 72%);
+  pointer-events: none;
 }
-@keyframes promo-linea {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
+
+/* Rombo dorado ornamental en el borde superior del panel */
+.promos::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translateX(-50%) rotate(45deg);
+  background: linear-gradient(135deg, #ffe9b0, #c98a1b 70%);
+  box-shadow: 0 0 14px rgba(255, 209, 102, 0.55);
 }
+
+/* ── Encabezado: título con brillo animado (shimmer) ── */
 .promos-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 16px 10px;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-bottom: 38px;
 }
+
 .promos-titulo {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #ffd166;
-  text-shadow: 0 0 10px rgba(255, 209, 102, 0.6), 0 0 26px rgba(201, 138, 27, 0.45);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 22px;
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 800;
+  font-size: clamp(2.1rem, 4.5vw, 3.1rem);
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  /* Gradiente pan de oro que "barre" el texto (shimmer) */
+  background: linear-gradient(105deg,
+    #a8741c 0%, #f6d98a 22%, #fff6d8 38%,
+    #ffd166 50%, #f6d98a 62%, #a8741c 100%);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 26px rgba(255, 209, 102, 0.16);
+  animation: brillo-oro 5s linear infinite;
 }
-.promos-titulo::before {
+
+/* Filetes dorados que enmarcan el título */
+.promos-titulo::before,
+.promos-titulo::after {
   content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 8px rgba(255, 209, 102, 0.9);
-  animation: promo-punto 1.8s ease-in-out infinite;
-  flex: 0 0 auto;
+  flex: 0 0 clamp(36px, 10vw, 120px);
+  height: 1px;
 }
-@keyframes promo-punto {
-  0%, 100% { box-shadow: 0 0 4px rgba(255, 209, 102, 0.5); }
-  50% { box-shadow: 0 0 14px rgba(255, 209, 102, 1); }
+.promos-titulo::before { background: linear-gradient(90deg, transparent, rgba(255, 209, 102, 0.75)); }
+.promos-titulo::after { background: linear-gradient(90deg, rgba(255, 209, 102, 0.75), transparent); }
+
+/* Subtítulo en versalitas espaciadas, tinta dorada atenuada */
+.promos-sub {
+  display: block;
+  margin-top: 10px;
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(240, 220, 170, 0.58);
 }
-.promos-sub { font-size: 0.7rem; letter-spacing: 0.08em; color: #9fb4c7; }
+
+@keyframes brillo-oro {
+  to { background-position: -220% center; }
+}
+
+/* Respaldo si el navegador no soporta recorte de texto por gradiente */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .promos-titulo,
+  .promo-card .promo-precio { background: none; color: #ffd166; }
+}
+
+/* ── Carrusel: grilla de tarjetas (4 → 2 → 1) ── */
 .carrusel-promos {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding: 8px 16px 12px;
-  perspective: 1000px;
-  scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
-}
-.carrusel-promos::-webkit-scrollbar { display: none; }
-.promo-card {
-  flex: 0 0 auto;
-  width: 158px;
-  scroll-snap-align: center;
   position: relative;
-  background: linear-gradient(180deg, #ffffff 0%, #fbf3e0 100%);
-  border: 1px solid rgba(201, 138, 27, 0.6);
-  border-radius: var(--radius);
-  padding: 10px;
+  z-index: 1;
+  max-width: 1160px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+
+/* Polvo de brillo dorado disperso detrás de las tarjetas */
+.carrusel-promos::before {
+  content: "";
+  position: absolute;
+  inset: -30px -20px;
+  pointer-events: none;
+  background:
+    radial-gradient(2px 2px at 8% 18%, rgba(255, 224, 150, 0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 22% 8%, rgba(255, 224, 150, 0.35), transparent 60%),
+    radial-gradient(2px 2px at 38% 30%, rgba(255, 224, 150, 0.28), transparent 60%),
+    radial-gradient(1.5px 1.5px at 64% 12%, rgba(255, 224, 150, 0.4), transparent 60%),
+    radial-gradient(2px 2px at 86% 24%, rgba(255, 224, 150, 0.3), transparent 60%),
+    radial-gradient(1.5px 1.5px at 95% 40%, rgba(255, 224, 150, 0.25), transparent 60%);
+}
+
+/* ── Tarjeta: marco dorado fino + destello al hover ── */
+.promo-card {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  box-shadow: 0 0 14px rgba(201, 138, 27, 0.28), 0 10px 22px rgba(14, 34, 51, 0.38);
-  transition: transform 0.16s ease-out, box-shadow 0.2s ease, border-color 0.2s ease;
-  will-change: transform;
-}
-.promo-card:hover {
-  border-color: #ffd166;
-  box-shadow: 0 0 24px rgba(255, 209, 102, 0.55), 0 14px 28px rgba(14, 34, 51, 0.42);
-}
-.promo-foto {
-  aspect-ratio: 1 / 0.85;
-  display: grid;
-  place-items: center;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 6px;
   overflow: hidden;
+  border-radius: 16px;
+  /* Marco fino: borde degradado dorado sobre superficie navy */
+  border: 1px solid transparent;
+  background:
+    linear-gradient(180deg, #0d1c30, #0a1626 65%, #0b1830) padding-box,
+    linear-gradient(150deg,
+      rgba(255, 224, 150, 0.85), rgba(201, 138, 27, 0.28) 30%,
+      rgba(255, 209, 102, 0.12) 55%, rgba(255, 224, 150, 0.7)) border-box;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.promo-foto img { max-width: 92%; max-height: 92%; object-fit: contain; }
-.promo-foto .emoji-fallback { font-size: 2.6rem; }
-.promo-card .badge-promo {
-  top: 14px;
-  left: 14px;
-  background: linear-gradient(180deg, #e5484d, var(--red));
-  box-shadow: 0 0 10px rgba(229, 72, 77, 0.75);
-  animation: promo-pulso 2.2s ease-in-out infinite;
+
+/* Elevación + halo dorado al pasar el mouse */
+.promo-card:hover,
+.promo-card:focus-within {
+  transform: translateY(-6px);
+  box-shadow:
+    0 22px 44px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 209, 102, 0.4),
+    0 0 34px rgba(201, 138, 27, 0.3);
 }
-@keyframes promo-pulso {
-  0%, 100% { box-shadow: 0 0 5px rgba(229, 72, 77, 0.5); }
-  50% { box-shadow: 0 0 16px rgba(229, 72, 77, 1); }
-}
-.promo-ahorro {
+
+/* Luz cenital suave permanente sobre la tarjeta */
+.promo-card::before {
+  content: "";
   position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(255, 222, 150, 0.07), transparent 30%);
+  pointer-events: none;
+}
+
+/* Destello que barre la tarjeta al pasar el mouse */
+.promo-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: linear-gradient(105deg,
+    transparent 32%, rgba(255, 236, 190, 0.1) 45%,
+    rgba(255, 255, 255, 0.2) 50%, rgba(255, 236, 190, 0.1) 55%,
+    transparent 68%);
+  transform: translateX(-130%) skewX(-6deg);
+  transition: transform 0.75s ease;
+  pointer-events: none;
+}
+.promo-card:hover::after,
+.promo-card:focus-within::after { transform: translateX(130%) skewX(-6deg); }
+
+/* ── Foto: vitrina navy con halo detrás del producto ── */
+.promo-foto {
+  position: relative;
+  z-index: 1;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: radial-gradient(90% 80% at 50% 0%, #14304f 0%, #0a1830 72%);
+}
+
+.promo-foto img {
+  max-width: 86%;
+  max-height: 86%;
+  object-fit: contain;
+  border-radius: 10px;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.5));
+  transition: transform 0.35s ease;
+}
+
+.promo-card:hover .promo-foto img { transform: scale(1.04); }
+.promo-foto .emoji-fallback { font-size: 2.6rem; }
+
+/* Hilo de oro que separa la foto del cuerpo */
+.promo-foto::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 209, 102, 0.55), transparent);
+}
+
+/* ── Badge: medallón dorado con halo pulsante ── */
+.promo-card .badge-promo {
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: "Cinzel", serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #241503;
+  /* Medallón: pan de oro radial + doble anillo grabado */
+  background: radial-gradient(circle at 32% 26%,
+    #fff7dc 0%, #ffd166 42%, #d99a24 74%, #9c6a0d 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 248, 224, 0.85),
+    inset 0 0 0 5px rgba(122, 82, 8, 0.28);
+  animation: halo-promo 2.6s ease-out infinite;
+}
+
+/* Halo: anillo dorado que se expande y desvanece en bucle */
+@keyframes halo-promo {
+  0% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 248, 224, 0.85),
+      inset 0 0 0 5px rgba(122, 82, 8, 0.28),
+      0 0 0 0 rgba(255, 209, 102, 0.55);
+  }
+  70% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 248, 224, 0.85),
+      inset 0 0 0 5px rgba(122, 82, 8, 0.28),
+      0 0 0 16px rgba(255, 209, 102, 0);
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 248, 224, 0.85),
+      inset 0 0 0 5px rgba(122, 82, 8, 0.28),
+      0 0 0 0 rgba(255, 209, 102, 0);
+  }
+}
+
+/* Chip de ahorro "−N%": píldora negra con filete dorado */
+.promo-card .promo-ahorro {
   top: 14px;
   right: 14px;
-  z-index: 2;
-  background: linear-gradient(180deg, #ffd166, var(--gold));
-  color: var(--navy-900);
-  font-size: 0.68rem;
-  font-weight: 800;
-  padding: 3px 8px;
+  z-index: 5;
+  padding: 5px 11px;
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(14, 34, 51, 0.35);
-  font-variant-numeric: tabular-nums;
+  background: rgba(6, 13, 24, 0.82);
+  border: 1px solid rgba(255, 209, 102, 0.38);
+  color: #ffd166;
+  font-family: "Cinzel", serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  backdrop-filter: blur(2px);
 }
-.promo-cuerpo { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.promo-nombre { font-weight: 700; font-size: 0.84rem; line-height: 1.2; color: var(--ink); min-height: 2.4em; }
-.promo-precios { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
-.promo-precio { font-weight: 800; font-size: 1.14rem; color: var(--navy-700); font-variant-numeric: tabular-nums; }
-@media (prefers-reduced-motion: reduce) {
-  .promos::before,
+
+/* ── Cuerpo: nombre, precios y botón ── */
+.promo-cuerpo {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px 17px 18px;
+}
+
+.promo-nombre {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 16.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #eef4fa;
+  text-wrap: pretty;
+  min-height: 2.7em; /* alinea los precios entre tarjetas de distinta altura */
+}
+
+.promo-precios {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.promo-card .precio-anterior {
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(205, 218, 232, 0.55);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(179, 38, 30, 0.55); /* guiño al rojo de la app */
+}
+
+/* Precio actual: serif grabada con efecto metálico dorado */
+.promo-card .promo-precio {
+  font-family: "Cinzel", "Playfair Display", serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-variant-numeric: lining-nums;
+  background: linear-gradient(180deg,
+    #fff8dd 0%, #ffe3a1 30%, #f0b64a 48%,
+    #b97b10 68%, #e9c36a 88%, #f7dfa0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55));
+}
+
+/* Botón pan de oro con destello al hover */
+.promo-card .btn-agregar {
+  margin-top: auto;
+  width: 100%;
+  min-height: 44px; /* target táctil accesible */
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #101c2b;
+  background: linear-gradient(180deg, #ffe9ae 0%, #ffd166 34%, #e2a53a 68%, #b97b10 100%);
+  box-shadow:
+    0 6px 16px rgba(201, 138, 27, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(90, 58, 6, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.promo-card .btn-agregar:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow:
+    0 9px 22px rgba(201, 138, 27, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(90, 58, 6, 0.35);
+}
+
+/* Reflejo que cruza el botón */
+.promo-card .btn-agregar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+  transform: translateX(-130%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.promo-card .btn-agregar:hover::after { transform: translateX(130%); }
+
+.promo-card .btn-agregar:focus-visible {
+  outline: 2px solid #ffd166;
+  outline-offset: 3px;
+}
+
+.promo-card .btn-agregar:active { transform: translateY(0) scale(0.985); }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .carrusel-promos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 500px) {
+  .promos { padding: 44px 16px 56px; }
   .promos-titulo::before,
+  .promos-titulo::after { display: none; } /* sin filetes en pantallas angostas */
+  .carrusel-promos { grid-template-columns: 1fr; }
+  .promo-card .badge-promo { width: 54px; height: 54px; font-size: 9.5px; top: 10px; left: 10px; }
+  .promo-card .promo-ahorro { top: 12px; right: 12px; }
+  .promo-card .promo-precio { font-size: 1.25rem; }
+}
+
+/* Ajuste fino para 375px (iPhone SE / Android chico) */
+@media (max-width: 375px) {
+  .promos { padding: 34px 12px 44px; }
+  .promos-titulo { font-size: 1.9rem; }
+  .promos-sub { font-size: 11px; letter-spacing: 0.24em; }
+  .carrusel-promos { gap: 14px; }
+  .promo-nombre { font-size: 15.5px; }
+  .promo-cuerpo { padding: 12px 13px 14px; }
+}
+
+/* Respeto por usuarios con movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .promos-titulo,
   .promo-card .badge-promo { animation: none; }
+  .promo-card,
+  .promo-card::after,
+  .promo-foto img,
+  .promo-card .btn-agregar,
+  .promo-card .btn-agregar::after { transition: none; }
+  .promo-card:hover::after,
+  .promo-card .btn-agregar:hover::after { transform: none; }
 }
 
 /* ── Búsqueda y chips ── */

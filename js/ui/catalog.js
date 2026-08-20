@@ -177,6 +177,7 @@
       const tilt = () => {
         const rect = carr.getBoundingClientRect();
         if (!rect.width) return;
+        if (carr.scrollWidth <= carr.clientWidth + 1) return; // grilla fija: sin tilt
         const centro = rect.left + rect.width / 2;
         carr.querySelectorAll(".promo-card").forEach((c) => {
           const cr = c.getBoundingClientRect();
@@ -198,6 +199,7 @@
         { passive: true }
       );
       const avanzar = () => {
+        if (carr.scrollWidth <= carr.clientWidth + 1) return; // grilla fija: sin auto-avance
         const card = carr.querySelector(".promo-card");
         if (!card) return;
         const paso = card.offsetWidth + 14;
