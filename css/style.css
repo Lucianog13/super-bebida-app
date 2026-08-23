@@ -1274,3 +1274,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 
 /* ── Zona de impresión (solo visible al imprimir) ── */
 #zona-impresion { display: none; }
+
+/* Modal "Ver pedido" */
+.modal-ver-pedido { max-width: 560px; max-height: 85vh; overflow: auto; }
+.ver-pedido-contenido .pedido-hoja { border: 0; box-shadow: none; padding: 0; }

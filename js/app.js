@@ -375,6 +375,7 @@
           Nº de cliente
           <input type="text" class="in-nro-cliente" value="${c.nroCliente || ""}" placeholder="—">
           <button class="btn small outline" data-accion="guardar-nro">Guardar</button>
+          <button class="btn small outline" data-accion="ver-pedido">👁 Ver pedido</button>
         </div>
       </div>
     </div>`;
@@ -464,6 +465,14 @@
     renderPedidos();
   }
 
+  /** Muestra el remito completo del pedido en un modal (sin imprimir). */
+  function verPedido(pid) {
+    const p = pedidosNube.find((x) => x.id === pid);
+    if (!p) return;
+    $("ver-pedido-contenido").innerHTML = `<div class="pedido-hoja">${remitoHTML(p)}</div>`;
+    $("modal-ver-pedido").hidden = false;
+  }
+
   // ── Pestañas del admin (Productos | Pedidos) ──
   function mostrarPanelAdmin(panel) {
     $("panel-productos").hidden = panel !== "productos";
@@ -495,9 +504,18 @@
   });
 
   $("lista-pedidos").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-accion='guardar-nro']");
+    const btn = e.target.closest("[data-accion]");
     if (!btn) return;
-    guardarNroCliente(btn.closest(".pedido-fila").dataset.id);
+    const pid = btn.closest(".pedido-fila").dataset.id;
+    if (btn.dataset.accion === "guardar-nro") guardarNroCliente(pid);
+    if (btn.dataset.accion === "ver-pedido") verPedido(pid);
+  });
+
+  $("btn-ver-pedido-cerrar").addEventListener("click", () => {
+    $("modal-ver-pedido").hidden = true;
+  });
+  $("modal-ver-pedido").addEventListener("click", (e) => {
+    if (e.target === $("modal-ver-pedido")) $("modal-ver-pedido").hidden = true;
   });
 
   // ── Modo administrador (login real con Supabase Auth) ──
