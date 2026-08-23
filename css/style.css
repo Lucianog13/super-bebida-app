@@ -1109,9 +1109,10 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   body { background: #fff; }
   .no-print { display: none !important; }
   body * { visibility: hidden; }
-  #vista-pedido, #vista-pedido * { visibility: visible; }
-  #vista-pedido { position: absolute; top: 0; left: 0; width: 100%; }
-  .pedido-hoja { border: 0; box-shadow: none; padding: 0; }
+  #zona-impresion, #zona-impresion * { visibility: visible; }
+  #zona-impresion { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
+  .pedido-hoja { border: 0; box-shadow: none; padding: 0; page-break-after: always; }
+  .pedido-hoja:last-child { page-break-after: auto; }
 }
 
 /* El atributo hidden siempre gana (evita que display:flex/block lo pise) */
@@ -1244,3 +1245,32 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   transform: none;
 }
 .fila-admin.inactiva { opacity: 0.55; }
+
+/* ── Pestañas del admin (Productos | Pedidos) ── */
+.admin-tabs { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
+.admin-tabs .tab {
+  background: none; border: 0; border-bottom: 2px solid transparent;
+  padding: 10px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  color: var(--muted); font-family: inherit; letter-spacing: 0.03em;
+}
+.admin-tabs .tab.active { color: var(--navy-700); border-bottom-color: var(--navy-700); }
+
+/* ── Vista de Pedidos (admin) ── */
+.pedidos-acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.lista-pedidos { display: flex; flex-direction: column; gap: 16px; }
+.pedido-grupo { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+.pedido-fecha { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--navy-50); border-bottom: 1px solid var(--border); }
+.pedido-fecha label { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--navy-700); cursor: pointer; }
+.pedido-fecha-count { font-size: 0.72rem; color: var(--muted); }
+.pedido-fila { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); align-items: flex-start; }
+.pedido-fila:last-child { border-bottom: 0; }
+.pedido-check { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--navy-700); flex-shrink: 0; }
+.pedido-cuerpo { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.pedido-cliente { font-size: 0.88rem; color: var(--ink); }
+.pedido-cliente .pedido-nro { display: inline-block; background: var(--navy-700); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 0.72rem; margin: 0 2px; }
+.pedido-items { font-size: 0.78rem; color: var(--muted); }
+.pedido-nro-editor { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+.pedido-nro-editor input { width: 110px; padding: 7px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 0.85rem; font-family: inherit; }
+
+/* ── Zona de impresión (solo visible al imprimir) ── */
+#zona-impresion { display: none; }

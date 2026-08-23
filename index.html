@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=15">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
   <header class="topbar no-print">
@@ -95,6 +95,9 @@
         <label>Dirección
           <input id="cliente-direccion" placeholder="Ej. Av. Siempre Viva 123">
         </label>
+        <label>Nº de cliente (opcional)
+          <input id="cliente-nro" inputmode="numeric" placeholder="Ej. 1234">
+        </label>
         <p id="aviso-repetir" class="aviso" hidden>
           El cliente tiene pedidos anteriores.
           <button type="button" id="btn-repetir" class="btn small outline">Repetir último pedido</button>
@@ -153,6 +156,11 @@
           <button id="btn-admin-cerrar" class="btn small outline">Cerrar sesión</button>
         </div>
       </div>
+      <div class="admin-tabs">
+        <button id="tab-productos" class="tab active">Productos</button>
+        <button id="tab-pedidos" class="tab">Pedidos</button>
+      </div>
+      <div id="panel-productos">
       <div class="search-bar">
         <svg class="icon icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="search" id="admin-busqueda" placeholder="Buscar producto para editar…" autocomplete="off">
@@ -196,6 +204,15 @@
         </form>
       </div>
       <div id="lista-admin" class="lista-admin"></div>
+      </div>
+      <div id="panel-pedidos" hidden>
+        <div class="pedidos-acciones">
+          <button id="btn-imprimir-seleccion" class="btn primary small">🖨 Imprimir seleccionados</button>
+          <button id="btn-imprimir-todo" class="btn secondary small">🖨 Imprimir todo</button>
+          <button id="btn-recargar-pedidos" class="btn small outline">↻ Actualizar</button>
+        </div>
+        <div id="lista-pedidos" class="lista-pedidos"></div>
+      </div>
     </section>
   </main>
 
@@ -245,16 +262,18 @@
 
   <div id="toast" class="toast no-print" hidden></div>
 
-  <script src="js/data/products.js?v=15"></script>
-  <script src="js/core/cart.js?v=15"></script>
-  <script src="js/core/order.js?v=15"></script>
-  <script src="js/core/storage.js?v=15"></script>
-  <script src="js/core/auth.js?v=15"></script>
-  <script src="js/config.js?v=15"></script>
-  <script src="js/ui/catalog.js?v=15"></script>
-  <script src="js/ui/cartView.js?v=15"></script>
-  <script src="js/ui/checkout.js?v=15"></script>
-  <script src="js/ui/admin.js?v=15"></script>
-  <script src="js/app.js?v=15"></script>
+  <div id="zona-impresion" aria-hidden="true"></div>
+
+  <script src="js/data/products.js?v=6"></script>
+  <script src="js/core/cart.js?v=6"></script>
+  <script src="js/core/order.js?v=6"></script>
+  <script src="js/core/storage.js?v=6"></script>
+  <script src="js/core/auth.js?v=6"></script>
+  <script src="js/config.js?v=6"></script>
+  <script src="js/ui/catalog.js?v=6"></script>
+  <script src="js/ui/cartView.js?v=6"></script>
+  <script src="js/ui/checkout.js?v=6"></script>
+  <script src="js/ui/admin.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

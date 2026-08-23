@@ -43,6 +43,7 @@
     lines.push(`Cliente: ${pedido.cliente.nombre}`);
     if (pedido.cliente.telefono) lines.push(`Tel: ${pedido.cliente.telefono}`);
     if (pedido.cliente.direccion) lines.push(`Dirección: ${pedido.cliente.direccion}`);
+    if (pedido.cliente.nroCliente) lines.push(`Nº de cliente: ${pedido.cliente.nroCliente}`);
     lines.push("━━━━━━━━━━━━━━━━");
     pedido.items.forEach((it, i) => {
       const unidad = it.unidad ? ` · ${it.unidad}` : "";

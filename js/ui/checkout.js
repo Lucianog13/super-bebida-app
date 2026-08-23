@@ -10,6 +10,7 @@
       nombreInput,
       telefonoInput,
       direccionInput,
+      nroClienteInput,
       aviso,
       btnRepetir,
       loadOrders,
@@ -26,6 +27,7 @@
       nombreInput.value = prev.nombre || "";
       telefonoInput.value = prev.telefono || "";
       direccionInput.value = prev.direccion || "";
+      if (nroClienteInput) nroClienteInput.value = prev.nroCliente || "";
     }
 
     function checkRepetir() {
@@ -51,6 +53,7 @@
         nombre: nombreInput.value.trim(),
         telefono: telefonoInput.value.trim(),
         direccion: direccionInput.value.trim(),
+        nroCliente: (nroClienteInput ? nroClienteInput.value.trim() : "") || "",
       });
     });
   }
