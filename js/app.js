@@ -476,13 +476,17 @@
   function mostrarPanelAdmin(panel) {
     $("panel-productos").hidden = panel !== "productos";
     $("panel-pedidos").hidden = panel !== "pedidos";
+    $("panel-reparto").hidden = panel !== "reparto";
     $("tab-productos").classList.toggle("active", panel === "productos");
     $("tab-pedidos").classList.toggle("active", panel === "pedidos");
+    $("tab-reparto").classList.toggle("active", panel === "reparto");
     if (panel === "pedidos") cargarPedidos();
+    if (panel === "reparto") Reparto.cargar();
   }
 
   $("tab-productos").addEventListener("click", () => mostrarPanelAdmin("productos"));
   $("tab-pedidos").addEventListener("click", () => mostrarPanelAdmin("pedidos"));
+  $("tab-reparto").addEventListener("click", () => mostrarPanelAdmin("reparto"));
   $("btn-imprimir-seleccion").addEventListener("click", () => imprimirRemitos(pedidosMarcados()));
   $("btn-imprimir-todo").addEventListener("click", () => imprimirRemitos(pedidosNube));
   $("btn-recargar-pedidos").addEventListener("click", cargarPedidos);
@@ -565,6 +569,7 @@
   });
 
   AdminUI.init({ lista: $("lista-admin"), busqueda: $("admin-busqueda"), toast });
+  Reparto.init({ toast });
 
   $("btn-admin-cerrar").addEventListener("click", () => {
     Auth.logout();

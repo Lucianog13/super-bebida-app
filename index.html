@@ -11,7 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
   <header class="topbar no-print">
@@ -159,6 +160,7 @@
       <div class="admin-tabs">
         <button id="tab-productos" class="tab active">Productos</button>
         <button id="tab-pedidos" class="tab">Pedidos</button>
+        <button id="tab-reparto" class="tab">Reparto</button>
       </div>
       <div id="panel-productos">
       <div class="search-bar">
@@ -212,6 +214,20 @@
           <button id="btn-recargar-pedidos" class="btn small outline">↻ Actualizar</button>
         </div>
         <div id="lista-pedidos" class="lista-pedidos"></div>
+      </div>
+      <div id="panel-reparto" hidden>
+        <div class="pedidos-acciones">
+          <button id="btn-reparto-cargar" class="btn primary small">↻ Cargar pedidos de hoy</button>
+          <button id="btn-unificar" class="btn small outline">🔗 Unificar en una sola carga</button>
+          <button id="btn-carga-z1" class="btn small secondary">🖨 Carga Z1</button>
+          <button id="btn-carga-z2" class="btn small secondary">🖨 Carga Z2</button>
+          <button id="btn-clientes-z1" class="btn small secondary">🖨 Clientes Z1</button>
+          <button id="btn-clientes-z2" class="btn small secondary">🖨 Clientes Z2</button>
+        </div>
+        <p id="sugerencia-unificar" class="admin-ayuda" hidden>💡 Una zona trae pocos pedidos — podés unificar todo en una sola carga.</p>
+        <div id="reparto-resumen" class="reparto-resumen"></div>
+        <div id="mapa-reparto" class="mapa-reparto"></div>
+        <div id="lista-reparto" class="lista-reparto"></div>
       </div>
     </section>
   </main>
@@ -274,16 +290,19 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=9"></script>
-  <script src="js/core/cart.js?v=9"></script>
-  <script src="js/core/order.js?v=9"></script>
-  <script src="js/core/storage.js?v=9"></script>
-  <script src="js/core/auth.js?v=9"></script>
-  <script src="js/config.js?v=9"></script>
-  <script src="js/ui/catalog.js?v=9"></script>
-  <script src="js/ui/cartView.js?v=9"></script>
-  <script src="js/ui/checkout.js?v=9"></script>
-  <script src="js/ui/admin.js?v=9"></script>
-  <script src="js/app.js?v=9"></script>
+  <script src="js/data/products.js?v=10"></script>
+  <script src="js/data/zonas.js?v=10"></script>
+  <script src="js/core/cart.js?v=10"></script>
+  <script src="js/core/order.js?v=10"></script>
+  <script src="js/core/storage.js?v=10"></script>
+  <script src="js/core/auth.js?v=10"></script>
+  <script src="js/config.js?v=10"></script>
+  <script src="js/ui/catalog.js?v=10"></script>
+  <script src="js/ui/cartView.js?v=10"></script>
+  <script src="js/ui/checkout.js?v=10"></script>
+  <script src="js/ui/admin.js?v=10"></script>
+  <script src="js/ui/reparto.js?v=10"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>

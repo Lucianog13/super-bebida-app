@@ -1104,6 +1104,46 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 }
 .toast-error { background: #b3261e; }
 
+/* ── Reparto: mapa, lista y hojas de carga ── */
+.mapa-reparto { height: 380px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); margin: 14px 0; z-index: 0; }
+.reparto-resumen { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 4px; }
+.chip-resumen { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 0.78rem; }
+.chip-resumen.alerta { border-color: var(--gold); background: #fff7e6; color: #8a5a00; }
+.lista-reparto { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.rep-fila { display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow); }
+.rep-punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.rep-cuerpo { flex: 1; min-width: 0; }
+.rep-cliente { font-weight: 650; }
+.rep-dir { font-size: 0.8rem; color: var(--muted); }
+.rep-items { font-size: 0.78rem; color: var(--muted); }
+.rep-zona { text-align: right; flex-shrink: 0; }
+.rep-zona-label { display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px; }
+.rep-zona-botones { display: flex; gap: 4px; justify-content: flex-end; }
+.btn.mini { padding: 4px 9px; font-size: 0.72rem; border-radius: 7px; }
+
+/* Hojas de carga (Control de Carga + Hoja de Clientes) */
+.hoja-carga { background: #fff; font-family: var(--sans); font-size: 0.82rem; color: var(--ink); }
+.hc-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--navy-700); padding-bottom: 8px; margin-bottom: 10px; gap: 10px; }
+.hc-titulo { font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--navy-700); font-size: 1.05rem; }
+.hc-sub { font-weight: 700; color: var(--navy-900); }
+.hc-fecha { color: var(--muted); font-size: 0.8rem; }
+.hc-repartidor { font-size: 0.85rem; margin-bottom: 10px; color: var(--navy-900); font-weight: 600; }
+.hc-tabla { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.hc-tabla th { text-align: left; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 5px 4px; border-bottom: 1px solid var(--border-dark); }
+.hc-tabla td { padding: 6px 4px; border-bottom: 1px dashed var(--border); vertical-align: top; }
+.hc-tabla .num { text-align: right; white-space: nowrap; }
+.hc-desc { display: block; color: var(--muted); font-size: 0.72rem; }
+.hc-envases { margin-top: 10px; font-weight: 600; }
+.hc-cliente { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+.hc-c-nombre { font-weight: 700; }
+.hc-nro { color: var(--navy-700); font-weight: 600; }
+.hc-c-dir { font-size: 0.78rem; color: var(--muted); margin: 2px 0 4px; }
+.hc-item { font-size: 0.82rem; }
+.hc-c-total { font-weight: 700; margin-top: 4px; text-align: right; }
+.hc-total-carga { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 3px solid var(--gold); font-size: 0.85rem; }
+.hc-total-carga strong { font-size: 1.1rem; color: var(--navy-900); }
+.hc-vacio { color: var(--muted); }
+
 /* ── Impresión: solo el remito ── */
 @media print {
   @page { size: A4; margin: 8mm; }
@@ -1114,6 +1154,8 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   #zona-impresion { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
   .pedido-hoja { border: 0; box-shadow: none; padding: 0; page-break-after: always; }
   .pedido-hoja:last-child { page-break-after: auto; }
+  .hoja-carga { page-break-after: always; }
+  .hoja-carga:last-child { page-break-after: auto; }
 }
 
 /* El atributo hidden siempre gana (evita que display:flex/block lo pise) */

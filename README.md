@@ -18,6 +18,7 @@ Aplicación web para que los clientes de la distribuidora **"El Super de la Bebi
 * **Pedido por WhatsApp:** texto formal con el detalle completo (ítems con viñetas •, sin numeración para evitar confusiones), link directo precargado, y **remito imprimible** compacto que entra en una sola hoja A4.
 * **Funciona sin conexión:** el catálogo queda en caché y la app sigue operativa offline.
 * **Panel de administración con login real** (Supabase Auth, solo usuarios habilitados): editar precios, promos, fotos, nombre y descripción, agregar productos, marcar stock y ver/imprimir los pedidos recibidos.
+* **Reparto con mapa:** pestaña "Reparto" con mapa (OpenStreetMap) que ubica los pedidos del día por su dirección, los divide automáticamente en **Zona 1** y **Zona 2** (con ajuste manual por pedido), y genera las **hojas de carga** — Control de Carga (productos) y Hoja de Clientes (con total de carga) — por zona, listas para imprimir en A4. Incluye **unificación en una sola carga** cuando una zona trae poco.
 
 ---
 
