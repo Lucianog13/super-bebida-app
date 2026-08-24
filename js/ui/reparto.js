@@ -258,15 +258,14 @@
 
   function hojaClientesHTML(zonaNum, tituloZona) {
     const ps = pedidosDeZona(zonaNum);
-    const bultosTotales = ps.reduce((s, p) => s + (p.items || []).reduce((a, it) => a + it.cantidad, 0), 0);
+    const totalCarga = ps.reduce((s, p) => s + (p.total || 0), 0);
     const filas = ps.map((p) => {
       const c = p.cliente || {};
-      const bultos = (p.items || []).reduce((a, it) => a + it.cantidad, 0);
       return `
       <tr>
         <td>${c.nombre || "—"}${c.nroCliente ? ' <span class="hc-nro">Nº ' + c.nroCliente + "</span>" : ""}</td>
         <td>${c.direccion || ""}${c.telefono ? " · " + c.telefono : ""}</td>
-        <td class="num">${bultos}</td>
+        <td class="num">${Order.formatMoney(p.total)}</td>
       </tr>`;
     }).join("");
     return `
@@ -278,12 +277,12 @@
       </div>
       <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${ps.length} cliente${ps.length === 1 ? "" : "s"}</div>
       <table class="hc-tabla">
-        <thead><tr><th>Cliente</th><th>Dirección</th><th class="num">Bultos</th></tr></thead>
+        <thead><tr><th>Cliente</th><th>Dirección</th><th class="num">Total</th></tr></thead>
         <tbody>${filas || '<tr><td colspan="3">Sin pedidos</td></tr>'}</tbody>
       </table>
       <div class="hc-total-carga">
         <span>${ps.length} pedido${ps.length === 1 ? "" : "s"}</span>
-        <strong>TOTAL DE LA CARGA: ${bultosTotales} bultos</strong>
+        <strong>TOTAL DE LA CARGA: ${Order.formatMoney(totalCarga)}</strong>
       </div>
     </div>`;
   }
