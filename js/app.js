@@ -266,9 +266,8 @@
   function remitoHTML(p) {
     const rows = p.items
       .map(
-        (it, i) => `
+        (it) => `
         <tr>
-          <td class="num">${i + 1}</td>
           <td>${it.nombre}<span class="desc">${it.presentacion}${it.unidad ? " · " + it.unidad : ""}</span></td>
           <td class="num">${it.cantidad}</td>
           <td class="num">${Order.formatMoney(it.precioUnit)}</td>
@@ -295,7 +294,7 @@
       </div>
       <table class="remito-tabla">
         <thead>
-          <tr><th>#</th><th>Descripción</th><th class="num">Cant.</th><th class="num">P. unit.</th><th class="num">Subtotal</th></tr>
+          <tr><th>Descripción</th><th class="num">Cant.</th><th class="num">P. unit.</th><th class="num">Subtotal</th></tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
