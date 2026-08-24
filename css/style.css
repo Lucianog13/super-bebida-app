@@ -969,70 +969,70 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   flex-wrap: wrap;
 }
 
-/* ── Hoja de pedido (remito) ── */
+/* ── Hoja de pedido (remito) — compacto para entrar en una hoja A4 ── */
 .pedido-hoja {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 26px 22px;
+  padding: 14px 12px;
   box-shadow: var(--shadow);
   font-family: var(--sans);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 .remito-head {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 3px solid var(--navy-700);
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  border-bottom: 2px solid var(--navy-700);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 .remito-razon { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--navy-700); }
-.remito-sub { color: var(--muted); font-size: 0.74rem; margin-top: 2px; }
+.remito-sub { color: var(--muted); font-size: 0.68rem; margin-top: 1px; }
 .remito-num { text-align: right; }
 .remito-doc {
-  font-size: 0.64rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.remito-id { font-weight: 700; font-size: 1.05rem; color: var(--navy-900); font-variant-numeric: tabular-nums; }
+.remito-id { font-weight: 700; font-size: 1rem; color: var(--navy-900); font-variant-numeric: tabular-nums; }
 .remito-cliente {
   border: 1px solid var(--border);
   background: var(--navy-50);
   border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  margin-bottom: 12px;
-  font-size: 0.88rem;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
 }
 .remito-tabla { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .remito-tabla th {
   text-align: left;
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 6px 4px;
+  padding: 4px 3px;
   border-bottom: 1px solid var(--border-dark);
 }
-.remito-tabla td { padding: 8px 4px; border-bottom: 1px dashed var(--border); vertical-align: top; }
+.remito-tabla td { padding: 5px 3px; border-bottom: 1px dashed var(--border); vertical-align: top; }
 .remito-tabla .num { text-align: right; }
 .remito-tabla td.num { white-space: nowrap; }
-.remito-tabla .desc { display: block; color: var(--muted); font-size: 0.76rem; margin-top: 2px; }
+.remito-tabla .desc { display: block; color: var(--muted); font-size: 0.68rem; margin-top: 1px; }
 .remito-total {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 3px solid var(--gold);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px solid var(--gold);
 }
-.remito-total .detalle { font-size: 0.78rem; color: var(--muted); }
-.remito-total strong { font-size: 1.35rem; color: var(--navy-900); font-variant-numeric: tabular-nums; }
-.remito-nota { margin-top: 16px; color: var(--muted); font-size: 0.72rem; }
+.remito-total .detalle { font-size: 0.72rem; color: var(--muted); }
+.remito-total strong { font-size: 1.1rem; color: var(--navy-900); font-variant-numeric: tabular-nums; }
+.remito-nota { margin-top: 8px; color: var(--muted); font-size: 0.66rem; }
 
 /* ── Historial ── */
 .historial { margin-top: 26px; }
@@ -1106,6 +1106,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 
 /* ── Impresión: solo el remito ── */
 @media print {
+  @page { size: A4; margin: 8mm; }
   body { background: #fff; }
   .no-print { display: none !important; }
   body * { visibility: hidden; }

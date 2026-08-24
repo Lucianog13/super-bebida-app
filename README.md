@@ -1,39 +1,82 @@
-# 🛒 El Súper de la Bebida - App Web de Pedidos
+# 🛒 El Súper de la Bebida — App Web de Pedidos
 
 ## 🌐 Link de la app (en vivo)
 
 👉 **[Entrar a la app: https://lucianog13.github.io/super-bebida-app/](https://lucianog13.github.io/super-bebida-app/)**
 
-Una aplicación web móvil diseñada para simplificar y agilizar el proceso de compra en distribuidoras de bebidas. Cuenta con una interfaz extremadamente visual e intuitiva, optimizada para facilitar el uso a personas con dificultades de lectoescritura.
+Aplicación web para que los clientes de la distribuidora **"El Super de la Bebida S.R.L."** (Paraná, Entre Ríos) armen su pedido solos desde el celular. Interfaz visual e intuitiva, pensada para usarse sin explicaciones: se eligen los productos con fotos, se arma el carrito y el pedido sale por WhatsApp. Sin instalar nada.
 
 ---
 
-## 🌟 Características Principales
+## ✨ Características
 
-* **Diseño Ultra-Accesible:** Enfoque prioritario en imágenes claras de productos, marcas y categorías.
-* **Catálogo Dinámico & Filtros:** Navegación fluida por categorías de bebidas y ofertas destacadas alimentadas en tiempo real.
-* **Base de Datos en la Nube:** Integración directa con Supabase para la gestión y sincronización continua de datos.
-* **Carrito de Compras:** Gestión simple de productos y cantidades seleccionadas.
-* **Integración con WhatsApp:** Envío del pedido con el listado de productos formateado directamente al chat de la distribuidora.
-* **Panel de Administración:** Módulos para editar nombres, descripciones, precios y stock de productos almacenados en la base de datos.
-
----
-
-## 🛠️ Tecnologías Utilizadas
-
-* **HTML5:** Estructura semántica de la aplicación.
-* **CSS3:** Estilos responsivos optimizados para pantallas móviles.
-* **JavaScript (Vanilla):** Lógica del carrito, filtros y comunicación con la API.
-* **Supabase:** Backend como servicio (BaaS) para la base de datos PostgreSQL, autenticación y persistencia de datos.
-* **GitHub Pages:** Despliegue y hosting continuo del proyecto.
+* **Catálogo real con fotos de marca:** el catálogo completo de la lista de precios (585 productos, agosto 2026) más los que se agregan desde el panel admin, cada uno con su foto e investigado por marca. Búsqueda y filtros por 15 categorías.
+* **Promociones:** badge PROMO, precio anterior tachado y **carrusel destacado** en la portada con las ofertas del día.
+* **Carrito con mínimo de compra:** edición de cantidades (con tope por producto) y botón de confirmar **bloqueado hasta alcanzar el pedido mínimo ($80.000)**.
+* **Stock en vivo:** los productos sin stock se ven en gris y no se pueden agregar.
+* **Envases retornables:** conteo automático en el resumen del pedido.
+* **Pedido por WhatsApp:** texto formal con el detalle completo (ítems con viñetas •, sin numeración para evitar confusiones), link directo precargado, y **remito imprimible** compacto que entra en una sola hoja A4.
+* **Funciona sin conexión:** el catálogo queda en caché y la app sigue operativa offline.
+* **Panel de administración con login real** (Supabase Auth, solo usuarios habilitados): editar precios, promos, fotos, nombre y descripción, agregar productos, marcar stock y ver/imprimir los pedidos recibidos.
 
 ---
 
-## 📁 Estructura del Repositorio
+## 🛠️ Tecnologías
+
+* **HTML5 + CSS3:** estructura semántica y estilos responsive mobile-first (paleta corporativa navy + dorado).
+* **JavaScript (Vanilla):** sin frameworks ni build — lógica de carrito, catálogo y comunicación con la API separada en módulos puros y testeables.
+* **Supabase:** backend como servicio (PostgreSQL, autenticación y almacenamiento de fotos) con seguridad por RLS.
+* **GitHub Pages:** hosting público del proyecto.
+* **Node.js (≥18):** solo para correr los tests (`node:test`, sin librerías externas).
+
+---
+
+## 📁 Estructura del repositorio
 
 ```text
-aplicacion-superbebida/
-├── activos/      # Imágenes de productos, banners y assets visuales
-├── CSS/          # Hojas de estilo
-├── js/           # Scripts de lógica, cliente de Supabase y administración
-└── índice.html   # Archivo principal de la aplicación
+distribuidora-bebidas/
+├── index.html              # SPA: 3 vistas (catálogo / carrito / pedido final)
+├── css/
+│   └── style.css           # estilos corporativos, mobile-first + @media print
+├── assets/
+│   ├── logo.png            # logo de la empresa
+│   └── img/                # fotos de producto (una por id)
+├── js/
+│   ├── app.js              # router de vistas e inicialización
+│   ├── config.js           # credenciales públicas de Supabase
+│   ├── core/               # lógica PURA (sin DOM → testeable): auth, cart, order, storage
+│   ├── data/
+│   │   └── products.js     # catálogo local (fallback offline)
+│   └── ui/                 # capa de presentación: admin, catalog, cartView, checkout
+├── scripts/                # parseo de lista de precios, deploy, Supabase, imágenes
+├── tests/                  # tests de lógica (node:test)
+├── docs/                   # lista de precios PDF, análisis de referencia
+├── MEMORY.md               # arquitectura técnica (fuente de verdad para desarrollo)
+└── CONTEXT.md              # contexto del negocio
+```
+
+---
+
+## 🧪 Cómo probar en local
+
+1. Abrir `index.html` con doble clic (funciona desde `file://`) o servirlo con un servidor estático.
+2. Correr los tests de lógica: `node --test tests/*.test.js`
+
+---
+
+## 🚀 Deploy a producción
+
+```bash
+python scripts/deploy_github.py "mensaje del cambio"
+```
+
+Copia la app al repo clonado, commitea y pushea a GitHub Pages (propaga en ~1 min). Antes de publicar, **bumpear `?v=N` en `index.html`** (cache-busting, los navegadores cachean los assets ~10 min).
+
+---
+
+## 📌 Notas
+
+* Pedido mínimo: **$80.000** (configurable en `js/core/order.js`).
+* El catálogo se sincroniza desde Supabase; sin conexión usa la copia local.
+* El admin se abre con el botón "Administrar" del encabezado (usuarios habilitados por Supabase Auth).
+* Razón social y CUIT en el pie de página y en el remito.

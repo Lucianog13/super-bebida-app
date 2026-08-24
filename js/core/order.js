@@ -48,7 +48,7 @@
     pedido.items.forEach((it, i) => {
       const unidad = it.unidad ? ` · ${it.unidad}` : "";
       const subtotal = formatMoney(it.precioUnit * it.cantidad);
-      lines.push(`${i + 1}. ${it.nombre} ${it.presentacion}${unidad} ×${it.cantidad} — ${subtotal}`);
+      lines.push(`• ${it.nombre} ${it.presentacion}${unidad} ×${it.cantidad} — ${subtotal}`);
     });
     lines.push("━━━━━━━━━━━━━━━━");
     lines.push(`*TOTAL: ${formatMoney(pedido.total)}*`);
