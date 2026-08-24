@@ -258,20 +258,16 @@
 
   function hojaClientesHTML(zonaNum, tituloZona) {
     const ps = pedidosDeZona(zonaNum);
-    const totalCarga = ps.reduce((s, p) => s + (p.total || 0), 0);
-    const bultos = ps.reduce((s, p) => s + (p.items || []).reduce((a, it) => a + it.cantidad, 0), 0);
-    const clientes = ps.map((p) => {
+    const bultosTotales = ps.reduce((s, p) => s + (p.items || []).reduce((a, it) => a + it.cantidad, 0), 0);
+    const filas = ps.map((p) => {
       const c = p.cliente || {};
-      const items = (p.items || []).map((it) =>
-        `<div class="hc-item">• ${it.nombre} ${it.presentacion}${it.unidad ? " · " + it.unidad : ""} ×${it.cantidad}</div>`
-      ).join("");
+      const bultos = (p.items || []).reduce((a, it) => a + it.cantidad, 0);
       return `
-      <div class="hc-cliente">
-        <div class="hc-c-nombre">• ${c.nombre || "—"}${c.nroCliente ? ' <span class="hc-nro">Nº ' + c.nroCliente + "</span>" : ""}</div>
-        <div class="hc-c-dir">${c.direccion || ""}${c.telefono ? " · " + c.telefono : ""}</div>
-        ${items}
-        <div class="hc-c-total">Total: ${Order.formatMoney(p.total)}</div>
-      </div>`;
+      <tr>
+        <td>${c.nombre || "—"}${c.nroCliente ? ' <span class="hc-nro">Nº ' + c.nroCliente + "</span>" : ""}</td>
+        <td>${c.direccion || ""}${c.telefono ? " · " + c.telefono : ""}</td>
+        <td class="num">${bultos}</td>
+      </tr>`;
     }).join("");
     return `
     <div class="hoja-carga">
@@ -281,10 +277,13 @@
         <div class="hc-fecha">${Order.formatDate(new Date())}</div>
       </div>
       <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${ps.length} cliente${ps.length === 1 ? "" : "s"}</div>
-      ${clientes || '<p class="hc-vacio">Sin pedidos</p>'}
+      <table class="hc-tabla">
+        <thead><tr><th>Cliente</th><th>Dirección</th><th class="num">Bultos</th></tr></thead>
+        <tbody>${filas || '<tr><td colspan="3">Sin pedidos</td></tr>'}</tbody>
+      </table>
       <div class="hc-total-carga">
-        <span>${ps.length} pedido${ps.length === 1 ? "" : "s"} · ${bultos} bultos</span>
-        <strong>TOTAL DE LA CARGA: ${Order.formatMoney(totalCarga)}</strong>
+        <span>${ps.length} pedido${ps.length === 1 ? "" : "s"}</span>
+        <strong>TOTAL DE LA CARGA: ${bultosTotales} bultos</strong>
       </div>
     </div>`;
   }
