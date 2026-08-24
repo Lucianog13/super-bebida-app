@@ -11,7 +11,7 @@ Aplicación web para que los clientes de la distribuidora **"El Super de la Bebi
 ## ✨ Características
 
 * **Catálogo real con fotos de marca:** el catálogo completo de la lista de precios (585 productos, agosto 2026) más los que se agregan desde el panel admin, cada uno con su foto e investigado por marca. Búsqueda y filtros por 15 categorías.
-* **Promociones:** badge PROMO, precio anterior tachado y **carrusel destacado** en la portada con las ofertas del día.
+* **Promociones:** badge PROMO, precio anterior tachado, **carrusel destacado** en la portada y **filtro "Ofertas"** en el catálogo para ver todas las promos juntas.
 * **Carrito con mínimo de compra:** edición de cantidades (con tope por producto) y botón de confirmar **bloqueado hasta alcanzar el pedido mínimo ($80.000)**.
 * **Stock en vivo:** los productos sin stock se ven en gris y no se pueden agregar.
 * **Envases retornables:** conteo automático en el resumen del pedido.

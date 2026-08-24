@@ -647,6 +647,8 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   border-color: var(--navy-700);
   box-shadow: 0 2px 8px rgba(14, 34, 51, 0.22);
 }
+.chip-promo { border-color: var(--gold); color: #8a5a00; background: #fff7e6; }
+.chip-promo.active { background: linear-gradient(180deg, var(--gold), #b57a14); color: #fff; border-color: var(--gold); }
 
 /* ── Grilla de productos ── */
 .grilla {

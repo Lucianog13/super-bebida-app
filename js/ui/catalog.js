@@ -42,7 +42,11 @@
   function filtrar(productos, query, categoria) {
     const q = normalize(query).trim();
     return productos.filter((p) => {
-      if (categoria && categoria !== "todas" && p.categoria !== categoria) return false;
+      if (categoria === "promociones") {
+        if (!(p.enPromo && p.activo !== false)) return false;
+      } else if (categoria && categoria !== "todas" && p.categoria !== categoria) {
+        return false;
+      }
       if (!q) return true;
       return normalize(p.nombre + " " + (p.marca || "")).includes(q);
     });
@@ -111,17 +115,16 @@
   }
 
   function categoriasDisponibles() {
-    return ["todas"].concat([...new Set(opts.productos.map((p) => p.categoria))]);
+    return ["todas"].concat([...new Set(opts.productos.map((p) => p.categoria))], ["promociones"]);
   }
 
   function renderChips() {
     opts.chips.innerHTML = categoriasDisponibles()
-      .map(
-        (c) =>
-          `<button class="chip ${state.categoria === c ? "active" : ""}" data-categoria="${c}">${
-            c === "todas" ? "Todos" : LABELS[c] || c
-          }</button>`
-      )
+      .map((c) => {
+        const label = c === "todas" ? "Todos" : c === "promociones" ? "🔥 Ofertas" : LABELS[c] || c;
+        const extra = c === "promociones" ? " chip-promo" : "";
+        return `<button class="chip ${state.categoria === c ? "active" : ""}${extra}" data-categoria="${c}">${label}</button>`;
+      })
       .join("");
   }
 
