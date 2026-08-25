@@ -22,7 +22,7 @@
       ? `<span class="precio-anterior">${Order.formatMoney(it.precioAnterior)}</span> `
       : "";
     return `
-      <div class="fila-item" data-id="${it.productoId}">
+      <div class="fila-item" data-id="${it.productoId}" data-sabor="${it.sabor || ""}">
         ${foto}
         <div class="info">
           <div class="nombre">${it.nombre}</div>
@@ -78,13 +78,14 @@
         if (!btn) return;
         const fila = btn.closest("[data-id]");
         const id = fila.dataset.id;
+        const sabor = fila.dataset.sabor || "";
         const accion = btn.dataset.accion;
-        const item = Cart.find(currentItems, id);
+        const item = Cart.find(currentItems, id, sabor);
         if (!item) return;
         let nuevo = currentItems;
-        if (accion === "mas") nuevo = Cart.updateQty(currentItems, id, item.cantidad + 1);
-        else if (accion === "menos") nuevo = Cart.updateQty(currentItems, id, item.cantidad - 1);
-        else if (accion === "eliminar") nuevo = Cart.removeItem(currentItems, id);
+        if (accion === "mas") nuevo = Cart.updateQty(currentItems, id, item.cantidad + 1, sabor);
+        else if (accion === "menos") nuevo = Cart.updateQty(currentItems, id, item.cantidad - 1, sabor);
+        else if (accion === "eliminar") nuevo = Cart.removeItem(currentItems, id, sabor);
         if (nuevo !== currentItems) currentHandlers.onUpdate(nuevo);
       });
     }

@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -286,23 +286,44 @@
     </div>
   </div>
 
+  <div id="modal-sabores" class="modal" hidden>
+    <div class="modal-caja modal-sabores">
+      <div class="modal-sabores-head">
+        <div>
+          <h3 id="modal-sabores-titulo"></h3>
+          <p class="modal-sub" id="modal-sabores-sub"></p>
+        </div>
+        <button type="button" class="btn-sabores-cerrar" data-accion="cerrar-sabores" aria-label="Cerrar">✕</button>
+      </div>
+      <div id="modal-sabores-lista" class="modal-sabores-lista"></div>
+      <div class="modal-sabores-pie">
+        <div class="modal-sabores-total">
+          <span>Unidades a agregar</span>
+          <strong id="modal-sabores-total">0</strong>
+        </div>
+        <button type="button" class="btn-sabores-confirmar" id="btn-confirmar-sabores" data-accion="confirmar-sabores" disabled>Agregar al pedido</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast no-print" hidden></div>
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=13"></script>
-  <script src="js/data/zonas.js?v=13"></script>
-  <script src="js/core/cart.js?v=13"></script>
-  <script src="js/core/order.js?v=13"></script>
-  <script src="js/core/storage.js?v=13"></script>
-  <script src="js/core/auth.js?v=13"></script>
-  <script src="js/config.js?v=13"></script>
-  <script src="js/ui/catalog.js?v=13"></script>
-  <script src="js/ui/cartView.js?v=13"></script>
-  <script src="js/ui/checkout.js?v=13"></script>
-  <script src="js/ui/admin.js?v=13"></script>
-  <script src="js/ui/reparto.js?v=13"></script>
+  <script src="js/data/products.js?v=14"></script>
+  <script src="js/data/sabores.js?v=14"></script>
+  <script src="js/data/zonas.js?v=14"></script>
+  <script src="js/core/cart.js?v=14"></script>
+  <script src="js/core/order.js?v=14"></script>
+  <script src="js/core/storage.js?v=14"></script>
+  <script src="js/core/auth.js?v=14"></script>
+  <script src="js/config.js?v=14"></script>
+  <script src="js/ui/catalog.js?v=14"></script>
+  <script src="js/ui/cartView.js?v=14"></script>
+  <script src="js/ui/checkout.js?v=14"></script>
+  <script src="js/ui/admin.js?v=14"></script>
+  <script src="js/ui/reparto.js?v=14"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=13"></script>
+  <script src="js/app.js?v=14"></script>
 </body>
 </html>

@@ -74,13 +74,30 @@
       imagen: row.imagen || "",
       descripcion: row.descripcion || "",
       activo: row.activo !== false,
+      sabores: Array.isArray(row.sabores) ? row.sabores : [],
     };
+  }
+
+  // Overlay de sabores (js/data/sabores.js): nombres limpios, listas de sabores
+  // y entradas absorbidas por una familia. Idempotente: se aplica sobre nube,
+  // caché y archivo local para que la vista de clientes sea siempre la misma.
+  function aplicarOverlay(productos) {
+    const ov = window.SABORES_OVERLAY;
+    if (!ov || !Array.isArray(productos)) return productos;
+    const ocultos = new Set(ov.ocultar || []);
+    return productos
+      .filter((p) => !ocultos.has(p.id))
+      .map((p) => {
+        const fam = (ov.familias || {})[p.id];
+        if (!fam) return p;
+        return { ...p, nombre: fam.nombre, sabores: fam.sabores };
+      });
   }
 
   async function cargarCatalogo() {
     if (!CFG) {
       updateEstado("Modo local");
-      return window.PRODUCTS;
+      return aplicarOverlay(window.PRODUCTS);
     }
     const cacheKey = "catalogo_cache";
     try {
@@ -91,7 +108,7 @@
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       if (!Array.isArray(rows) || rows.length === 0) throw new Error("catálogo vacío");
-      const productos = rows.map(mapProductoDb);
+      const productos = aplicarOverlay(rows.map(mapProductoDb));
       try {
         localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), productos }));
       } catch {}
@@ -103,11 +120,11 @@
         const c = JSON.parse(localStorage.getItem(cacheKey) || "null");
         if (c && Array.isArray(c.productos) && c.productos.length) {
           updateEstado("● Sin conexión — catálogo en caché");
-          return c.productos;
+          return aplicarOverlay(c.productos);
         }
       } catch {}
       updateEstado("● Sin conexión — catálogo local");
-      return window.PRODUCTS;
+      return aplicarOverlay(window.PRODUCTS);
     }
   }
 
@@ -176,12 +193,31 @@
       resultados: $("resultados-catalogo"),
       promos: $("seccion-promos"),
       carruselPromos: $("carrusel-promos"),
+      modalSabores: $("modal-sabores"),
+      modalSaboresTitulo: $("modal-sabores-titulo"),
+      modalSaboresSub: $("modal-sabores-sub"),
+      modalSaboresLista: $("modal-sabores-lista"),
+      modalSaboresTotal: $("modal-sabores-total"),
+      btnConfirmarSabores: $("btn-confirmar-sabores"),
       productos,
       onAdd(producto) {
         carrito = Cart.addItem(carrito, producto);
         Storage.saveCart(carrito);
         updateContador();
         toast(`"${producto.nombre}" agregado al pedido`);
+      },
+      cantidadEnCarrito(id, sabor) {
+        const linea = Cart.find(carrito, id, sabor);
+        return linea ? linea.cantidad : 0;
+      },
+      onAddSabores(producto, seleccion) {
+        seleccion.forEach(({ sabor, cantidad }) => {
+          carrito = Cart.addItem(carrito, producto, cantidad, sabor);
+        });
+        Storage.saveCart(carrito);
+        updateContador();
+        const unidades = seleccion.reduce((s, x) => s + x.cantidad, 0);
+        toast(`${unidades} unidad${unidades === 1 ? "" : "es"} de "${producto.nombre}" agregada${unidades === 1 ? "" : "s"} al pedido`);
       },
     });
   }

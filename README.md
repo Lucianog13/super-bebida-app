@@ -11,6 +11,7 @@ Aplicación web para que los clientes de la distribuidora **"El Super de la Bebi
 ## ✨ Características
 
 * **Catálogo real con fotos de marca:** el catálogo completo de la lista de precios (585 productos, agosto 2026) más los que se agregan desde el panel admin, cada uno con su foto e investigado por marca. Búsqueda y filtros por 15 categorías.
+* **Variedades por sabor:** productos como Biscochito Don Satur, 9 de Oro, Obleas Tym, Formis, Polvoritas, Manaos, Planet y aguas saborizadas abren un selector de sabores (botón **"Elegir sabores"**) donde se elige la cantidad de cada variedad; cada sabor entra al pedido como línea propia (ej: *"Biscochito Don Satur — Dulce ×2"*). Las listas de sabores viven en `js/data/sabores.js` y en la columna `sabores` de Supabase.
 * **Promociones:** badge PROMO, precio anterior tachado, **carrusel destacado** en la portada y **filtro "Ofertas"** en el catálogo para ver todas las promos juntas.
 * **Carrito con mínimo de compra:** edición de cantidades (con tope por producto) y botón de confirmar **bloqueado hasta alcanzar el pedido mínimo ($80.000)**.
 * **Stock en vivo:** los productos sin stock se ven en gris y no se pueden agregar.
@@ -47,7 +48,9 @@ distribuidora-bebidas/
 │   ├── config.js           # credenciales públicas de Supabase
 │   ├── core/               # lógica PURA (sin DOM → testeable): auth, cart, order, storage
 │   ├── data/
-│   │   └── products.js     # catálogo local (fallback offline)
+│   │   ├── products.js     # catálogo local (fallback offline)
+│   │   ├── sabores.js      # overlay de sabores (productos con variedades)
+│   │   └── zonas.js        # zonas de reparto
 │   └── ui/                 # capa de presentación: admin, catalog, cartView, checkout
 ├── scripts/                # parseo de lista de precios, deploy, Supabase, imágenes
 ├── tests/                  # tests de lógica (node:test)

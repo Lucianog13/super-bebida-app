@@ -1323,3 +1323,47 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 /* Modal "Ver pedido" */
 .modal-ver-pedido { max-width: 560px; max-height: 85vh; overflow: auto; }
 .ver-pedido-contenido .pedido-hoja { border: 0; box-shadow: none; padding: 0; }
+
+/* ── Modal selector de sabores ── */
+.modal-sabores { max-width: 430px; padding: 0; overflow: hidden; }
+.modal-sabores-head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+  padding: 18px 20px 12px; border-bottom: 1px solid var(--border);
+}
+.modal-sabores-head h3 { margin: 0; color: var(--navy-800); font-size: 1.05rem; }
+.btn-sabores-cerrar {
+  background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--muted);
+  padding: 4px 10px; border-radius: 6px; line-height: 1;
+}
+.btn-sabores-cerrar:hover { background: var(--navy-50); color: var(--ink); }
+.modal-sabores-lista { max-height: 52vh; overflow-y: auto; padding: 2px 20px; }
+.sabor-fila {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.sabor-fila:last-child { border-bottom: none; }
+.sabor-nombre { font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+.sabor-controles { display: flex; align-items: center; gap: 10px; }
+.sabor-controles button {
+  width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--navy-700);
+  background: var(--surface); color: var(--navy-700); font-size: 1.15rem; font-weight: 700;
+  cursor: pointer; display: grid; place-items: center; line-height: 1;
+}
+.sabor-controles button:hover { background: var(--navy-50); }
+.sabor-controles button:active { transform: scale(0.94); }
+.sabor-qty { min-width: 28px; text-align: center; font-weight: 700; color: var(--ink); }
+.modal-sabores-pie {
+  padding: 14px 20px 18px; display: flex; flex-direction: column; gap: 10px;
+  border-top: 1px solid var(--border); background: var(--navy-50);
+}
+.modal-sabores-total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 0.85rem; color: var(--muted);
+}
+.modal-sabores-total strong { font-size: 1.2rem; color: var(--navy-800); }
+.btn-sabores-confirmar {
+  background: var(--gold); color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 13px; font-size: 1rem; font-weight: 700; cursor: pointer; letter-spacing: 0.02em;
+}
+.btn-sabores-confirmar:hover { background: #b37a16; }
+.btn-sabores-confirmar:disabled { opacity: 0.45; cursor: not-allowed; }

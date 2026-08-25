@@ -70,8 +70,11 @@
     const desc = p.descripcion ? `<div class="descripcion">${p.descripcion}</div>` : "";
     const unidad = unidadTexto(p) ? `<div class="detalle">${unidadTexto(p)}</div>` : "";
     const sinStockBadge = sinStock ? `<span class="badge-sin-stock">Sin stock</span>` : "";
+    const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
     const boton = sinStock
       ? `<button class="btn-agregar" disabled>Sin stock</button>`
+      : tieneSabores
+      ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} Elegir sabores</button>`
       : `<button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>`;
     return `
       <article class="card${sinStock ? " sin-stock" : ""}" data-id="${p.id}">
@@ -101,6 +104,10 @@
     const anterior = p.precioAnterior
       ? `<span class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</span>`
       : "";
+    const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
+    const boton = tieneSabores
+      ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} Elegir sabores</button>`
+      : `<button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>`;
     return `
       <article class="promo-card" data-id="${p.id}">
         ${foto}
@@ -109,7 +116,7 @@
         <div class="promo-cuerpo">
           <div class="promo-nombre">${p.nombre}</div>
           <div class="promo-precios">${anterior}<span class="promo-precio">${Order.formatMoney(p.precio)}</span></div>
-          <button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>
+          ${boton}
         </div>
       </article>`;
   }
@@ -147,6 +154,66 @@
     renderPromos();
   }
 
+  // ── Modal selector de sabores (productos con variedades) ──
+  const selSabores = { producto: null, cantidades: {} };
+
+  function totalSeleccion() {
+    return Object.values(selSabores.cantidades).reduce((s, n) => s + n, 0);
+  }
+
+  function pintarModalSabores() {
+    const p = selSabores.producto;
+    if (!p || !opts.modalSaboresLista) return;
+    const unidad = unidadTexto(p);
+    opts.modalSaboresTitulo.textContent = p.nombre;
+    opts.modalSaboresSub.textContent =
+      `${Order.formatMoney(p.precio)} c/u${unidad ? " · " + unidad : ""}`;
+    opts.modalSaboresLista.innerHTML = p.sabores
+      .map((s) => {
+        const n = selSabores.cantidades[s] || 0;
+        return `<div class="sabor-fila">
+          <span class="sabor-nombre">${s}</span>
+          <div class="sabor-controles">
+            <button type="button" data-accion="sabor-menos" data-sabor="${s}" aria-label="Quitar ${s}">−</button>
+            <span class="sabor-qty">${n}</span>
+            <button type="button" data-accion="sabor-mas" data-sabor="${s}" aria-label="Agregar ${s}">+</button>
+          </div>
+        </div>`;
+      })
+      .join("");
+    const total = totalSeleccion();
+    opts.modalSaboresTotal.textContent = total;
+    opts.btnConfirmarSabores.disabled = total === 0;
+  }
+
+  function abrirModalSabores(producto) {
+    if (!opts.modalSabores || !producto.sabores) return;
+    selSabores.producto = producto;
+    selSabores.cantidades = {};
+    producto.sabores.forEach((s) => {
+      selSabores.cantidades[s] = opts.cantidadEnCarrito ? opts.cantidadEnCarrito(producto.id, s) : 0;
+    });
+    pintarModalSabores();
+    opts.modalSabores.hidden = false;
+  }
+
+  function cerrarModalSabores() {
+    if (!opts.modalSabores) return;
+    opts.modalSabores.hidden = true;
+    selSabores.producto = null;
+    selSabores.cantidades = {};
+  }
+
+  function confirmarSabores() {
+    const p = selSabores.producto;
+    if (!p) return;
+    const seleccion = Object.keys(selSabores.cantidades)
+      .map((s) => ({ sabor: s, cantidad: selSabores.cantidades[s] }))
+      .filter((x) => x.cantidad > 0);
+    if (seleccion.length && opts.onAddSabores) opts.onAddSabores(p, seleccion);
+    cerrarModalSabores();
+  }
+
   function bind() {
     opts.searchInput.addEventListener("input", () => {
       state.query = opts.searchInput.value;
@@ -160,22 +227,28 @@
       render();
     });
     opts.grid.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-accion='agregar']");
+      const btn = e.target.closest("button[data-accion]");
       if (!btn) return;
       const card = btn.closest("[data-id]");
+      if (!card) return;
       const producto = opts.productos.find((p) => p.id === card.dataset.id);
-      if (producto) opts.onAdd(producto);
+      if (!producto) return;
+      if (btn.dataset.accion === "abrir-sabores") abrirModalSabores(producto);
+      else if (btn.dataset.accion === "agregar") opts.onAdd(producto);
     });
 
     // ── Carrusel de promos: agregar al carrito, efecto 3D y auto-avance ──
     if (opts.carruselPromos) {
       const carr = opts.carruselPromos;
       carr.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-accion='agregar']");
+        const btn = e.target.closest("button[data-accion]");
         if (!btn) return;
         const card = btn.closest("[data-id]");
+        if (!card) return;
         const producto = opts.productos.find((p) => p.id === card.dataset.id);
-        if (producto) opts.onAdd(producto);
+        if (!producto) return;
+        if (btn.dataset.accion === "abrir-sabores") abrirModalSabores(producto);
+        else if (btn.dataset.accion === "agregar") opts.onAdd(producto);
       });
       const tilt = () => {
         const rect = carr.getBoundingClientRect();
@@ -225,6 +298,33 @@
         carr.addEventListener("touchend", reanudar, { passive: true });
       }
       tilt();
+    }
+
+    // ── Modal de sabores: steppers, confirmar y cerrar ──
+    if (opts.modalSabores) {
+      const CAP_MAX = typeof Cart !== "undefined" ? Cart.MAX_POR_ITEM : 20;
+      opts.modalSabores.addEventListener("click", (e) => {
+        if (e.target === opts.modalSabores) {
+          cerrarModalSabores();
+          return;
+        }
+        const btn = e.target.closest("[data-accion]");
+        if (!btn) return;
+        const accion = btn.dataset.accion;
+        const s = btn.dataset.sabor;
+        if (accion === "cerrar-sabores") cerrarModalSabores();
+        else if (accion === "confirmar-sabores") confirmarSabores();
+        else if (accion === "sabor-mas") {
+          selSabores.cantidades[s] = Math.min(CAP_MAX, (selSabores.cantidades[s] || 0) + 1);
+          pintarModalSabores();
+        } else if (accion === "sabor-menos") {
+          selSabores.cantidades[s] = Math.max(0, (selSabores.cantidades[s] || 0) - 1);
+          pintarModalSabores();
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !opts.modalSabores.hidden) cerrarModalSabores();
+      });
     }
   }
 
