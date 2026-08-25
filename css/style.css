@@ -971,6 +971,52 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   flex-wrap: wrap;
 }
 
+/* ── Autocompletar de clientes (checkout) ── */
+.form label { position: relative; }
+.autocomplete-clientes {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(14, 34, 51, 0.16);
+  max-height: 300px;
+  overflow-y: auto;
+}
+.autocomplete-clientes[hidden] { display: none; }
+.sugerencia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--ink);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.sugerencia:last-child { border-bottom: none; }
+.sugerencia:hover, .sugerencia:focus { background: var(--navy-100); }
+.sug-nombre { font-weight: 600; flex: 0 1 auto; }
+.sug-dir { color: var(--muted); font-size: 0.8rem; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sug-nro {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--navy-900);
+  background: var(--gold-soft);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+}
+
 /* ── Hoja de pedido (remito) — compacto para entrar en una hoja A4 ── */
 .pedido-hoja {
   background: var(--surface);

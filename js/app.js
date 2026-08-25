@@ -233,6 +233,8 @@
     btnRepetir: $("btn-repetir"),
     loadOrders: Storage.loadOrders,
     loadCliente: Storage.loadCliente,
+    supabaseUrl: CFG.supabaseUrl,
+    supabaseKey: CFG.supabaseKey,
     onGenerar(cliente) {
       pedidoActual = Order.buildOrder(cliente, carrito);
       Storage.saveOrder(pedidoActual);
