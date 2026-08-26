@@ -1038,6 +1038,34 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 }
 .remito-razon { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--navy-700); }
 .remito-sub { color: var(--muted); font-size: 0.68rem; margin-top: 1px; }
+.remito-emisor { flex: 1 1 42%; min-width: 0; }
+.remito-iva { margin-top: 4px; font-weight: 600; color: var(--navy-700); }
+.remito-tabla td:first-child { word-break: break-word; }
+.remito-tipo { flex: 0 0 auto; text-align: center; align-self: flex-start; }
+.remito-tipo-caja {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto;
+  border: 1.5px solid var(--navy-900);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--navy-900);
+}
+.remito-tipo-texto {
+  margin-top: 3px;
+  max-width: 96px;
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: var(--navy-900);
+}
 .remito-num { text-align: right; }
 .remito-doc {
   font-size: 0.6rem;

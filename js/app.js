@@ -10,8 +10,12 @@
     razonSocial: "EL SUPER DE LA BEBIDA S.R.L.",
     rubro: "Distribuidora de bebidas",
     cuit: "CUIT: 30-71782512-4",
-    direccion: "Migue David 2119",
+    ingBrutos: "Ing. Brutos: 30717825124",
+    iva: "IVA: RESP. INSCRIPTO",
+    direccion: "Domicilio: Miguel David 2119",
+    cp: "C.P.: 3100 - Paraná",
     tel: "Tel: 343 518-2883",
+    email: "E-Mail: elsuperdelabebida@gmail.com",
   };
 
   // ── Banner de pedido mínimo (catálogo) ──
@@ -306,7 +310,7 @@
       .map(
         (it) => `
         <tr>
-          <td>${it.nombre}<span class="desc">${it.presentacion}${it.unidad ? " · " + it.unidad : ""}</span></td>
+          <td>${it.nombre}</td>
           <td class="num">${it.cantidad}</td>
           <td class="num">${Order.formatMoney(it.precioUnit)}</td>
           <td class="num">${Order.formatMoney(it.precioUnit * it.cantidad)}</td>
@@ -316,19 +320,29 @@
     const ret = Order.envasesRetornables(p.items);
     return `
       <div class="remito-head">
-        <div>
+        <div class="remito-emisor">
           <div class="remito-razon">${EMPRESA.razonSocial}</div>
           <div class="remito-sub">${EMPRESA.rubro}</div>
-          <div class="remito-sub">${EMPRESA.cuit} · ${EMPRESA.direccion} · ${EMPRESA.tel}</div>
+          <div class="remito-sub">${EMPRESA.direccion}</div>
+          <div class="remito-sub">${EMPRESA.cp}</div>
+          <div class="remito-sub">${EMPRESA.tel}</div>
+          <div class="remito-sub">${EMPRESA.email}</div>
+          <div class="remito-sub remito-iva">${EMPRESA.iva}</div>
+        </div>
+        <div class="remito-tipo">
+          <div class="remito-tipo-caja">X</div>
+          <div class="remito-tipo-texto">NO VALIDO COMO FACTURA</div>
         </div>
         <div class="remito-num">
           <div class="remito-doc">Pedido</div>
           <div class="remito-id">${p.id}</div>
-          <div class="remito-sub">${Order.formatDate(p.fecha)}</div>
+          <div class="remito-sub">Fecha: ${Order.formatDate(p.fecha)}</div>
+          <div class="remito-sub">${EMPRESA.cuit}</div>
+          <div class="remito-sub">${EMPRESA.ingBrutos}</div>
         </div>
       </div>
       <div class="remito-cliente">
-        <strong>Cliente:</strong> ${p.cliente.nombre}${p.cliente.nroCliente ? " · Nº " + p.cliente.nroCliente : ""}${p.cliente.telefono ? " · " + p.cliente.telefono : ""}${p.cliente.direccion ? " · " + p.cliente.direccion : ""}
+        <strong>Cliente:</strong> ${p.cliente.nombre}${p.cliente.nroCliente ? " · Nº " + p.cliente.nroCliente : ""}${p.cliente.direccion ? " · " + p.cliente.direccion : ""}
       </div>
       <table class="remito-tabla">
         <thead>
@@ -339,8 +353,7 @@
       <div class="remito-total">
         <span class="detalle">${p.items.length} items${ret ? " · Envases retornables: " + ret : ""}</span>
         <strong>${Order.formatMoney(p.total)}</strong>
-      </div>
-      <div class="remito-nota">Documento no válido como factura.</div>`;
+      </div>`;
   }
 
   function renderPedido() {
