@@ -14,6 +14,14 @@
   // Fotos elegidas pero aún no guardadas: pid → File
   const fotosPendientes = new Map();
 
+  // "Jamón, Pizza, Queso" → ["Jamón", "Pizza", "Queso"]
+  function parseSabores(txt) {
+    return (txt || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
   const API = () => window.APP_CONFIG;
 
   async function cargar() {
@@ -226,6 +234,7 @@
     document.getElementById("editar-producto-actual").textContent = p.nombre;
     document.getElementById("editar-nombre").value = p.nombre;
     document.getElementById("editar-descripcion").value = p.descripcion || "";
+    document.getElementById("editar-sabores").value = Array.isArray(p.sabores) ? p.sabores.join(", ") : "";
     document.getElementById("modal-editar").hidden = false;
     document.getElementById("editar-nombre").focus();
   }
@@ -239,6 +248,7 @@
     if (!editandoPid) return;
     const nombre = document.getElementById("editar-nombre").value.trim();
     const descripcion = document.getElementById("editar-descripcion").value.trim();
+    const sabores = parseSabores(document.getElementById("editar-sabores").value);
     if (!nombre) {
       toastFn("El nombre no puede quedar vacío", "error");
       return;
@@ -254,7 +264,7 @@
       {
         method: "PATCH",
         headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify({ nombre, descripcion }),
+        body: JSON.stringify({ nombre, descripcion, sabores }),
       }
     );
     if (!res.ok) {
@@ -267,7 +277,7 @@
       return;
     }
     const p = productos.find((x) => x.id === editandoPid);
-    if (p) { p.nombre = nombre; p.descripcion = descripcion; }
+    if (p) { p.nombre = nombre; p.descripcion = descripcion; p.sabores = sabores; }
     cerrarEditar();
     render(filtro);
     marcarEstado(editandoPid, "✔ guardado", "ok");
@@ -292,6 +302,7 @@
     const presentacion = get("nuevo-presentacion");
     const unidad = get("nuevo-unidad") || "unidad";
     const precio = parseInt(get("nuevo-precio"), 10);
+    const sabores = parseSabores(get("nuevo-sabores"));
     const fotoInput = document.getElementById("nuevo-foto");
     if (!nombre || !Number.isFinite(precio) || precio <= 0) {
       toastFn("Completá nombre y precio", "error");
@@ -340,6 +351,7 @@
       unidad, precio, en_promo: false, precio_anterior: null,
       retornable: false, emoji: "", imagen,
       descripcion: get("nuevo-descripcion"),
+      sabores,
     };
     const res = await fetch(`${cfg.supabaseUrl}/rest/v1/productos`, {
       method: "POST",

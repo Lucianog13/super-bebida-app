@@ -95,7 +95,13 @@
       .map((p) => {
         const fam = (ov.familias || {})[p.id];
         if (!fam) return p;
-        return { ...p, nombre: fam.nombre, sabores: fam.sabores };
+        // La nube (columna sabores) manda cuando hay datos; si no, el overlay (modo local).
+        const desdeDb = Array.isArray(p.sabores);
+        return {
+          ...p,
+          nombre: desdeDb ? p.nombre : fam.nombre,
+          sabores: desdeDb ? p.sabores : fam.sabores,
+        };
       });
   }
 
