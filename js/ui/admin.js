@@ -59,6 +59,7 @@
         <button class="btn small secondary" data-accion="foto">Cambiar foto</button>
         <button class="btn small outline" data-accion="editar">✏️ Editar</button>
         <button class="btn small ${inactivo ? "primary" : "outline"}" data-accion="stock">${inactivo ? "✅ Activar" : "🚫 Sin stock"}</button>
+        <button class="btn small danger" data-accion="eliminar">🗑 Eliminar</button>
         <input type="file" class="in-foto" accept="image/png,image/jpeg,image/webp" hidden>
       </div>
     </div>`;
@@ -172,6 +173,31 @@
     p.activo = activar;
     render(filtro);
     toastFn(activar ? "Producto activado ✔ — ya se puede pedir" : "Producto desactivado — sin stock, no se puede pedir");
+  }
+
+  /** Elimina un producto del catálogo (DELETE en la nube). */
+  async function eliminarProducto(pid) {
+    const p = productos.find((x) => x.id === pid);
+    if (!p) return;
+    if (!window.confirm(`¿Eliminar "${p.nombre}" del catálogo? Esta acción no se puede deshacer.`)) return;
+    const cfg = API();
+    const h = await headersAuth(true);
+    if (!h.Authorization) {
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
+      return;
+    }
+    const res = await fetch(
+      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
+      { method: "DELETE", headers: { ...h, Prefer: "return=minimal" } }
+    );
+    if (!res.ok) {
+      const noAuth = res.status === 401 || res.status === 403;
+      toastFn(noAuth ? "No autorizado — cerrá sesión y volvé a entrar" : "Error al eliminar (HTTP " + res.status + ")", "error");
+      return;
+    }
+    productos = productos.filter((x) => x.id !== pid);
+    render(filtro);
+    toastFn("Producto eliminado del catálogo ✔");
   }
 
   /** Sube la foto al Storage y asocia la URL al producto. Devuelve la URL o null. */
@@ -403,6 +429,7 @@
       if (btn.dataset.accion === "foto") fila.querySelector(".in-foto").click();
       if (btn.dataset.accion === "editar") abrirEditar(pid);
       if (btn.dataset.accion === "stock") toggleStock(pid);
+      if (btn.dataset.accion === "eliminar") eliminarProducto(pid);
     });
     listaEl.addEventListener("change", (e) => {
       if (!e.target.classList.contains("in-foto")) return;

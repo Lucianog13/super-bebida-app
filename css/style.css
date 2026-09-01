@@ -927,6 +927,8 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .btn[disabled] { opacity: 0.45; pointer-events: none; }
 .btn.small { padding: 6px 12px; font-size: 0.78rem; min-width: 0; flex: 0 0 auto; }
 .btn.outline { background: var(--surface); color: var(--navy-700); border: 1px solid var(--navy-700); }
+.btn.danger { background: #c0392b; color: #fff; }
+.btn.danger:hover { filter: brightness(1.08); }
 
 /* ── Formulario ── */
 .panel {
