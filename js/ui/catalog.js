@@ -71,10 +71,13 @@
     const unidad = unidadTexto(p) ? `<div class="detalle">${unidadTexto(p)}</div>` : "";
     const sinStockBadge = sinStock ? `<span class="badge-sin-stock">Sin stock</span>` : "";
     const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
+    const enCarrito = opts.cantidadEnCarrito ? opts.cantidadEnCarrito(p.id) : 0;
     const boton = sinStock
       ? `<button class="btn-agregar" disabled>Sin stock</button>`
       : tieneSabores
       ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} Elegir sabores</button>`
+      : enCarrito > 0
+      ? `<button class="btn-agregar btn-quitar" data-accion="quitar">Quitar</button>`
       : `<button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>`;
     return `
       <article class="card${sinStock ? " sin-stock" : ""}" data-id="${p.id}">
@@ -105,8 +108,11 @@
       ? `<span class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</span>`
       : "";
     const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
+    const enCarrito = opts.cantidadEnCarrito ? opts.cantidadEnCarrito(p.id) : 0;
     const boton = tieneSabores
       ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} Elegir sabores</button>`
+      : enCarrito > 0
+      ? `<button class="btn-agregar btn-quitar" data-accion="quitar">Quitar</button>`
       : `<button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>`;
     return `
       <article class="promo-card" data-id="${p.id}">
@@ -168,15 +174,24 @@
     opts.modalSaboresTitulo.textContent = p.nombre;
     opts.modalSaboresSub.textContent =
       `${Order.formatMoney(p.precio)} c/u${unidad ? " · " + unidad : ""}`;
+    const sinStock = new Set(Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []);
+    const esAdmin = typeof opts.esAdmin === "function" ? opts.esAdmin() : !!opts.esAdmin;
     opts.modalSaboresLista.innerHTML = p.sabores
       .map((s) => {
         const n = selSabores.cantidades[s] || 0;
-        return `<div class="sabor-fila">
+        const fuera = sinStock.has(s);
+        const toggle = esAdmin
+          ? `<button type="button" class="btn-sin-stock${fuera ? " activo" : ""}" data-accion="sabor-stock" data-sabor="${s}">${fuera ? "✓ Sin stock" : "Sin stock"}</button>`
+          : fuera
+          ? `<span class="tag-sin-stock">Sin stock</span>`
+          : "";
+        return `<div class="sabor-fila${fuera ? " sin-stock" : ""}">
           <span class="sabor-nombre">${s}</span>
           <div class="sabor-controles">
-            <button type="button" data-accion="sabor-menos" data-sabor="${s}" aria-label="Quitar ${s}">−</button>
+            ${toggle}
+            <button type="button" data-accion="sabor-menos" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Quitar ${s}">−</button>
             <span class="sabor-qty">${n}</span>
-            <button type="button" data-accion="sabor-mas" data-sabor="${s}" aria-label="Agregar ${s}">+</button>
+            <button type="button" data-accion="sabor-mas" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Agregar ${s}">+</button>
           </div>
         </div>`;
       })
@@ -190,8 +205,9 @@
     if (!opts.modalSabores || !producto.sabores) return;
     selSabores.producto = producto;
     selSabores.cantidades = {};
+    const sinStock = new Set(Array.isArray(producto.sabores_sin_stock) ? producto.sabores_sin_stock : []);
     producto.sabores.forEach((s) => {
-      selSabores.cantidades[s] = opts.cantidadEnCarrito ? opts.cantidadEnCarrito(producto.id, s) : 0;
+      selSabores.cantidades[s] = sinStock.has(s) ? 0 : (opts.cantidadEnCarrito ? opts.cantidadEnCarrito(producto.id, s) : 0);
     });
     pintarModalSabores();
     opts.modalSabores.hidden = false;
@@ -235,6 +251,7 @@
       if (!producto) return;
       if (btn.dataset.accion === "abrir-sabores") abrirModalSabores(producto);
       else if (btn.dataset.accion === "agregar") opts.onAdd(producto);
+      else if (btn.dataset.accion === "quitar") opts.onRemove(producto);
     });
 
     // ── Carrusel de promos: agregar al carrito, efecto 3D y auto-avance ──
@@ -249,6 +266,7 @@
         if (!producto) return;
         if (btn.dataset.accion === "abrir-sabores") abrirModalSabores(producto);
         else if (btn.dataset.accion === "agregar") opts.onAdd(producto);
+        else if (btn.dataset.accion === "quitar") opts.onRemove(producto);
       });
       const tilt = () => {
         const rect = carr.getBoundingClientRect();
@@ -314,6 +332,12 @@
         const s = btn.dataset.sabor;
         if (accion === "cerrar-sabores") cerrarModalSabores();
         else if (accion === "confirmar-sabores") confirmarSabores();
+        else if (accion === "sabor-stock") {
+          selSabores.cantidades[s] = 0;
+          const r = opts.onToggleSaborStock ? opts.onToggleSaborStock(selSabores.producto, s) : null;
+          if (r && typeof r.then === "function") r.then(() => pintarModalSabores());
+          else pintarModalSabores();
+        }
         else if (accion === "sabor-mas") {
           selSabores.cantidades[s] = Math.min(CAP_MAX, (selSabores.cantidades[s] || 0) + 1);
           pintarModalSabores();

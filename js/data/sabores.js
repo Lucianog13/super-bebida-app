@@ -36,6 +36,14 @@
         nombre: "Manaos 3L",
         sabores: ["Cola", "Naranja", "Pomelo", "Lima", "Limón", "Citrus", "Manzana", "Granadina"],
       },
+      "saladix-caja-pack-x6": {
+        nombre: "Saladix Caja",
+        sabores: ["Jamón", "Pizza", "Cheddar", "Calabresa", "Dúo"],
+      },
+      "tira-saladix-pack-x6": {
+        nombre: "Tira Saladix",
+        sabores: ["Jamón", "Pizza", "Cheddar", "Calabresa", "Dúo"],
+      },
       "planet-nar-pom-lima-sierra-de-los-padres-1-5lt-pack-x6": {
         nombre: "Planet 1,5L",
         sabores: ["Naranja", "Pomelo", "Lima"],

@@ -11,10 +11,10 @@ Aplicación web para que los clientes de la distribuidora **"El Super de la Bebi
 ## ✨ Características
 
 * **Catálogo real con fotos de marca:** el catálogo completo de la lista de precios (585 productos, agosto 2026) más los que se agregan desde el panel admin, cada uno con su foto e investigado por marca. Búsqueda y filtros por 15 categorías.
-* **Variedades por sabor:** productos como Biscochito Don Satur, 9 de Oro, Obleas Tym, Formis, Polvoritas, Manaos, Planet y aguas saborizadas abren un selector de sabores (botón **"Elegir sabores"**) donde se elige la cantidad de cada variedad; cada sabor entra al pedido como línea propia (ej: *"Biscochito Don Satur — Dulce ×2"*). Las listas de sabores viven en `js/data/sabores.js` y en la columna `sabores` de Supabase.
+* **Variedades por sabor:** productos como Biscochito Don Satur, 9 de Oro, Obleas Tym, Formis, Polvoritas, Manaos, Planet, Sáladix (tira y caja) y aguas saborizadas abren un selector de sabores (botón **"Elegir sabores"**) donde se elige la cantidad de cada variedad; cada sabor entra al pedido como línea propia (ej: *"Biscochito Don Satur — Dulce ×2"*). Las listas de sabores viven en `js/data/sabores.js` y en la columna `sabores` de Supabase.
 * **Promociones:** badge PROMO, precio anterior tachado, **carrusel destacado** en la portada y **filtro "Ofertas"** en el catálogo para ver todas las promos juntas.
-* **Carrito con mínimo de compra:** edición de cantidades (con tope por producto) y botón de confirmar **bloqueado hasta alcanzar el pedido mínimo ($80.000)**.
-* **Stock en vivo:** los productos sin stock se ven en gris y no se pueden agregar.
+* **Carrito con mínimo de compra:** edición de cantidades (con tope por producto), **botón Agregar que cambia a Quitar** cuando el producto ya está en el pedido, y botón de confirmar **bloqueado hasta alcanzar el pedido mínimo ($80.000)**.
+* **Stock en vivo:** los productos sin stock se ven en gris y no se pueden agregar. **Por sabor:** desde el selector de sabores (con sesión de admin) se tilda qué variedad no hay; queda en gris y bloqueada para todos los clientes (sincronizado a la nube).
 * **Envases retornables:** conteo automático en el resumen del pedido.
 * **Pedido por WhatsApp:** texto formal con el detalle completo (ítems con viñetas •, sin numeración para evitar confusiones), link directo precargado, y **remito imprimible** compacto que entra en una sola hoja A4.
 * **Funciona sin conexión:** el catálogo queda en caché y la app sigue operativa offline.

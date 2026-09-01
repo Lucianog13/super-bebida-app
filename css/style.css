@@ -1441,3 +1441,43 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 }
 .btn-sabores-confirmar:hover { background: #b37a16; }
 .btn-sabores-confirmar:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Toggle Agregar/Quitar y stock por sabor (2026-09-01) ── */
+.btn-agregar.btn-quitar {
+  background: linear-gradient(180deg, #c0392b, #96281b);
+}
+
+.sabor-controles .btn-sin-stock {
+  width: auto;
+  height: auto;
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--muted);
+  color: var(--muted);
+  background: var(--surface);
+}
+.sabor-controles .btn-sin-stock.activo {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: #fdecec;
+}
+.tag-sin-stock {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #c0392b;
+  background: #fdecec;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.sabor-fila.sin-stock .sabor-nombre {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.sabor-fila.sin-stock .sabor-controles button:not(.btn-sin-stock) {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
