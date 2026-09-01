@@ -83,7 +83,21 @@
         });
         if (!res.ok) throw new Error(res.status);
         const data = await res.json();
-        pintar(Array.isArray(data) ? data : []);
+        const lista = Array.isArray(data) ? data : [];
+        // Autocompletar solo: si hay UNA única coincidencia exacta de nombre → rellenar
+        const exactos = lista.filter((c) => norm(c.nombre) === nq);
+        if (exactos.length === 1) {
+          const c = exactos[0];
+          nombreInput.value = c.nombre;
+          if (nroClienteInput) nroClienteInput.value = c.codigo;
+          if (direccionInput && !direccionInput.value && c.direccion) {
+            direccionInput.value = c.direccion;
+          }
+          cerrar();
+          checkRepetir();
+          return;
+        }
+        pintar(lista);
       } catch (e) {
         cerrar();
       }
