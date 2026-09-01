@@ -271,7 +271,6 @@
   CheckoutUI.init({
     form: $("form-cliente"),
     nombreInput: $("cliente-nombre"),
-    telefonoInput: $("cliente-telefono"),
     direccionInput: $("cliente-direccion"),
     nroClienteInput: $("cliente-nro"),
     aviso: $("aviso-repetir"),

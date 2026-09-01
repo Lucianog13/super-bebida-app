@@ -4,6 +4,9 @@
   if (typeof module !== "undefined" && module.exports) module.exports = factory();
   else root.CheckoutUI = factory();
 })(typeof window !== "undefined" ? window : globalThis, function () {
+  // Número fijo de la empresa: el pedido sale siempre a este WhatsApp (no editable).
+  const TELEFONO_EMPRESA = "343 518-2883";
+
   function norm(s) {
     return (s || "")
       .toLowerCase()
@@ -22,7 +25,6 @@
     const {
       form,
       nombreInput,
-      telefonoInput,
       direccionInput,
       nroClienteInput,
       aviso,
@@ -41,7 +43,6 @@
     const prev = loadCliente();
     if (prev) {
       nombreInput.value = prev.nombre || "";
-      telefonoInput.value = prev.telefono || "";
       direccionInput.value = prev.direccion || "";
       if (nroClienteInput) nroClienteInput.value = prev.nroCliente || "";
     }
@@ -144,7 +145,7 @@
       }
       onGenerar({
         nombre: nombreInput.value.trim(),
-        telefono: telefonoInput.value.trim(),
+        telefono: TELEFONO_EMPRESA,
         direccion: direccionInput.value.trim(),
         nroCliente: (nroClienteInput ? nroClienteInput.value.trim() : "") || "",
       });
