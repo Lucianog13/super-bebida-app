@@ -99,6 +99,14 @@
         <label class="campo">Anterior $<input type="number" class="in-anterior" value="${p.precio_anterior || ""}" min="0" step="100"></label>
       </div>
       <label class="campo campo-desc">Descripción <input type="text" class="in-descripcion" value="${p.descripcion || ""}" placeholder="Ej: Sabores surtido, chocolate y vainilla"></label>
+      ${Array.isArray(p.sabores) && p.sabores.length ? `
+      <div class="sabores-admin">
+        <span class="sabores-label">Sabores (tocá para marcar sin stock):</span>
+        ${p.sabores.map((s) => {
+          const fuera = (Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []).includes(s);
+          return `<button type="button" class="chip-sabor${fuera ? " sin-stock" : ""}" data-accion="sabor-stock" data-sabor="${s}">${s}</button>`;
+        }).join("")}
+      </div>` : ""}
       <div class="acciones">
         <span class="estado-fila">${pendiente}</span>
         <button class="btn small primary" data-accion="guardar">Guardar</button>
@@ -219,6 +227,31 @@
     p.activo = activar;
     render(filtro);
     toastFn(activar ? "Producto activado ✔ — ya se puede pedir" : "Producto desactivado — sin stock, no se puede pedir");
+  }
+
+  /** Marca/desmarca un sabor como "sin stock" (PATCH a productos.sabores_sin_stock). */
+  async function toggleSaborStock(pid, sabor) {
+    const p = productos.find((x) => x.id === pid);
+    if (!p) return;
+    const h = await headersAuth(true);
+    if (!h.Authorization) {
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
+      return;
+    }
+    const actual = Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : [];
+    const nuevo = actual.includes(sabor) ? actual.filter((x) => x !== sabor) : actual.concat(sabor);
+    const res = await fetch(`${API().supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`, {
+      method: "PATCH",
+      headers: { ...h, Prefer: "return=minimal" },
+      body: JSON.stringify({ sabores_sin_stock: nuevo }),
+    });
+    if (!res.ok) {
+      toastFn("Error al actualizar (HTTP " + res.status + ")", "error");
+      return;
+    }
+    p.sabores_sin_stock = nuevo;
+    render(filtro);
+    toastFn(nuevo.includes(sabor) ? `"${sabor}" marcado sin stock` : `"${sabor}" activado`);
   }
 
   /** Elimina un producto del catálogo (DELETE en la nube). */
@@ -523,6 +556,7 @@
       if (btn.dataset.accion === "foto") fila.querySelector(".in-foto").click();
       if (btn.dataset.accion === "editar") abrirEditar(pid);
       if (btn.dataset.accion === "stock") toggleStock(pid);
+      if (btn.dataset.accion === "sabor-stock") toggleSaborStock(pid, btn.dataset.sabor);
       if (btn.dataset.accion === "eliminar") eliminarProducto(pid);
     });
     listaEl.addEventListener("change", (e) => {
