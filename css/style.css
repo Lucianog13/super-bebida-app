@@ -1366,6 +1366,13 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   transform: none;
 }
 .fila-admin.inactiva { opacity: 0.55; }
+.fila-cliente { grid-template-columns: 1fr; }
+.fila-cliente .info { grid-column: 1 / -1; }
+.fila-cliente .acciones { grid-column: 1 / -1; }
+.cliente-nro {
+  display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px;
+  background: var(--navy-50); color: var(--navy-700); font-size: 0.7rem; font-weight: 600;
+}
 
 /* ── Pestañas del admin (Productos | Pedidos) ── */
 .admin-tabs { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }

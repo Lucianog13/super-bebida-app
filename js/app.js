@@ -568,16 +568,24 @@
     $("panel-productos").hidden = panel !== "productos";
     $("panel-pedidos").hidden = panel !== "pedidos";
     $("panel-reparto").hidden = panel !== "reparto";
+    $("panel-clientes").hidden = panel !== "clientes";
     $("tab-productos").classList.toggle("active", panel === "productos");
     $("tab-pedidos").classList.toggle("active", panel === "pedidos");
     $("tab-reparto").classList.toggle("active", panel === "reparto");
+    $("tab-clientes").classList.toggle("active", panel === "clientes");
     if (panel === "pedidos") cargarPedidos();
     if (panel === "reparto") Reparto.cargar();
+    if (panel === "clientes") {
+      ClientesUI.cargar()
+        .then(() => ClientesUI.render(""))
+        .catch(() => toast("No se pudieron cargar los clientes", "error"));
+    }
   }
 
   $("tab-productos").addEventListener("click", () => mostrarPanelAdmin("productos"));
   $("tab-pedidos").addEventListener("click", () => mostrarPanelAdmin("pedidos"));
   $("tab-reparto").addEventListener("click", () => mostrarPanelAdmin("reparto"));
+  $("tab-clientes").addEventListener("click", () => mostrarPanelAdmin("clientes"));
   $("btn-imprimir-seleccion").addEventListener("click", () => imprimirRemitos(pedidosMarcados()));
   $("btn-imprimir-todo").addEventListener("click", () => imprimirRemitos(pedidosNube));
   $("btn-recargar-pedidos").addEventListener("click", cargarPedidos);
@@ -661,6 +669,7 @@
 
   AdminUI.init({ lista: $("lista-admin"), busqueda: $("admin-busqueda"), toast });
   Reparto.init({ toast });
+  ClientesUI.init({ lista: $("lista-clientes"), busqueda: $("cliente-busqueda"), toast });
 
   $("btn-admin-cerrar").addEventListener("click", () => {
     Auth.logout();

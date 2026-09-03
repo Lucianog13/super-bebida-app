@@ -22,6 +22,50 @@
       .filter(Boolean);
   }
 
+  // Comprime/redimensiona una foto antes de subirla (evita archivos pesados
+  // que saturan la memoria del navegador y el storage de Supabase).
+  // Resultado: JPEG de máx ~800px y ~150 KB.
+  function comprimirImagen(file, maxLado, calidad) {
+    maxLado = maxLado || 800;
+    calidad = calidad || 0.82;
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          let w = img.naturalWidth || img.width;
+          let h = img.naturalHeight || img.height;
+          const escala = Math.min(1, maxLado / Math.max(w, h));
+          w = Math.max(1, Math.round(w * escala));
+          h = Math.max(1, Math.round(h * escala));
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob(
+            (blob) => {
+              URL.revokeObjectURL(url);
+              if (!blob) { reject(new Error("no se pudo procesar la imagen")); return; }
+              const nombre = (file.name || "foto.jpg").replace(/\.[^.]+$/, "") + ".jpg";
+              resolve(new File([blob], nombre, { type: "image/jpeg" }));
+            },
+            "image/jpeg",
+            calidad
+          );
+        } catch (e) {
+          URL.revokeObjectURL(url);
+          reject(e);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("imagen inválida"));
+      };
+      img.src = url;
+    });
+  }
+
   const API = () => window.APP_CONFIG;
 
   async function cargar() {
@@ -209,18 +253,26 @@
       toastFn("Formato no soportado (usá PNG, JPG o WEBP)", "error");
       return null;
     }
+    // Comprimir antes de subir: evita "memoria insuficiente" y archivos gigantes.
+    let comprimida;
+    try {
+      comprimida = await comprimirImagen(file);
+    } catch {
+      toastFn("No se pudo procesar la imagen (probá con otra foto)", "error");
+      return null;
+    }
     const cfg = API();
-    const nombre = pid + "-" + Date.now() + "." + ext;
+    const nombre = pid + "-" + Date.now() + ".jpg";
     let res;
     try {
       res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/fotos/${nombre}`, {
         method: "POST",
         headers: {
           ...h,
-          "Content-Type": file.type || "image/" + ext,
+          "Content-Type": "image/jpeg",
           "x-upsert": "true",
         },
-        body: file,
+        body: comprimida,
       });
     } catch {
       toastFn("Error de red al subir la foto", "error");
@@ -352,14 +404,21 @@
         toastFn("Formato de foto no soportado (PNG, JPG o WEBP)", "error");
         return;
       }
-      toastFn("Subiendo foto…");
-      const fotoNombre = id + "." + ext;
+      toastFn("Procesando y subiendo foto…");
+      let comprimida;
+      try {
+        comprimida = await comprimirImagen(file);
+      } catch {
+        toastFn("No se pudo procesar la imagen (probá con otra foto)", "error");
+        return;
+      }
+      const fotoNombre = id + ".jpg";
       let res;
       try {
         res = await fetch(`${cfg.supabaseUrl}/storage/v1/object/fotos/${fotoNombre}`, {
           method: "POST",
-          headers: { ...h, "Content-Type": file.type || "image/" + ext, "x-upsert": "true" },
-          body: file,
+          headers: { ...h, "Content-Type": "image/jpeg", "x-upsert": "true" },
+          body: comprimida,
         });
       } catch {
         toastFn("Error de red al subir la foto", "error");

@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=23">
+  <link rel="stylesheet" href="css/style.css?v=24">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -158,6 +158,7 @@
         <button id="tab-productos" class="tab active">Productos</button>
         <button id="tab-pedidos" class="tab">Pedidos</button>
         <button id="tab-reparto" class="tab">Reparto</button>
+        <button id="tab-clientes" class="tab">Clientes</button>
       </div>
       <div id="panel-productos">
       <div class="search-bar">
@@ -227,6 +228,30 @@
         <div id="mapa-reparto" class="mapa-reparto"></div>
         <div id="lista-reparto" class="lista-reparto"></div>
       </div>
+      <div id="panel-clientes" hidden>
+        <div class="search-bar">
+          <svg class="icon icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="cliente-busqueda" placeholder="Buscar cliente por nombre, N° o dirección…" autocomplete="off">
+        </div>
+        <p class="admin-ayuda">Cargá acá los clientes que falten en el listado. El checkout los autocompleta por nombre, dirección o N°.</p>
+        <div class="admin-nuevo">
+          <button id="btn-cliente-nuevo" class="btn primary small">＋ Agregar cliente</button>
+          <form id="form-cliente-nuevo" class="form-nuevo" hidden>
+            <div class="form-grid">
+              <label class="campo">N° de cliente *<input type="text" id="nuevo-cliente-codigo" placeholder="Ej: 1132" inputmode="numeric" required></label>
+              <label class="campo">Nombre y apellido *<input type="text" id="nuevo-cliente-nombre" placeholder="Ej: Andrea Almeida" required></label>
+              <label class="campo">Dirección (calle)<input type="text" id="nuevo-cliente-direccion" placeholder="Ej: Madariaga"></label>
+              <label class="campo">N° de domicilio (altura)<input type="text" id="nuevo-cliente-numero" placeholder="Ej: 1234"></label>
+              <label class="campo">Teléfono celular<input type="tel" id="nuevo-cliente-telefono" placeholder="Ej: 343 1234567"></label>
+            </div>
+            <div class="form-acciones">
+              <button type="submit" class="btn primary small">Agregar cliente</button>
+              <button type="button" id="btn-cliente-nuevo-cancelar" class="btn secondary small">Cancelar</button>
+            </div>
+          </form>
+        </div>
+        <div id="lista-clientes" class="lista-admin"></div>
+      </div>
     </section>
   </main>
 
@@ -277,6 +302,29 @@
     </div>
   </div>
 
+  <div id="modal-editar-cliente" class="modal" hidden>
+    <div class="modal-caja modal-editar">
+      <h3>✏️ Editar cliente</h3>
+      <p class="modal-sub">N° de cliente: <span id="editar-cliente-codigo"></span></p>
+      <label class="campo-editar">Nombre y apellido
+        <input type="text" id="editar-cliente-nombre" placeholder="Nombre y apellido">
+      </label>
+      <label class="campo-editar">Dirección (calle)
+        <input type="text" id="editar-cliente-direccion" placeholder="Dirección">
+      </label>
+      <label class="campo-editar">N° de domicilio (altura)
+        <input type="text" id="editar-cliente-numero" placeholder="Altura">
+      </label>
+      <label class="campo-editar">Teléfono celular
+        <input type="tel" id="editar-cliente-telefono" placeholder="343 1234567">
+      </label>
+      <div class="acciones">
+        <button id="btn-editar-cliente-cancelar" class="btn secondary">Cancelar</button>
+        <button id="btn-editar-cliente-guardar" class="btn primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-ver-pedido" class="modal" hidden>
     <div class="modal-caja modal-ver-pedido">
       <h3>Pedido</h3>
@@ -311,20 +359,21 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=23"></script>
-  <script src="js/data/sabores.js?v=23"></script>
-  <script src="js/data/zonas.js?v=23"></script>
-  <script src="js/core/cart.js?v=23"></script>
-  <script src="js/core/order.js?v=23"></script>
-  <script src="js/core/storage.js?v=23"></script>
-  <script src="js/core/auth.js?v=23"></script>
-  <script src="js/config.js?v=23"></script>
-  <script src="js/ui/catalog.js?v=23"></script>
-  <script src="js/ui/cartView.js?v=23"></script>
-  <script src="js/ui/checkout.js?v=23"></script>
-  <script src="js/ui/admin.js?v=23"></script>
-  <script src="js/ui/reparto.js?v=23"></script>
+  <script src="js/data/products.js?v=24"></script>
+  <script src="js/data/sabores.js?v=24"></script>
+  <script src="js/data/zonas.js?v=24"></script>
+  <script src="js/core/cart.js?v=24"></script>
+  <script src="js/core/order.js?v=24"></script>
+  <script src="js/core/storage.js?v=24"></script>
+  <script src="js/core/auth.js?v=24"></script>
+  <script src="js/config.js?v=24"></script>
+  <script src="js/ui/catalog.js?v=24"></script>
+  <script src="js/ui/cartView.js?v=24"></script>
+  <script src="js/ui/checkout.js?v=24"></script>
+  <script src="js/ui/admin.js?v=24"></script>
+  <script src="js/ui/clientes.js?v=24"></script>
+  <script src="js/ui/reparto.js?v=24"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=23"></script>
+  <script src="js/app.js?v=24"></script>
 </body>
 </html>
