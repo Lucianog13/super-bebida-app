@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=24">
+  <link rel="stylesheet" href="css/style.css?v=25">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -295,6 +295,10 @@
       <label class="campo-editar">Sabores (separados por coma)
         <input type="text" id="editar-sabores" placeholder="Ej: Jamón, Pizza, Queso (vacío = sin variedades)">
       </label>
+      <div class="campo-editar">
+        <span>Sin stock por sabor</span>
+        <div id="editar-sin-stock" class="sin-stock-sabores" hidden></div>
+      </div>
       <div class="acciones">
         <button id="btn-editar-cancelar" class="btn secondary">Cancelar</button>
         <button id="btn-editar-guardar" class="btn primary">Guardar</button>
@@ -359,21 +363,21 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=24"></script>
-  <script src="js/data/sabores.js?v=24"></script>
-  <script src="js/data/zonas.js?v=24"></script>
-  <script src="js/core/cart.js?v=24"></script>
-  <script src="js/core/order.js?v=24"></script>
-  <script src="js/core/storage.js?v=24"></script>
-  <script src="js/core/auth.js?v=24"></script>
-  <script src="js/config.js?v=24"></script>
-  <script src="js/ui/catalog.js?v=24"></script>
-  <script src="js/ui/cartView.js?v=24"></script>
-  <script src="js/ui/checkout.js?v=24"></script>
-  <script src="js/ui/admin.js?v=24"></script>
-  <script src="js/ui/clientes.js?v=24"></script>
-  <script src="js/ui/reparto.js?v=24"></script>
+  <script src="js/data/products.js?v=25"></script>
+  <script src="js/data/sabores.js?v=25"></script>
+  <script src="js/data/zonas.js?v=25"></script>
+  <script src="js/core/cart.js?v=25"></script>
+  <script src="js/core/order.js?v=25"></script>
+  <script src="js/core/storage.js?v=25"></script>
+  <script src="js/core/auth.js?v=25"></script>
+  <script src="js/config.js?v=25"></script>
+  <script src="js/ui/catalog.js?v=25"></script>
+  <script src="js/ui/cartView.js?v=25"></script>
+  <script src="js/ui/checkout.js?v=25"></script>
+  <script src="js/ui/admin.js?v=25"></script>
+  <script src="js/ui/clientes.js?v=25"></script>
+  <script src="js/ui/reparto.js?v=25"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=24"></script>
+  <script src="js/app.js?v=25"></script>
 </body>
 </html>

@@ -11,6 +11,8 @@
   let toastFn = () => {};
   let filtro = "";
   let editandoPid = null;
+  // Estado temporal de "sin stock por sabor" mientras se edita un producto
+  let sinStockEditando = {};
   // Fotos elegidas pero aún no guardadas: pid → File
   const fotosPendientes = new Map();
 
@@ -313,6 +315,8 @@
     document.getElementById("editar-nombre").value = p.nombre;
     document.getElementById("editar-descripcion").value = p.descripcion || "";
     document.getElementById("editar-sabores").value = Array.isArray(p.sabores) ? p.sabores.join(", ") : "";
+    sinStockEditando = {};
+    renderSinStock();
     document.getElementById("modal-editar").hidden = false;
     document.getElementById("editar-nombre").focus();
   }
@@ -320,6 +324,32 @@
   function cerrarEditar() {
     editandoPid = null;
     document.getElementById("modal-editar").hidden = true;
+  }
+
+  /** Pinta los checkboxes de "sin stock" por sabor, según el campo Sabores. */
+  function renderSinStock() {
+    const cont = document.getElementById("editar-sin-stock");
+    if (!cont) return;
+    const p = productos.find((x) => x.id === editandoPid);
+    const sabores = parseSabores(document.getElementById("editar-sabores").value);
+    if (!p || !sabores.length) {
+      cont.innerHTML = "";
+      cont.hidden = true;
+      return;
+    }
+    const base = new Set(Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []);
+    cont.hidden = false;
+    cont.innerHTML = sabores.map((s) => {
+      const checked = Object.prototype.hasOwnProperty.call(sinStockEditando, s)
+        ? sinStockEditando[s]
+        : base.has(s);
+      return `<label class="chk-sin-stock"><input type="checkbox" data-sabor="${s}" ${checked ? "checked" : ""}> <span>${s}</span></label>`;
+    }).join("");
+    cont.querySelectorAll("input[data-sabor]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        sinStockEditando[cb.dataset.sabor] = cb.checked;
+      });
+    });
   }
 
   async function guardarEdicion() {
@@ -331,6 +361,11 @@
       toastFn("El nombre no puede quedar vacío", "error");
       return;
     }
+    const p = productos.find((x) => x.id === editandoPid);
+    const baseSinStock = new Set(p && Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []);
+    const saboresSinStock = sabores.filter((s) =>
+      Object.prototype.hasOwnProperty.call(sinStockEditando, s) ? sinStockEditando[s] : baseSinStock.has(s)
+    );
     const cfg = API();
     const h = await headersAuth(true);
     if (!h.Authorization) {
@@ -342,7 +377,7 @@
       {
         method: "PATCH",
         headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify({ nombre, descripcion, sabores }),
+        body: JSON.stringify({ nombre, descripcion, sabores, sabores_sin_stock: saboresSinStock }),
       }
     );
     if (!res.ok) {
@@ -354,8 +389,7 @@
       );
       return;
     }
-    const p = productos.find((x) => x.id === editandoPid);
-    if (p) { p.nombre = nombre; p.descripcion = descripcion; p.sabores = sabores; }
+    if (p) { p.nombre = nombre; p.descripcion = descripcion; p.sabores = sabores; p.sabores_sin_stock = saboresSinStock; }
     cerrarEditar();
     render(filtro);
     marcarEstado(editandoPid, "✔ guardado", "ok");
@@ -464,6 +498,7 @@
     toastFn = o.toast || toastFn;
     document.getElementById("btn-editar-cancelar").addEventListener("click", cerrarEditar);
     document.getElementById("btn-editar-guardar").addEventListener("click", guardarEdicion);
+    document.getElementById("editar-sabores").addEventListener("input", renderSinStock);
     const modalEditar = document.getElementById("modal-editar");
     modalEditar.addEventListener("click", (e) => {
       if (e.target === modalEditar) cerrarEditar();

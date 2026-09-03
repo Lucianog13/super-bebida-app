@@ -175,20 +175,15 @@
     opts.modalSaboresSub.textContent =
       `${Order.formatMoney(p.precio)} c/u${unidad ? " · " + unidad : ""}`;
     const sinStock = new Set(Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []);
-    const esAdmin = typeof opts.esAdmin === "function" ? opts.esAdmin() : !!opts.esAdmin;
     opts.modalSaboresLista.innerHTML = p.sabores
       .map((s) => {
         const n = selSabores.cantidades[s] || 0;
         const fuera = sinStock.has(s);
-        const toggle = esAdmin
-          ? `<button type="button" class="btn-sin-stock${fuera ? " activo" : ""}" data-accion="sabor-stock" data-sabor="${s}">${fuera ? "✓ Sin stock" : "Sin stock"}</button>`
-          : fuera
-          ? `<span class="tag-sin-stock">Sin stock</span>`
-          : "";
+        const tag = fuera ? `<span class="tag-sin-stock">Sin stock</span>` : "";
         return `<div class="sabor-fila${fuera ? " sin-stock" : ""}">
           <span class="sabor-nombre">${s}</span>
           <div class="sabor-controles">
-            ${toggle}
+            ${tag}
             <button type="button" data-accion="sabor-menos" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Quitar ${s}">−</button>
             <span class="sabor-qty">${n}</span>
             <button type="button" data-accion="sabor-mas" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Agregar ${s}">+</button>
@@ -332,12 +327,6 @@
         const s = btn.dataset.sabor;
         if (accion === "cerrar-sabores") cerrarModalSabores();
         else if (accion === "confirmar-sabores") confirmarSabores();
-        else if (accion === "sabor-stock") {
-          selSabores.cantidades[s] = 0;
-          const r = opts.onToggleSaborStock ? opts.onToggleSaborStock(selSabores.producto, s) : null;
-          if (r && typeof r.then === "function") r.then(() => pintarModalSabores());
-          else pintarModalSabores();
-        }
         else if (accion === "sabor-mas") {
           selSabores.cantidades[s] = Math.min(CAP_MAX, (selSabores.cantidades[s] || 0) + 1);
           pintarModalSabores();

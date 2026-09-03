@@ -1373,6 +1373,9 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px;
   background: var(--navy-50); color: var(--navy-700); font-size: 0.7rem; font-weight: 600;
 }
+.sin-stock-sabores { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.chk-sin-stock { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; }
+.chk-sin-stock input { width: 15px; height: 15px; accent-color: var(--navy-700); margin: 0; }
 
 /* ── Pestañas del admin (Productos | Pedidos) ── */
 .admin-tabs { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }

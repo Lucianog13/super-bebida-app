@@ -211,7 +211,6 @@
       modalSaboresTotal: $("modal-sabores-total"),
       btnConfirmarSabores: $("btn-confirmar-sabores"),
       productos,
-      esAdmin: () => !!Auth.getSession(),
       onAdd(producto) {
         carrito = Cart.addItem(carrito, producto);
         Storage.saveCart(carrito);
@@ -238,31 +237,6 @@
         updateContador();
         const unidades = seleccion.reduce((s, x) => s + x.cantidad, 0);
         toast(`${unidades} unidad${unidades === 1 ? "" : "es"} de "${producto.nombre}" agregada${unidades === 1 ? "" : "s"} al pedido`);
-      },
-      async onToggleSaborStock(producto, sabor) {
-        const t = await Auth.token();
-        if (!t) {
-          toast("Sesión vencida — cerrá sesión y volvé a entrar", "error");
-          return false;
-        }
-        const actual = Array.isArray(producto.sabores_sin_stock) ? producto.sabores_sin_stock : [];
-        const nuevo = actual.includes(sabor) ? actual.filter((x) => x !== sabor) : actual.concat(sabor);
-        const res = await fetch(`${CFG.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(producto.id)}`, {
-          method: "PATCH",
-          headers: {
-            apikey: CFG.supabaseKey,
-            Authorization: "Bearer " + t,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({ sabores_sin_stock: nuevo }),
-        });
-        if (!res.ok) {
-          toast("No se pudo actualizar el stock del sabor", "error");
-          return false;
-        }
-        producto.sabores_sin_stock = nuevo;
-        return true;
       },
     });
   }

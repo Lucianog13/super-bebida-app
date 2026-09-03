@@ -56,6 +56,18 @@
         nombre: "Agua Saborizada 500ML",
         sabores: ["Manzana", "Naranja", "Pomelo"],
       },
+      "pitusa-surtida-choco-vaini-frutilla-limon-u": {
+        nombre: "Pitusa",
+        sabores: ["Chocolate", "Vainilla", "Frutilla", "Limón", "Merengue", "Mousse"],
+      },
+      "delicia-de-la-nona-rellenas-vani-choco-fruti-180gr-u": {
+        nombre: "Delicias de la Nonna Rellenas 180GR",
+        sabores: ["Vainilla", "Chocolate", "Frutilla"],
+      },
+      "mana-rellenas-152gr-u": {
+        nombre: "Mana Rellenas 152GR",
+        sabores: ["Chocolate", "Vainilla", "Frutilla", "Limón"],
+      },
     },
     ocultar: [
       "agua-sab-1-5-naranja-sierra-de-los-padres-pack-x6",
