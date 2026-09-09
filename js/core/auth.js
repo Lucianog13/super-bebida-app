@@ -36,6 +36,10 @@
       return { ok: false, error: "Sin conexión. Probá de nuevo." };
     }
     if (!res.ok) {
+      if (res.status === 402) {
+        // servicio restringido (cuota del plan agotada) — no es problema de credenciales
+        return { ok: false, error: "El servicio de datos está caído (cuota del plan agotada). Avisale a administración." };
+      }
       let err = null;
       try {
         err = (await res.json()).msg;
@@ -63,7 +67,10 @@
       return null;
     }
     if (!res.ok) {
-      logout();
+      // 400 = refresh_token inválido/expirado → la sesión murió, desloguear.
+      // 402/5xx/red = corte temporal del servicio → NO desloguear (la sesión
+      // sigue siendo válida y el usuario no debería perder el acceso por eso).
+      if (res.status === 400) logout();
       return null;
     }
     const data = await res.json();
