@@ -1436,7 +1436,9 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   padding: 10px 0; border-bottom: 1px solid var(--border);
 }
 .sabor-fila:last-child { border-bottom: none; }
-.sabor-nombre { font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+.sabor-nombre { font-size: 0.95rem; font-weight: 600; color: var(--ink); flex: 1 1 auto; min-width: 0; }
+.sabor-precio { flex: 0 0 auto; min-width: 88px; text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--navy-700); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mapa-error { display: flex; align-items: center; justify-content: center; height: 100%; min-height: 120px; color: var(--muted); font-size: 0.9rem; text-align: center; }
 .sabor-controles { display: flex; align-items: center; gap: 10px; }
 .sabor-controles button {
   width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--navy-700);
@@ -1486,6 +1488,8 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   background: #fdecec;
 }
 .tag-sin-stock {
+  display: inline-block;
+  vertical-align: middle;
   font-size: 0.7rem;
   font-weight: 700;
   color: #c0392b;
@@ -1496,6 +1500,12 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .sabor-fila.sin-stock .sabor-nombre {
   color: var(--muted);
   text-decoration: line-through;
+}
+.sabor-fila.sin-stock .sabor-nombre .tag-sin-stock {
+  text-decoration: none;
+}
+.sabor-fila.sin-stock .sabor-qty {
+  color: var(--muted);
 }
 .sabor-fila.sin-stock .sabor-controles button:not(.btn-sin-stock) {
   opacity: 0.4;

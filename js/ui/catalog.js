@@ -171,19 +171,26 @@
     const p = selSabores.producto;
     if (!p || !opts.modalSaboresLista) return;
     const unidad = unidadTexto(p);
+    const precios = p.sabores_precios && typeof p.sabores_precios === "object" ? p.sabores_precios : null;
     opts.modalSaboresTitulo.textContent = p.nombre;
-    opts.modalSaboresSub.textContent =
-      `${Order.formatMoney(p.precio)} c/u${unidad ? " · " + unidad : ""}`;
+    opts.modalSaboresSub.textContent = precios
+      ? `Precios según sabor${unidad ? " · " + unidad : ""}`
+      : `${Order.formatMoney(p.precio)} c/u${unidad ? " · " + unidad : ""}`;
     const sinStock = new Set(Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []);
-    opts.modalSaboresLista.innerHTML = p.sabores
+    // Orden alfabético (es-AR) para que todos los productos muestren los sabores igual.
+    const lista = [...p.sabores].sort((a, b) => a.localeCompare(b, "es"));
+    opts.modalSaboresLista.innerHTML = lista
       .map((s) => {
         const n = selSabores.cantidades[s] || 0;
         const fuera = sinStock.has(s);
-        const tag = fuera ? `<span class="tag-sin-stock">Sin stock</span>` : "";
+        // La etiqueta va junto al NOMBRE (no entre precio y controles) para que la
+        // columna de precios quede siempre alineada.
+        const tag = fuera ? ` <span class="tag-sin-stock">Sin stock</span>` : "";
+        const precioSabor = precios ? (precios[s] != null ? precios[s] : p.precio) : p.precio;
         return `<div class="sabor-fila${fuera ? " sin-stock" : ""}">
-          <span class="sabor-nombre">${s}</span>
+          <span class="sabor-nombre">${s}${tag}</span>
+          <span class="sabor-precio">${Order.formatMoney(precioSabor)}</span>
           <div class="sabor-controles">
-            ${tag}
             <button type="button" data-accion="sabor-menos" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Quitar ${s}">−</button>
             <span class="sabor-qty">${n}</span>
             <button type="button" data-accion="sabor-mas" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Agregar ${s}">+</button>
@@ -218,8 +225,13 @@
   function confirmarSabores() {
     const p = selSabores.producto;
     if (!p) return;
+    const precios = p.sabores_precios && typeof p.sabores_precios === "object" ? p.sabores_precios : null;
     const seleccion = Object.keys(selSabores.cantidades)
-      .map((s) => ({ sabor: s, cantidad: selSabores.cantidades[s] }))
+      .map((s) => ({
+        sabor: s,
+        cantidad: selSabores.cantidades[s],
+        precio: precios && precios[s] != null ? precios[s] : p.precio,
+      }))
       .filter((x) => x.cantidad > 0);
     if (seleccion.length && opts.onAddSabores) opts.onAddSabores(p, seleccion);
     cerrarModalSabores();

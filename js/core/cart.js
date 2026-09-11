@@ -11,7 +11,7 @@
     return i.productoId === id && (i.sabor || "") === (sabor || "");
   }
 
-  function addItem(cart, producto, cantidad = 1, sabor = "") {
+  function addItem(cart, producto, cantidad = 1, sabor = "", precioSabor = null) {
     const items = (cart || []).map((i) => ({ ...i }));
     const saborClave = sabor || "";
     const idx = items.findIndex((i) => mismoItem(i, producto.id, saborClave));
@@ -25,7 +25,7 @@
         unidad: producto.unidad || "",
         emoji: producto.emoji || "",
         imagen: producto.imagen || "",
-        precioUnit: producto.precio,
+        precioUnit: precioSabor != null ? precioSabor : producto.precio,
         precioAnterior: producto.precioAnterior || null,
         retornable: !!producto.retornable,
         sabor: saborClave,

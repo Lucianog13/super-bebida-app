@@ -15,7 +15,7 @@
   }
 
   function formatDate(fecha) {
-    const d = fecha instanceof Date ? fecha : new Date(fecha);
+    const d = fecha instanceof Date ? fecha : new Date(/^\d{4}-\d{2}-\d{2}$/.test(fecha) ? fecha + "T00:00:00" : fecha);
     return new Intl.DateTimeFormat("es-AR", {
       day: "2-digit",
       month: "2-digit",

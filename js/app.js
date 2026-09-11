@@ -96,11 +96,13 @@
         const fam = (ov.familias || {})[p.id];
         if (!fam) return p;
         // La nube (columna sabores) manda cuando hay datos; si no, el overlay (modo local).
-        const desdeDb = Array.isArray(p.sabores);
+        const desdeDb = Array.isArray(p.sabores) && p.sabores.length > 0;
         return {
           ...p,
           nombre: desdeDb ? p.nombre : fam.nombre,
           sabores: desdeDb ? p.sabores : fam.sabores,
+          activo: fam.activar ? true : p.activo,
+          sabores_precios: desdeDb ? null : (fam.precios || null),
         };
       });
   }
@@ -230,8 +232,8 @@
         return linea ? linea.cantidad : 0;
       },
       onAddSabores(producto, seleccion) {
-        seleccion.forEach(({ sabor, cantidad }) => {
-          carrito = Cart.addItem(carrito, producto, cantidad, sabor);
+        seleccion.forEach(({ sabor, cantidad, precio }) => {
+          carrito = Cart.addItem(carrito, producto, cantidad, sabor, precio != null ? precio : null);
         });
         Storage.saveCart(carrito);
         updateContador();

@@ -70,13 +70,18 @@
     });
     if (!faltan.length) return;
     toastFn("Ubicando direcciones en el mapa… (" + faltan.length + ")", "");
+    let fallas = 0;
     for (const p of faltan) {
       const dir = (p.cliente && p.cliente.direccion) || "";
       const g = await geocodificar(dir);
-      if (g) { geocache.set(dir, g); p._geo = g; }
+      if (g) { geocache.set(dir, g); p._geo = g; } else { fallas++; }
       await sleep(1100); // respetar el rate limit de Nominatim (1 req/seg)
     }
-    toastFn("", "");
+    if (fallas) {
+      toastFn(`No se pudieron ubicar ${fallas} dirección${fallas === 1 ? "" : "es"} (el servicio de mapas rechazó el pedido — reintentá en unos minutos)`, "error");
+    } else {
+      toastFn("", "");
+    }
   }
 
   function asignarZona(lat, lon) {
@@ -109,11 +114,19 @@
 
   function renderMapa() {
     const el = document.getElementById("mapa-reparto");
-    if (!el || typeof L === "undefined") return;
+    if (!el) return;
+    if (typeof L === "undefined") {
+      el.innerHTML = '<div class="mapa-error">No se pudo cargar el mapa (CDN no disponible). Recargá la página.</div>';
+      return;
+    }
     if (!mapa) {
       mapa = L.map("mapa-reparto").setView([Z().distribuidora.lat, Z().distribuidora.lon], 12);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
+      // Esri World Street Map: tiles gratuitos SIN API key y sin los bloqueos de OSM
+      // (tile.openstreetmap.org bloquea por IP/uso y Carto ahora exige key).
+      // Ojo: el orden de las variables es {z}/{y}/{x} (Esri invierte x e y).
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+        attribution: "Powered by Esri",
+        maxZoom: 19,
       }).addTo(mapa);
       capaPedidos = L.layerGroup().addTo(mapa);
     }
