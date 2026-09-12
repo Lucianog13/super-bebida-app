@@ -1407,6 +1407,10 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .pedido-cuerpo { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .pedido-cliente { font-size: 0.88rem; color: var(--ink); }
 .pedido-cliente .pedido-nro { display: inline-block; background: var(--navy-700); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 0.72rem; margin: 0 2px; }
+.pedido-zona { display: inline-block; margin: 0 6px 0 2px; padding: 1px 8px; border-radius: 999px; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.03em; vertical-align: middle; }
+.pedido-zona.z1 { background: #1a7f37; color: #fff; }
+.pedido-zona.z2 { background: #c98a1b; color: #fff; }
+.pedido-zona.sin { background: #8a93a0; color: #fff; }
 .pedido-items { font-size: 0.78rem; color: var(--muted); }
 .pedido-nro-editor { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
 .pedido-nro-editor input { width: 110px; padding: 7px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 0.85rem; font-family: inherit; }

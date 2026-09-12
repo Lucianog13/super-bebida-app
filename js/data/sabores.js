@@ -1,13 +1,15 @@
-// Overlay de sabores (2026-08-19, pedido de Lucho): productos que se venden con
-// variedades. Este archivo sobrevive a la regeneración de products.js (parse_precios.py)
-// porque se aplica encima del catálogo cargado (nube, caché o archivo local).
+// Overlay de correcciones (2026-08-19, pedido de Lucho; ampliado 12/09/2026):
+// productos que se venden con variedades + corrección de categorías. Este archivo
+// sobrevive a la regeneración de products.js (parse_precios.py) porque se aplica
+// encima del catálogo cargado (nube, caché o archivo local).
 //
 // - familias: id → nombre limpio + lista de sabores (un precio para todos).
 //   Opcional: `precios: { "Sabor": 8000 }` para sabores con precio propio (el resto
-//   usa el precio del producto) y `activar: true` para reactivar un producto que
-//   está inactivo en la nube.
+//   usa el precio del producto), `activar: true` para reactivar un producto inactivo
+//   en la nube, y `saboresLabel` para cambiar el texto del botón (ej. "Elegir fragancia").
 // - ocultar: entradas del catálogo que quedan absorbidas por la familia (ej. las
 //   aguas saborizadas repetidas). Se filtran de la vista de clientes.
+// - categorias: id → categoría correcta (corrige errores de la base sin tocar Supabase).
 //
 // Para agregar un producto con sabores: copiar el patrón de una familia.
 // Para cambiar la lista: editar el array. El admin también lo va a poder editar.
@@ -88,6 +90,7 @@
       "liq-para-lavar-ropa-ecovita-800ml-u": {
         nombre: "Suavizante para Ropa Ecovita 800ML",
         sabores: ["Épico", "Tradicional", "Único"],
+        saboresLabel: "Elegir fragancia",
       },
       "alfajor-guaymayen-bco-negro-triple-pack-x24": {
         nombre: "Alfajor Guaymayen Triple x24",
@@ -135,6 +138,35 @@
         nombre: "Vodka New Style",
         sabores: ["Apricot", "Bubble Gum", "Citrus", "Frutos Rojos", "Lollipop", "Manzana Verde", "Maracuyá", "Melón", "Original", "Pineapple", "Raspberry", "Sandía"],
       },
+      // ── Familias nuevas (pedido de Tincho, 12/09/2026) ──
+      "power-500ml-manzana-rojo-azul-pack-x6": {
+        nombre: "Power 500ML",
+        sabores: ["Azul", "Manzana", "Rojo"],
+      },
+      "amarula-mtbp0obe": {
+        nombre: "Amarula",
+        sabores: ["Café Etíope", "Especias de Vainilla", "Frambuesa - Chocolate blanco - Baobab"],
+      },
+      "vodka-smirnoff-clasico-u": {
+        nombre: "Vodka Smirnoff",
+        sabores: ["Citrus", "Clásico", "Fresa", "Frutas Tropicales", "Manzana Verde", "Sandía"],
+        precios: {
+          "Clásico": 8300,
+          "Citrus": 9000,
+          "Fresa": 9000,
+          "Frutas Tropicales": 9000,
+          "Manzana Verde": 9000,
+          "Sandía": 9000,
+        },
+      },
+    },
+    categorias: {
+      "aceite-girasol-fraud-bidon-4-5lt-u": "almacen",
+      "yerba-aguantadora-500gr-x-unidad-u": "almacen",
+      "yerba-aguantadora-500grs-pack-x10": "almacen",
+      "gall-agua-la-providencia-pack-x3": "galletitas",
+      "gall-agua-la-providencia-pack-x5": "galletitas",
+      "pepas-delicias-de-la-nonna-mtkbwlyf": "galletitas",
     },
     ocultar: [
       "agua-sab-1-5-naranja-sierra-de-los-padres-pack-x6",
@@ -153,6 +185,12 @@
       "vodka-sabor-new-style-maracuya-u",
       "vodka-sabor-new-style-melon-u",
       "vodka-sabor-new-style-sandia-u",
+      // unificación Smirnoff (pedido de Tincho, 12/09/2026)
+      "vodka-smirnoff-citrus-u",
+      "vodka-smirnoff-fresa-u",
+      "vodka-smirnoff-frutos-tropicales-u",
+      "vodka-smirnoff-green-apple-u",
+      "vodka-smirnoff-watermelon-u",
     ],
   };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -1,5 +1,8 @@
 // Vista "Reparto": mapa con los pedidos del día, división automática por zona
 // y generación de las hojas de carga (Control de Carga + Hoja de Clientes) por zona.
+// v2 (2026-09-12): hojas de carga generalizadas a cualquier conjunto de pedidos
+// (para el día seleccionado desde "Pedidos"), detección de zona reutilizable y
+// hoja individual "por cliente" con productos.
 (function (root, factory) {
   if (typeof module !== "undefined" && module.exports) module.exports = factory();
   else root.Reparto = factory();
@@ -13,6 +16,7 @@
 
   const CFG = () => window.APP_CONFIG;
   const Z = () => window.ZONAS;
+  const RC = () => window.RepartoCore;
   const NOMINATIM = "https://nominatim.openstreetmap.org/search";
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -46,7 +50,16 @@
     render();
   }
 
-  async function geocodificar(dir) {
+  // Geocodificación con deduplicación de pedidos en vuelo (evita doble consulta
+  // si "Pedidos" y "Reparto" geocodifican la misma dirección a la vez).
+  const enVuelo = new Map();
+  function geocodificar(dir) {
+    if (enVuelo.has(dir)) return enVuelo.get(dir);
+    const p = _geocodificar(dir).finally(() => enVuelo.delete(dir));
+    enVuelo.set(dir, p);
+    return p;
+  }
+  async function _geocodificar(dir) {
     try {
       const q = `${dir}, Paraná, Entre Ríos, Argentina`;
       const url = NOMINATIM + "?format=json&limit=1&countrycodes=ar&q=" + encodeURIComponent(q);
@@ -85,20 +98,46 @@
   }
 
   function asignarZona(lat, lon) {
-    const zonas = Z().zonas;
-    let mejor = 1, mejorD = Infinity;
-    for (const k of Object.keys(zonas)) {
-      const z = zonas[k];
-      const d = (lat - z.centro.lat) ** 2 + (lon - z.centro.lon) ** 2;
-      if (d < mejorD) { mejorD = d; mejor = parseInt(k, 10); }
-    }
-    return mejor;
+    return RC().asignarZona(lat, lon, Z().zonas);
   }
 
   function zonaDe(p) {
     if (zonaOverride[p.id]) return zonaOverride[p.id];
     if (p._geo) return asignarZona(p._geo.lat, p._geo.lon);
     return 0; // sin dirección → sin zona (asignar a mano)
+  }
+
+  // Zona disponible SIN geocodificar (solo caché + _geo). Rápida, para la vista
+  // "Pedidos"; si no está resuelta devuelve 0 y la resuelve detectarZonas().
+  function zonaCacheada(p) {
+    if (zonaOverride[p.id]) return zonaOverride[p.id];
+    const dir = (p.cliente && p.cliente.direccion) || "";
+    const g = p._geo || (dir ? geocache.get(dir) : null);
+    if (g) return asignarZona(g.lat, g.lon);
+    return 0;
+  }
+
+  // Geocodifica (con rate limit de 1 req/seg) los pedidos sin zona y avisa por
+  // callback (pid, zona, {hecho, total}). Devuelve cuántas direcciones se ubicaron.
+  async function detectarZonas(orders, onZona) {
+    const faltan = (orders || []).filter((p) => {
+      const dir = (p.cliente && p.cliente.direccion) || "";
+      if (!dir) return false;
+      if (p._geo) return false;
+      const c = geocache.get(dir);
+      if (c) { p._geo = c; return false; }
+      return true;
+    });
+    let ok = 0;
+    for (let i = 0; i < faltan.length; i++) {
+      const p = faltan[i];
+      const dir = (p.cliente && p.cliente.direccion) || "";
+      const g = await geocodificar(dir);
+      if (g) { geocache.set(dir, g); p._geo = g; ok++; }
+      if (onZona) onZona(p.id, zonaDe(p), { hecho: i + 1, total: faltan.length });
+      await sleep(1100);
+    }
+    return ok;
   }
 
   function colorZona(z) {
@@ -237,28 +276,23 @@
     return hoy.filter((p) => zonaDe(p) === zona);
   }
 
-  function hojaCargaHTML(zonaNum, tituloZona) {
-    const ps = pedidosDeZona(zonaNum);
-    const agg = new Map();
-    ps.forEach((p) => (p.items || []).forEach((it) => {
-      const clave = `${it.nombre}|${it.presentacion}|${it.unidad}`;
-      if (!agg.has(clave)) agg.set(clave, { nombre: it.nombre, presentacion: it.presentacion, unidad: it.unidad, cantidad: 0 });
-      agg.get(clave).cantidad += it.cantidad;
-    }));
-    const filas = [...agg.values()]
-      .sort((a, b) => a.nombre.localeCompare(b.nombre))
-      .map((it) => `
+  // Control de Carga (sumado por producto). Recibe los pedidos explícitos; la
+  // fecha sale del primer pedido (el día seleccionado), no de "hoy".
+  function hojaCargaHTML(orders, tituloZona) {
+    const ps = orders || [];
+    const filas = RC().agregarItems(ps).map((it) => `
         <tr>
-          <td>${it.nombre}<span class="hc-desc">${it.presentacion}${it.unidad ? " · " + it.unidad : ""}</span></td>
+          <td>${it.nombre}</td>
           <td class="num">${it.cantidad}</td>
         </tr>`).join("");
     const ret = ps.reduce((s, p) => s + Order.envasesRetornables(p.items || []), 0);
+    const fecha = (ps[0] && ps[0].fecha) || new Date();
     return `
     <div class="hoja-carga">
       <div class="hc-head">
         <div class="hc-titulo">El Super de la Bebida S.R.L.</div>
         <div class="hc-sub">Control de Carga</div>
-        <div class="hc-fecha">${Order.formatDate(new Date())}</div>
+        <div class="hc-fecha">${RC().nombreDiaLargo(fecha)}</div>
       </div>
       <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${tituloZona}</div>
       <table class="hc-tabla">
@@ -266,6 +300,41 @@
         <tbody>${filas || '<tr><td colspan="2">Sin pedidos</td></tr>'}</tbody>
       </table>
       ${ret ? `<div class="hc-envases">Envases retornables: ${ret}</div>` : ""}
+    </div>`;
+  }
+
+  // Hoja individual: cliente por cliente con sus productos (nombre + zona).
+  function hojaIndividualHTML(orders, tituloZona) {
+    const ps = orders || [];
+    const fecha = (ps[0] && ps[0].fecha) || new Date();
+    const totalCarga = ps.reduce((s, p) => s + (p.total || 0), 0);
+    const porId = new Map(ps.map((p) => [p.id, p]));
+    const bloques = RC().agruparPorCliente(ps).map((c) => {
+      const cli = c.cliente || {};
+      const z = zonaDe(porId.get(c.id));
+      const zTxt = z ? "Zona " + z : "Sin zona";
+      const filas = c.items.map((it) => `<div class="hc-item">${it.nombre} — <strong>${it.cantidad}</strong></div>`).join("");
+      return `
+      <div class="hc-cliente">
+        <div class="hc-c-nombre">${cli.nombre || "—"}${cli.nroCliente ? ' <span class="hc-nro">Nº ' + cli.nroCliente + "</span>" : ""} <span class="hc-nro">· ${zTxt}</span></div>
+        <div class="hc-c-dir">${cli.direccion || ""}${cli.telefono ? " · " + cli.telefono : ""}</div>
+        ${filas}
+        <div class="hc-c-total">${Order.formatMoney(c.total)}</div>
+      </div>`;
+    }).join("");
+    return `
+    <div class="hoja-carga">
+      <div class="hc-head">
+        <div class="hc-titulo">El Super de la Bebida S.R.L.</div>
+        <div class="hc-sub">Hoja por Cliente — ${tituloZona}</div>
+        <div class="hc-fecha">${RC().nombreDiaLargo(fecha)}</div>
+      </div>
+      <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${ps.length} cliente${ps.length === 1 ? "" : "s"}</div>
+      ${bloques || '<p class="hc-vacio">Sin pedidos</p>'}
+      <div class="hc-total-carga">
+        <span>${ps.length} pedido${ps.length === 1 ? "" : "s"}</span>
+        <strong>TOTAL DE LA CARGA: ${Order.formatMoney(totalCarga)}</strong>
+      </div>
     </div>`;
   }
 
@@ -308,7 +377,7 @@
 
   function imprimirCarga(zonaNum) {
     const t = unificado ? "Carga única (unificada)" : "Zona " + zonaNum;
-    imprimir(hojaCargaHTML(zonaNum, t));
+    imprimir(hojaCargaHTML(pedidosDeZona(zonaNum), t));
   }
   function imprimirClientes(zonaNum) {
     const t = unificado ? "Clientes — carga única (unificada)" : "Zona " + zonaNum;
@@ -332,5 +401,13 @@
     });
   }
 
-  return { init, cargar, render };
+  return {
+    init, cargar, render,
+    // Helpers para la vista "Pedidos" (app.js):
+    zonaCacheada,
+    detectarZonas,
+    hojaCargaHTML,
+    hojaIndividualHTML,
+    imprimirHTML: imprimir,
+  };
 });

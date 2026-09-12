@@ -75,7 +75,7 @@
     const boton = sinStock
       ? `<button class="btn-agregar" disabled>Sin stock</button>`
       : tieneSabores
-      ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} Elegir sabores</button>`
+      ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} ${p.saboresLabel || "Elegir sabores"}</button>`
       : enCarrito > 0
       ? `<button class="btn-agregar btn-quitar" data-accion="quitar">Quitar</button>`
       : `<button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>`;
@@ -110,7 +110,7 @@
     const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
     const enCarrito = opts.cantidadEnCarrito ? opts.cantidadEnCarrito(p.id) : 0;
     const boton = tieneSabores
-      ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} Elegir sabores</button>`
+      ? `<button class="btn-agregar" data-accion="abrir-sabores">${ICONO_PLUS} ${p.saboresLabel || "Elegir sabores"}</button>`
       : enCarrito > 0
       ? `<button class="btn-agregar btn-quitar" data-accion="quitar">Quitar</button>`
       : `<button class="btn-agregar" data-accion="agregar">${ICONO_PLUS} Agregar</button>`;
@@ -128,7 +128,9 @@
   }
 
   function categoriasDisponibles() {
-    return ["todas"].concat([...new Set(opts.productos.map((p) => p.categoria))], ["promociones"]);
+    const cats = [...new Set(opts.productos.map((p) => p.categoria))];
+    cats.sort((a, b) => (LABELS[a] || a).localeCompare(LABELS[b] || b, "es"));
+    return ["todas"].concat(cats, ["promociones"]);
   }
 
   function renderChips() {

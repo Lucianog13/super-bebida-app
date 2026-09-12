@@ -90,19 +90,23 @@
     const ov = window.SABORES_OVERLAY;
     if (!ov || !Array.isArray(productos)) return productos;
     const ocultos = new Set(ov.ocultar || []);
+    const categorias = ov.categorias || {};
     return productos
       .filter((p) => !ocultos.has(p.id))
       .map((p) => {
         const fam = (ov.familias || {})[p.id];
-        if (!fam) return p;
+        const categoria = categorias[p.id] || p.categoria;
+        if (!fam) return categorias[p.id] ? { ...p, categoria } : p;
         // La nube (columna sabores) manda cuando hay datos; si no, el overlay (modo local).
         const desdeDb = Array.isArray(p.sabores) && p.sabores.length > 0;
         return {
           ...p,
+          categoria,
           nombre: desdeDb ? p.nombre : fam.nombre,
           sabores: desdeDb ? p.sabores : fam.sabores,
           activo: fam.activar ? true : p.activo,
           sabores_precios: desdeDb ? null : (fam.precios || null),
+          saboresLabel: fam.saboresLabel || "",
         };
       });
   }
@@ -432,6 +436,7 @@
       <div class="pedido-cuerpo">
         <div class="pedido-cliente">
           <strong>${c.nombre || "—"}</strong>
+          ${zonaBadgeHTML(p)}
           ${c.nroCliente ? `<span class="pedido-nro">Nº ${c.nroCliente}</span>` : ""}
           ${c.telefono ? `<span>· ${c.telefono}</span>` : ""}
           ${c.direccion ? `<span>· ${c.direccion}</span>` : ""}
@@ -475,6 +480,7 @@
     }
     pedidosNube = await res.json();
     renderPedidos();
+    detectarZonasFondo();
   }
 
   function renderPedidos() {
@@ -488,6 +494,63 @@
 
   function pedidosMarcados() {
     return pedidosNube.filter((p) => pedidosSeleccion.has(p.id));
+  }
+
+  function zonaLabel(z) {
+    return z === 1 ? "Zona 1" : z === 2 ? "Zona 2" : "Sin zona";
+  }
+
+  function zonaBadgeHTML(p) {
+    const z = Reparto.zonaCacheada(p);
+    const cls = z === 1 ? "z1" : z === 2 ? "z2" : "sin";
+    const txt = z ? zonaLabel(z) : ((p.cliente && p.cliente.direccion) ? "…" : "Sin zona");
+    return `<span class="pedido-zona ${cls}" data-zona-for="${p.id}">${txt}</span>`;
+  }
+
+  function actualizarZonaBadge(pid, zona) {
+    document.querySelectorAll(`[data-zona-for="${CSS.escape(pid)}"]`).forEach((el) => {
+      el.textContent = zonaLabel(zona);
+      el.className = "pedido-zona " + (zona === 1 ? "z1" : zona === 2 ? "z2" : "sin");
+    });
+  }
+
+  // Geocodifica en segundo plano las direcciones que faltan y va pintando las zonas.
+  function detectarZonasFondo() {
+    const faltan = pedidosNube.filter(
+      (p) => Reparto.zonaCacheada(p) === 0 && p.cliente && p.cliente.direccion
+    );
+    if (!faltan.length) return;
+    Reparto.detectarZonas(pedidosNube, (pid, zona) => actualizarZonaBadge(pid, zona))
+      .then((n) => { if (n) toast(`Zonas detectadas: ${n} dirección${n === 1 ? "" : "es"}`); });
+  }
+
+  // ── Hojas de carga / por cliente desde la selección de "Pedidos" ──
+  async function ubicarSeleccion(sel) {
+    const faltan = sel.filter(
+      (p) => Reparto.zonaCacheada(p) === 0 && p.cliente && p.cliente.direccion
+    );
+    if (faltan.length) {
+      toast(`Ubicando direcciones para detectar zonas… (${faltan.length})`);
+      await Reparto.detectarZonas(sel);
+    }
+  }
+
+  function separarPorZona(sel) {
+    const porZona = { 1: [], 2: [], 0: [] };
+    sel.forEach((p) => porZona[Reparto.zonaCacheada(p)].push(p));
+    return porZona;
+  }
+
+  async function imprimirCargaSeleccion() {
+    const sel = pedidosMarcados();
+    if (!sel.length) { toast("Seleccioná un día o pedidos para generar la hoja de carga", "error"); return; }
+    await ubicarSeleccion(sel);
+    const porZona = separarPorZona(sel);
+    const partes = [];
+    if (porZona[1].length) partes.push(Reparto.hojaCargaHTML(porZona[1], "Zona 1"));
+    if (porZona[2].length) partes.push(Reparto.hojaCargaHTML(porZona[2], "Zona 2"));
+    if (porZona[0].length) partes.push(Reparto.hojaIndividualHTML(porZona[0], "Sin zona — revisar dirección"));
+    Reparto.imprimirHTML(partes.join(""));
   }
 
   function imprimirRemitos(pedidos) {
@@ -565,6 +628,7 @@
   $("btn-imprimir-seleccion").addEventListener("click", () => imprimirRemitos(pedidosMarcados()));
   $("btn-imprimir-todo").addEventListener("click", () => imprimirRemitos(pedidosNube));
   $("btn-recargar-pedidos").addEventListener("click", cargarPedidos);
+  $("btn-hoja-carga").addEventListener("click", imprimirCargaSeleccion);
 
   $("lista-pedidos").addEventListener("change", (e) => {
     if (e.target.classList.contains("pedido-check")) {
