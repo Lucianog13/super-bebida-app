@@ -159,6 +159,162 @@
           "Sandía": 9000,
         },
       },
+      // ── Familias nuevas (pedido de Tincho, 13/09/2026): TODOS los productos con variantes ──
+      "lata-monster-473ml-blanco-negro-verde-mango-u": {
+        nombre: "Lata Monster 473ML",
+        sabores: ["Blanco", "Mango", "Negro", "Verde"],
+      },
+      "cepita-1-5lt-durazno-nar-pack-x4": {
+        nombre: "Cepita 1.5LT",
+        sabores: ["Durazno", "Naranja"],
+      },
+      "mani-saborizado-julicroc-120gr-manteca-queso-jamon-u": {
+        nombre: "Maní Saborizado Julicroc 120GR",
+        sabores: ["Jamón", "Manteca", "Queso"],
+      },
+      "palitos-julicroc-sabor-150gr-pizza-jamon-u": {
+        nombre: "Palitos Julicroc Sabor 150GR",
+        sabores: ["Jamón", "Pizza"],
+      },
+      "fideos-ramen-pollo-carne-u": {
+        nombre: "Fideos Ramen",
+        sabores: ["Carne", "Pollo"],
+      },
+      "salsa-lista-pizza-tuco-filetto-italiana-arcor-u": {
+        nombre: "Salsa Lista Arcor",
+        sabores: ["Filetto", "Italiana", "Pizza", "Tuco"],
+      },
+      "club-social-clasicas-jamon-pack-x6": {
+        nombre: "Club Social",
+        sabores: ["Clásicas", "Jamón"],
+      },
+      "dilema-tto-bco-dulce-u": {
+        nombre: "Dilema",
+        sabores: ["Blanco Dulce", "Tinto"],
+      },
+      "mercier-extra-brut-demisec-u": {
+        nombre: "Mercier",
+        sabores: ["Demisec", "Extra Brut"],
+      },
+      "canciller-1-125-bco-dulce-o-tinto-pack-x6": {
+        nombre: "Canciller 1,125",
+        sabores: ["Blanco Dulce", "Tinto"],
+      },
+      "chicle-alka-menta-fruta-u": {
+        nombre: "Chicle Alka",
+        sabores: ["Fruta", "Menta"],
+      },
+      "chicle-beldent-frutilla-menta-negro-azulx20-u": {
+        nombre: "Chicle Beldent",
+        sabores: ["Azul", "Frutilla", "Menta", "Negro"],
+      },
+      "chicle-fierita-frutil-menta-tuti-banana-u": {
+        nombre: "Chicle Fierita",
+        sabores: ["Banana", "Frutilla", "Menta", "Tutti Frutti"],
+      },
+      "chicle-topline-7-x16u-rojo-negro-u": {
+        nombre: "Chicle Topline 7 X16U",
+        sabores: ["Negro", "Rojo"],
+      },
+      "chicle-topline-frutilla-menta-negro-u": {
+        nombre: "Chicle Topline",
+        sabores: ["Frutilla", "Menta", "Negro"],
+      },
+      "chocolate-cofler-macizo-fruti-leche-u": {
+        nombre: "Chocolate Cofler Macizo",
+        sabores: ["Frutilla", "Leche"],
+      },
+      "chupetin-evolution-azul-rojo-u": {
+        nombre: "Chupetín Evolution",
+        sabores: ["Azul", "Rojo"],
+      },
+      "gomitas-anillos-acidos-botoncito-la-pinata-u": {
+        nombre: "Gomitas La Piñata Anillos/Botoncitos",
+        sabores: ["Anillos Ácidos", "Botoncitos"],
+      },
+      "menthoplus-cherry-miel-menta-negro-pack-x12": {
+        nombre: "Menthoplus",
+        sabores: ["Cherry", "Miel", "Menta", "Negro"],
+      },
+      "sapito-chocolatoso-frutilla-pack-x24": {
+        nombre: "Sapito",
+        sabores: ["Chocolatoso", "Frutilla"],
+      },
+      "caram-billiken-palitos-frutal-yogurt-u": {
+        nombre: "Caramelos Billiken Palitos",
+        sabores: ["Frutal", "Yogurt"],
+      },
+      "espiral-raid-lavanda-tradicional-pack-x12": {
+        nombre: "Espiral Raid",
+        sabores: ["Lavanda", "Tradicional"],
+      },
+      "pilas-duracel-aax2-aaax2-u": {
+        nombre: "Pilas Duracell",
+        sabores: ["AA x2", "AAA x2"],
+        saboresLabel: "Elegir modelo",
+      },
+      // unificaciones: entradas sueltas con variantes (mismo producto, distinto sabor)
+      "lata-dr-lemon-473ml-limon-pack-x6": {
+        nombre: "Lata Dr Lemon 473ML",
+        sabores: ["Limón", "Pomelo", "Vodka"],
+      },
+      "alfajor-triple-fantoche-blanco-pack-x24": {
+        nombre: "Alfajor Triple Fantoche",
+        sabores: ["Blanco", "Negro"],
+      },
+      "alfajor-triple-riquito-bcox24-u": {
+        nombre: "Alfajor Triple Riquito",
+        sabores: ["Blanco", "Negro"],
+      },
+      "resero-tetra-blanco-dulce-pack-x12": {
+        nombre: "Resero Tetra",
+        sabores: ["Blanco", "Blanco Dulce", "Tinto"],
+        precios: {
+          "Blanco": 16000,
+          "Blanco Dulce": 16000,
+          "Tinto": 19000,
+        },
+      },
+      "toro-tetra-bcox12-u": {
+        nombre: "Toro Tetra",
+        sabores: ["Blanco", "Tinto"],
+        precios: {
+          "Blanco": 19500,
+          "Tinto": 23000,
+        },
+      },
+      "estancia-mza-cab-mal-u": {
+        nombre: "Estancia Mza",
+        sabores: ["Cabernet", "Chardonnay", "Chenin", "Dulce", "Malbec"],
+      },
+      "licor-new-stile-1lts-melon-u": {
+        nombre: "Licor New Style 1LT",
+        sabores: ["Blue Curaçao", "Melón"],
+      },
+      "anana-fizz-la-farruca-6x710cc-u": {
+        nombre: "Fizz La Farruca 6x710CC",
+        sabores: ["Ananá", "Fresa"],
+        precios: {
+          "Ananá": 14500,
+          "Fresa": 15000,
+        },
+      },
+      "fernandito-pack-x6": {
+        nombre: "Fernandito",
+        sabores: ["Clásico", "Gin Tonic"],
+      },
+      "paso-de-los-toros-pomelo-pack-x6": {
+        nombre: "Paso De Los Toros",
+        sabores: ["Pomelo", "Tónica"],
+      },
+      "cusenier-blue-curacao-menta-frutills-u": {
+        nombre: "Cusenier",
+        sabores: ["Blue Curaçao", "Café al Coñac", "Chocolate", "Dulce de Leche", "Frutilla", "Huevo", "Melón", "Menta"],
+      },
+      "caram-butter-bon-o-bon-aguila-u": {
+        nombre: "Caram Butter",
+        sabores: ["Águila", "Bon o Bon", "Chocolate", "Dulce de Leche"],
+      },
     },
     categorias: {
       "aceite-girasol-fraud-bidon-4-5lt-u": "almacen",
@@ -191,6 +347,24 @@
       "vodka-smirnoff-frutos-tropicales-u",
       "vodka-smirnoff-green-apple-u",
       "vodka-smirnoff-watermelon-u",
+      // unificaciones (pedido de Tincho, 13/09/2026)
+      "lata-dr-lemon-473ml-pomelo-pack-x6",
+      "lata-dr-lemon-473ml-vodk-pack-x6",
+      "alfajor-triple-fantoche-negro-pack-x24",
+      "alfajor-triple-riquito-negrox24-u",
+      "resero-tetra-blanco-pack-x12",
+      "resero-tetra-tinto-pack-x12",
+      "toro-tetra-tinto-pack-x12",
+      "estancia-mza-chard-chenin-u",
+      "estancia-mza-dulce-u",
+      "licor-new-stile-1lt-blue-curasao-u",
+      "fresa-fizz-la-farruca-6x710cc-u",
+      "fernandito-gin-tonic-pack-x6",
+      "paso-de-los-toros-tonica-pack-x6",
+      "cusenier-cafe-al-conac-melon-u",
+      "cusenier-choco-dulce-de-leche-huevo-u",
+      "caram-butter-chocolate-u",
+      "caram-butter-dulce-de-leche-u",
     ],
   };
 })(typeof window !== "undefined" ? window : globalThis);
