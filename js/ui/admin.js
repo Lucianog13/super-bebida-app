@@ -86,6 +86,7 @@
       : `<span class="thumb">${p.emoji || "📦"}</span>`;
     const pendiente = fotosPendientes.has(p.id) ? "📷 foto lista — apretá Guardar" : "";
     const inactivo = p.activo === false;
+    const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
     return `
     <div class="fila-admin${inactivo ? " inactiva" : ""}" data-id="${p.id}">
       ${foto}
@@ -95,9 +96,22 @@
       </div>
       <div class="campos">
         <label class="campo">Precio $<input type="number" class="in-precio" value="${p.precio}" min="0" step="100"></label>
+        ${!tieneSabores ? `
         <label class="campo promo-row"><input type="checkbox" class="in-promo" ${p.en_promo ? "checked" : ""}> Promo</label>
-        <label class="campo">Anterior $<input type="number" class="in-anterior" value="${p.precio_anterior || ""}" min="0" step="100"></label>
+        <label class="campo">Anterior $<input type="number" class="in-anterior" value="${p.precio_anterior || ""}" min="0" step="100"></label>` : ""}
       </div>
+      ${tieneSabores ? `
+      <div class="sabores-admin promo-admin">
+        <span class="sabores-label">Promo (tocá el sabor y poné su precio):</span>
+        ${p.sabores.map((s) => {
+          const reg = (Array.isArray(p.sabores_promo) ? p.sabores_promo : []).find((x) => (x && x.sabor != null ? x.sabor : x) === s);
+          const precio = reg && reg.precio != null ? reg.precio : "";
+          return `<span class="promo-item${reg ? " activo" : ""}" data-sabor="${s}">
+            <button type="button" class="chip-sabor chip-promo" data-accion="promo-toggle" data-sabor="${s}">${s}</button>
+            ${reg ? `<input type="number" class="in-promo-precio" data-sabor="${s}" value="${precio}" min="0" step="100" placeholder="$">` : ""}
+          </span>`;
+        }).join("")}
+      </div>` : ""}
       <label class="campo campo-desc">Descripción <input type="text" class="in-descripcion" value="${p.descripcion || ""}" placeholder="Ej: Sabores surtido, chocolate y vainilla"></label>
       ${Array.isArray(p.sabores) && p.sabores.length ? `
       <div class="sabores-admin">
@@ -141,15 +155,59 @@
     }
   }
 
+  /** Muestra/oculta el campo de precio de un sabor marcado en promo (solo visual; se guarda con "Guardar"). */
+  function togglePromo(btn) {
+    const item = btn.closest(".promo-item");
+    if (!item) return;
+    const activo = item.classList.contains("activo");
+    if (activo) {
+      item.classList.remove("activo");
+      const inp = item.querySelector(".in-promo-precio");
+      if (inp) inp.remove();
+    } else {
+      item.classList.add("activo");
+      const inp = document.createElement("input");
+      inp.type = "number";
+      inp.className = "in-promo-precio";
+      inp.dataset.sabor = item.dataset.sabor;
+      inp.min = "0";
+      inp.step = "100";
+      inp.placeholder = "$";
+      item.appendChild(inp);
+      inp.focus();
+    }
+  }
+
   async function guardar(pid) {
     const p = productos.find((x) => x.id === pid);
     const fila = listaEl.querySelector(`[data-id="${CSS.escape(pid)}"]`);
     if (!p || !fila) return;
     const precio = parseInt(fila.querySelector(".in-precio").value, 10);
-    const enPromo = fila.querySelector(".in-promo").checked;
-    const anteriorRaw = fila.querySelector(".in-anterior").value.trim();
-    const precioAnterior = enPromo && anteriorRaw ? parseInt(anteriorRaw, 10) : null;
     const descripcion = fila.querySelector(".in-descripcion").value.trim();
+    const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
+    let enPromo = false;
+    let precioAnterior = null;
+    let saboresPromo = [];
+    if (tieneSabores) {
+      const items = [...fila.querySelectorAll(".promo-item.activo")];
+      for (const it of items) {
+        const sabor = it.dataset.sabor;
+        const inp = it.querySelector(".in-promo-precio");
+        const raw = inp ? inp.value.trim() : "";
+        const precioPromo = raw ? parseInt(raw, 10) : null;
+        if (!Number.isFinite(precioPromo) || precioPromo <= 0) {
+          marcarEstado(pid, `✘ precio de promo de "${sabor}" inválido`, "error");
+          toastFn(`Ingresá el precio de promo de "${sabor}"`, "error");
+          return;
+        }
+        saboresPromo.push({ sabor, precio: precioPromo });
+      }
+      enPromo = saboresPromo.length > 0;
+    } else {
+      enPromo = fila.querySelector(".in-promo").checked;
+      const anteriorRaw = fila.querySelector(".in-anterior").value.trim();
+      precioAnterior = enPromo && anteriorRaw ? parseInt(anteriorRaw, 10) : null;
+    }
     if (!Number.isFinite(precio) || precio <= 0) {
       marcarEstado(pid, "✘ precio inválido", "error");
       toastFn("Precio inválido", "error");
@@ -181,7 +239,11 @@
       {
         method: "PATCH",
         headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify({ precio, en_promo: enPromo, precio_anterior: precioAnterior, descripcion }),
+        body: JSON.stringify(
+          tieneSabores
+            ? { precio, en_promo: enPromo, precio_anterior: null, sabores_promo: saboresPromo, descripcion }
+            : { precio, en_promo: enPromo, precio_anterior: precioAnterior, descripcion }
+        ),
       }
     );
     if (!res.ok) {
@@ -193,6 +255,7 @@
     p.precio = precio;
     p.en_promo = enPromo;
     p.precio_anterior = precioAnterior;
+    p.sabores_promo = saboresPromo;
     p.descripcion = descripcion;
     marcarEstado(pid, "✔ guardado", "ok");
     toastFn("Guardado ✔ — visible para todos los dispositivos");
@@ -557,13 +620,15 @@
       if (btn.dataset.accion === "editar") abrirEditar(pid);
       if (btn.dataset.accion === "stock") toggleStock(pid);
       if (btn.dataset.accion === "sabor-stock") toggleSaborStock(pid, btn.dataset.sabor);
+      if (btn.dataset.accion === "promo-toggle") togglePromo(btn);
       if (btn.dataset.accion === "eliminar") eliminarProducto(pid);
     });
     listaEl.addEventListener("change", (e) => {
-      if (!e.target.classList.contains("in-foto")) return;
-      const fila = e.target.closest(".fila-admin");
-      if (e.target.files && e.target.files[0]) elegirFoto(fila.dataset.id, e.target.files[0]);
-      e.target.value = "";
+      if (e.target.classList.contains("in-foto")) {
+        const fila = e.target.closest(".fila-admin");
+        if (e.target.files && e.target.files[0]) elegirFoto(fila.dataset.id, e.target.files[0]);
+        e.target.value = "";
+      }
     });
   }
 

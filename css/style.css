@@ -1384,6 +1384,13 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 }
 .chip-sabor:hover { border-color: var(--navy-700); }
 .chip-sabor.sin-stock { background: #fbe4e3; border-color: #b3261e; color: #b3261e; text-decoration: line-through; }
+.promo-item { display: inline-flex; align-items: center; gap: 4px; }
+.chip-promo { border-color: var(--gold); color: #8a5a00; }
+.promo-item.activo .chip-promo { background: var(--gold-soft); border-color: var(--gold); font-weight: 600; }
+.promo-item .in-promo-precio {
+  width: 74px; padding: 4px 6px; border: 1px solid var(--border-dark); border-radius: 6px;
+  font-size: 0.8rem; font-family: inherit; margin-left: 2px;
+}
 
 /* ── Pestañas del admin (Productos | Pedidos) ── */
 .admin-tabs { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
@@ -1501,6 +1508,20 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   padding: 2px 8px;
   border-radius: 10px;
 }
+.tag-promo {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--red);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.sabor-precio .sabor-precio-anterior {
+  text-decoration: line-through; color: var(--muted); font-size: 0.72rem; margin-right: 4px;
+}
+.sabor-precio .sabor-precio-promo { color: var(--red); font-weight: 800; }
 .sabor-fila.sin-stock .sabor-nombre {
   color: var(--muted);
   text-decoration: line-through;

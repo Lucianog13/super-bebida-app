@@ -58,14 +58,30 @@
     return p.unidad && p.unidad !== "unidad" ? p.unidad : "";
   }
 
+  function promoDe(p, sabor) {
+    const arr = Array.isArray(p.saboresPromo) ? p.saboresPromo : [];
+    const reg = arr.find((x) => (x && x.sabor != null ? x.sabor : x) === sabor);
+    return reg && reg.precio != null ? reg.precio : null;
+  }
+
+  function promoTitulo(p) {
+    const arr = Array.isArray(p.saboresPromo) ? p.saboresPromo : [];
+    if (arr.length === 1) {
+      const nombre = arr[0] && arr[0].sabor != null ? arr[0].sabor : arr[0];
+      return `Promo · ${nombre}`;
+    }
+    if (arr.length > 1) return `Promo · ${arr.length} sabores`;
+    return "Promo";
+  }
+
   function cardHTML(p) {
     const sinStock = p.activo === false;
     const foto = p.imagen
       ? `<div class="foto"><img src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.remove();this.parentElement.querySelector('.emoji-fallback').hidden=false"><span class="emoji-fallback" hidden>${p.emoji || "📦"}</span></div>`
       : `<div class="foto"><span class="emoji-fallback">${p.emoji || "📦"}</span></div>`;
     const promo = p.enPromo
-      ? `<span class="badge-promo">Promo</span>
-         <div class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</div>`
+      ? `<span class="badge-promo">${promoTitulo(p)}</span>
+         ${p.precioAnterior ? `<div class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</div>` : ""}`
       : "";
     const desc = p.descripcion ? `<div class="descripcion">${p.descripcion}</div>` : "";
     const unidad = unidadTexto(p) ? `<div class="detalle">${unidadTexto(p)}</div>` : "";
@@ -117,7 +133,7 @@
     return `
       <article class="promo-card" data-id="${p.id}">
         ${foto}
-        <span class="badge-promo">Promo</span>
+        <span class="badge-promo">${promoTitulo(p)}</span>
         ${ahorro ? `<span class="promo-ahorro">−${ahorro}%</span>` : ""}
         <div class="promo-cuerpo">
           <div class="promo-nombre">${p.nombre}</div>
@@ -187,11 +203,17 @@
         const fuera = sinStock.has(s);
         // La etiqueta va junto al NOMBRE (no entre precio y controles) para que la
         // columna de precios quede siempre alineada.
-        const tag = fuera ? ` <span class="tag-sin-stock">Sin stock</span>` : "";
-        const precioSabor = precios ? (precios[s] != null ? precios[s] : p.precio) : p.precio;
-        return `<div class="sabor-fila${fuera ? " sin-stock" : ""}">
+        const promoPrecio = promoDe(p, s);
+        const esPromo = !fuera && promoPrecio != null;
+        const tag = fuera ? ` <span class="tag-sin-stock">Sin stock</span>` : esPromo ? ` <span class="tag-promo">Promo</span>` : "";
+        const precioNormal = precios ? (precios[s] != null ? precios[s] : p.precio) : p.precio;
+        const precioSabor = esPromo ? promoPrecio : precioNormal;
+        const precioCol = esPromo
+          ? `<span class="sabor-precio-anterior">${Order.formatMoney(precioNormal)}</span><span class="sabor-precio-promo">${Order.formatMoney(precioSabor)}</span>`
+          : Order.formatMoney(precioSabor);
+        return `<div class="sabor-fila${fuera ? " sin-stock" : ""}${esPromo ? " en-promo" : ""}">
           <span class="sabor-nombre">${s}${tag}</span>
-          <span class="sabor-precio">${Order.formatMoney(precioSabor)}</span>
+          <span class="sabor-precio">${precioCol}</span>
           <div class="sabor-controles">
             <button type="button" data-accion="sabor-menos" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Quitar ${s}">−</button>
             <span class="sabor-qty">${n}</span>
@@ -229,11 +251,17 @@
     if (!p) return;
     const precios = p.sabores_precios && typeof p.sabores_precios === "object" ? p.sabores_precios : null;
     const seleccion = Object.keys(selSabores.cantidades)
-      .map((s) => ({
-        sabor: s,
-        cantidad: selSabores.cantidades[s],
-        precio: precios && precios[s] != null ? precios[s] : p.precio,
-      }))
+      .map((s) => {
+        const normal = precios && precios[s] != null ? precios[s] : p.precio;
+        const promoPrecio = promoDe(p, s);
+        const esPromo = promoPrecio != null;
+        return {
+          sabor: s,
+          cantidad: selSabores.cantidades[s],
+          precio: esPromo ? promoPrecio : normal,
+          precioAnterior: esPromo ? normal : null,
+        };
+      })
       .filter((x) => x.cantidad > 0);
     if (seleccion.length && opts.onAddSabores) opts.onAddSabores(p, seleccion);
     cerrarModalSabores();

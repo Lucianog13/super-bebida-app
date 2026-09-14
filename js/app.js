@@ -80,6 +80,7 @@
       activo: row.activo !== false,
       sabores: Array.isArray(row.sabores) ? row.sabores : [],
       sabores_sin_stock: Array.isArray(row.sabores_sin_stock) ? row.sabores_sin_stock : [],
+      saboresPromo: Array.isArray(row.sabores_promo) ? row.sabores_promo : [],
     };
   }
 
@@ -236,8 +237,8 @@
         return linea ? linea.cantidad : 0;
       },
       onAddSabores(producto, seleccion) {
-        seleccion.forEach(({ sabor, cantidad, precio }) => {
-          carrito = Cart.addItem(carrito, producto, cantidad, sabor, precio != null ? precio : null);
+        seleccion.forEach(({ sabor, cantidad, precio, precioAnterior }) => {
+          carrito = Cart.addItem(carrito, producto, cantidad, sabor, precio != null ? precio : null, precioAnterior != null ? precioAnterior : null);
         });
         Storage.saveCart(carrito);
         updateContador();
