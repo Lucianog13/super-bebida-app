@@ -118,6 +118,10 @@
       return aplicarOverlay(window.PRODUCTS);
     }
     const cacheKey = "catalogo_cache";
+    // La caché vence a las 24 h: si el fetch a la nube falla y la copia guardada es
+    // más vieja, se descarta y se cae al archivo local. Así ningún cliente queda
+    // pegado a un precio viejo (bug reportado: cliente 1000, Canciller $15.000 vs $13.500).
+    const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
     try {
       const res = await fetch(
         `${CFG.supabaseUrl}/rest/v1/productos?select=*&order=nombre.asc`,
@@ -136,7 +140,8 @@
     } catch {
       try {
         const c = JSON.parse(localStorage.getItem(cacheKey) || "null");
-        if (c && Array.isArray(c.productos) && c.productos.length) {
+        const cacheFresca = c && typeof c.t === "number" && (Date.now() - c.t) < CACHE_TTL_MS;
+        if (cacheFresca && Array.isArray(c.productos) && c.productos.length) {
           updateEstado("● Sin conexión — catálogo en caché");
           return aplicarOverlay(c.productos);
         }
