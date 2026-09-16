@@ -374,6 +374,7 @@
     cantidad: {
       "cerv-santa-fe-1lt-pack-x12": 6,
       "cerv-santa-fe-pilsen-1lt-pack-x12": 6,
+      "cerv-schneider-cajon-x1": 6,
       "cerv-imperial-apa-1lt-pack-x12": 6,
       "cerv-imperial-golden-12x1lts-u": 6,
       "cerv-budweiser-1-lt-x-12-u": 6,

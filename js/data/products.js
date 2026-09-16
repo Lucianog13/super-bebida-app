@@ -3,7 +3,7 @@
 // Para editar precios: modificar acá o re-generar con scripts/parse_precios.py.
 (function (root) {
   const PRODUCTS = [
-    {"id": "cerv-schneider-cajon-x1", "nombre": "Cerv Schneider", "marca": "Schneider", "categoria": "cervezas", "presentacion": "", "unidad": "cajón x1", "precio": 34000, "enPromo": false, "precioAnterior": null, "retornable": false, "emoji": "🍺", "imagen": "assets/img/cerv-schneider-cajon-x1.png"},
+    {"id": "cerv-schneider-cajon-x1", "nombre": "Cerv Schneider", "marca": "Schneider", "categoria": "cervezas", "presentacion": "", "unidad": "cajón completo x12", "precio": 34000, "enPromo": false, "precioAnterior": null, "retornable": false, "emoji": "🍺", "imagen": "assets/img/cerv-schneider-cajon-x1.png"},
     {"id": "cerv-santa-fe-1lt-pack-x12", "nombre": "Cerv Santa Fe 1LT", "marca": "Santa Fe", "categoria": "cervezas", "presentacion": "1L", "unidad": "cajón completo x12", "precio": 35000, "enPromo": false, "precioAnterior": null, "retornable": false, "emoji": "🍺", "imagen": "assets/img/cerv-santa-fe-1lt-pack-x12.png"},
     {"id": "cerv-santa-fe-pilsen-1lt-pack-x12", "nombre": "Cerv Santa Fe Pilsen 1LT", "marca": "Santa Fe", "categoria": "cervezas", "presentacion": "1L", "unidad": "cajón completo x12", "precio": 36000, "enPromo": false, "precioAnterior": null, "retornable": false, "emoji": "🍺", "imagen": "assets/img/cerv-santa-fe-pilsen-1lt-pack-x12.jpg"},
     {"id": "cerv-imperial-stout-u", "nombre": "Cerv Imperial Stout", "marca": "Imperial Stout", "categoria": "cervezas", "presentacion": "", "unidad": "unidad", "precio": 14000, "enPromo": false, "precioAnterior": null, "retornable": false, "emoji": "🍺", "imagen": "assets/img/cerv-imperial-stout-u.png"},
