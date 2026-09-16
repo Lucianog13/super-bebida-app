@@ -92,23 +92,44 @@
     if (!ov || !Array.isArray(productos)) return productos;
     const ocultos = new Set(ov.ocultar || []);
     const categorias = ov.categorias || {};
+    const cantidades = ov.cantidad || {};
     return productos
       .filter((p) => !ocultos.has(p.id))
       .map((p) => {
         const fam = (ov.familias || {})[p.id];
         const categoria = categorias[p.id] || p.categoria;
-        if (!fam) return categorias[p.id] ? { ...p, categoria } : p;
-        // La nube (columna sabores) manda cuando hay datos; si no, el overlay (modo local).
-        const desdeDb = Array.isArray(p.sabores) && p.sabores.length > 0;
-        return {
-          ...p,
-          categoria,
-          nombre: desdeDb ? p.nombre : fam.nombre,
-          sabores: desdeDb ? p.sabores : fam.sabores,
-          activo: fam.activar ? true : p.activo,
-          sabores_precios: desdeDb ? null : (fam.precios || null),
-          saboresLabel: fam.saboresLabel || "",
-        };
+        const cant = cantidades[p.id];
+        let out = categorias[p.id] ? { ...p, categoria } : p;
+        if (fam) {
+          // La nube (columna sabores) manda cuando hay datos; si no, el overlay (modo local).
+          const desdeDb = Array.isArray(p.sabores) && p.sabores.length > 0;
+          out = {
+            ...out,
+            categoria,
+            nombre: desdeDb ? p.nombre : fam.nombre,
+            sabores: desdeDb ? p.sabores : fam.sabores,
+            activo: fam.activar ? true : p.activo,
+            sabores_precios: desdeDb ? null : (fam.precios || null),
+            saboresLabel: fam.saboresLabel || "",
+          };
+        }
+        if (cant != null) {
+          // "Medio cajón": el precio base del producto es el CAJÓN COMPLETO; el medio
+          // cajón vale la mitad. La descripción muestra ambas opciones y el selector
+          // ofrece "Cajón completo" (= precio) y "Medio cajón" (= precio / 2). Idempotente.
+          const medio = "Medio cajón x" + cant;
+          const completo = "Cajón completo x" + cant * 2;
+          out = {
+            ...out,
+            cantidadMedio: cant,
+            unidad: "", // vacío: el cajón va en la descripción, no se repite en carrito/WhatsApp
+            descripcion: completo + " / " + medio,
+            sabores: [completo, medio],
+            sabores_precios: { [completo]: p.precio, [medio]: p.precio / 2 },
+            saboresLabel: "Elegir Cantidad",
+          };
+        }
+        return out;
       });
   }
 

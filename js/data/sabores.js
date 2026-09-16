@@ -366,5 +366,26 @@
       "caram-butter-chocolate-u",
       "caram-butter-dulce-de-leche-u",
     ],
+    // ── "Medio cajón" (pedido del dueño vía Tincho, 16/09/2026) ──
+    // Cervezas y cocas que pasan a venderse por medio cajón. El valor es la cantidad
+    // de unidades del MEDIO cajón (el cajón completo es el doble). aplicarOverlay()
+    // transforma cada id en dos opciones: "Medio cajón x{n}" (precio base, ya dividido
+    // en la data) y "Cajón completo x{2n}" (×2). Se reusa el mecanismo de sabores.
+    cantidad: {
+      "cerv-santa-fe-1lt-pack-x12": 6,
+      "cerv-santa-fe-pilsen-1lt-pack-x12": 6,
+      "cerv-imperial-apa-1lt-pack-x12": 6,
+      "cerv-imperial-golden-12x1lts-u": 6,
+      "cerv-budweiser-1-lt-x-12-u": 6,
+      "cerv-heineken-1lt-pack-x12": 6,
+      "cerv-imperial-golden-1-ltx12-u": 6,
+      "cerv-imperial-ipa-1ltx12-u": 6,
+      "cerv-miller-1-ltx12-u": 6,
+      "cerv-quilmes-stout-1-ltx12-u": 6,
+      "cerv-stella-1-lt-pack-x12": 6,
+      "coca-cola-ret-2lt-pack-x8": 4,
+      "coca-cola-vidrio-1-125-ml-pack-x8": 4,
+      "coca-ret-2-5-lt-pack-x8": 4,
+    },
   };
 })(typeof window !== "undefined" ? window : globalThis);

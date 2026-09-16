@@ -191,12 +191,16 @@
     const unidad = unidadTexto(p);
     const precios = p.sabores_precios && typeof p.sabores_precios === "object" ? p.sabores_precios : null;
     opts.modalSaboresTitulo.textContent = p.nombre;
+    const segun = p.cantidadMedio ? "presentación" : "sabor";
     opts.modalSaboresSub.textContent = precios
-      ? `Precios según sabor${unidad ? " · " + unidad : ""}`
+      ? `Precios según ${segun}${unidad ? " · " + unidad : ""}`
       : `${Order.formatMoney(p.precio)} c/u${unidad ? " · " + unidad : ""}`;
     const sinStock = new Set(Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []);
-    // Orden alfabético (es-AR) para que todos los productos muestren los sabores igual.
-    const lista = [...p.sabores].sort((a, b) => a.localeCompare(b, "es"));
+    // Orden alfabético (es-AR) para sabores; en "Cajón completo / Medio cajón" se
+    // respeta el orden definido (completo arriba, medio abajo).
+    const lista = p.cantidadMedio
+      ? [...p.sabores]
+      : [...p.sabores].sort((a, b) => a.localeCompare(b, "es"));
     opts.modalSaboresLista.innerHTML = lista
       .map((s) => {
         const n = selSabores.cantidades[s] || 0;
