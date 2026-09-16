@@ -387,6 +387,8 @@
       "coca-cola-ret-2lt-pack-x8": 4,
       "coca-cola-vidrio-1-125-ml-pack-x8": 4,
       "coca-ret-2-5-lt-pack-x8": 4,
+      "fanta-ret-2l-pack-x8": 4,
+      "sprite-vidrio-1-125x8-u": 4,
     },
   };
 })(typeof window !== "undefined" ? window : globalThis);
