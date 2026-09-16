@@ -389,6 +389,7 @@
       "coca-ret-2-5-lt-pack-x8": 4,
       "fanta-ret-2l-pack-x8": 4,
       "sprite-vidrio-1-125x8-u": 4,
+      "sprite-ret-8x2lts-u": 4,
     },
   };
 })(typeof window !== "undefined" ? window : globalThis);
