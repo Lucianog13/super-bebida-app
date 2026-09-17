@@ -127,6 +127,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   margin: 6px 0 14px;
   border-bottom: 1px solid var(--border);
@@ -1583,3 +1584,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   border-radius: 8px; font-family: inherit; font-size: 0.9rem; min-width: 0;
 }
 .mis-pedidos-busqueda .btn { flex: 0 0 auto; }
+
+/* ── Botón "← Volver" en encabezados de sección (usa .btn.primary.small) ── */
+.seccion-titulo { display: flex; align-items: center; gap: 10px; }
+.seccion-titulo .btn { flex: 0 0 auto; }

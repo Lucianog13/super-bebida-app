@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=44">
+  <link rel="stylesheet" href="css/style.css?v=45">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -68,7 +68,10 @@
     <!-- ── Vista: Carrito ── -->
     <section id="vista-carrito" class="vista" hidden>
       <div class="seccion-head">
-        <h2 class="seccion-label">Mi carrito</h2>
+        <div class="seccion-titulo">
+          <button type="button" class="btn primary small" data-volver="vista-catalogo">← Volver</button>
+          <h2 class="seccion-label">Mi carrito</h2>
+        </div>
         <span class="seccion-info">Revisá cantidades antes de confirmar</span>
       </div>
       <div id="aviso-modificacion" class="aviso-modificacion no-print" hidden>
@@ -92,7 +95,10 @@
     <!-- ── Vista: Checkout ── -->
     <section id="vista-checkout" class="vista" hidden>
       <div class="seccion-head">
-        <h2 class="seccion-label">Datos del cliente</h2>
+        <div class="seccion-titulo">
+          <button type="button" class="btn primary small" data-volver="vista-carrito">← Volver</button>
+          <h2 class="seccion-label">Datos del cliente</h2>
+        </div>
       </div>
       <form id="form-cliente" class="form panel">
         <label>Nombre del cliente *
@@ -124,7 +130,10 @@
     <!-- ── Vista: Pedido final ── -->
     <section id="vista-pedido" class="vista" hidden>
       <div class="seccion-head no-print">
-        <h2 class="seccion-label">Pedido generado</h2>
+        <div class="seccion-titulo">
+          <button type="button" class="btn primary small" data-volver="vista-catalogo">← Volver</button>
+          <h2 class="seccion-label">Pedido generado</h2>
+        </div>
         <span class="seccion-info">Enviá el pedido por WhatsApp o imprimilo</span>
       </div>
       <div id="resumen-pedido" class="pedido-hoja"></div>
@@ -156,7 +165,10 @@
     <!-- ── Vista: Mis pedidos ── -->
     <section id="vista-mis-pedidos" class="vista" hidden>
       <div class="seccion-head">
-        <h2 class="seccion-label">Mis pedidos</h2>
+        <div class="seccion-titulo">
+          <button type="button" class="btn primary small" data-volver="vista-catalogo">← Volver</button>
+          <h2 class="seccion-label">Mis pedidos</h2>
+        </div>
         <span class="seccion-info">Buscá los pedidos de un cliente por su Nº y nombre</span>
       </div>
       <div class="mis-pedidos-busqueda">
@@ -390,22 +402,22 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=44"></script>
-  <script src="js/data/sabores.js?v=44"></script>
-  <script src="js/data/zonas.js?v=44"></script>
-  <script src="js/core/cart.js?v=44"></script>
-  <script src="js/core/order.js?v=44"></script>
-  <script src="js/core/storage.js?v=44"></script>
-  <script src="js/core/auth.js?v=44"></script>
-  <script src="js/core/reparto-core.js?v=44"></script>
-  <script src="js/config.js?v=44"></script>
-  <script src="js/ui/catalog.js?v=44"></script>
-  <script src="js/ui/cartView.js?v=44"></script>
-  <script src="js/ui/checkout.js?v=44"></script>
-  <script src="js/ui/admin.js?v=44"></script>
-  <script src="js/ui/clientes.js?v=44"></script>
-  <script src="js/ui/reparto.js?v=44"></script>
+  <script src="js/data/products.js?v=45"></script>
+  <script src="js/data/sabores.js?v=45"></script>
+  <script src="js/data/zonas.js?v=45"></script>
+  <script src="js/core/cart.js?v=45"></script>
+  <script src="js/core/order.js?v=45"></script>
+  <script src="js/core/storage.js?v=45"></script>
+  <script src="js/core/auth.js?v=45"></script>
+  <script src="js/core/reparto-core.js?v=45"></script>
+  <script src="js/config.js?v=45"></script>
+  <script src="js/ui/catalog.js?v=45"></script>
+  <script src="js/ui/cartView.js?v=45"></script>
+  <script src="js/ui/checkout.js?v=45"></script>
+  <script src="js/ui/admin.js?v=45"></script>
+  <script src="js/ui/clientes.js?v=45"></script>
+  <script src="js/ui/reparto.js?v=45"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=44"></script>
+  <script src="js/app.js?v=45"></script>
 </body>
 </html>

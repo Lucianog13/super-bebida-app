@@ -453,6 +453,12 @@
     showVista("vista-catalogo");
   });
 
+  // ── Botones "Volver" genéricos (data-volver) ──
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-volver]");
+    if (b && b.dataset.volver) showVista(b.dataset.volver);
+  });
+
   // ── Mis pedidos (búsqueda por Nº + nombre, nube + local) ──
   $("btn-mis-pedidos").addEventListener("click", () => {
     const prev = Storage.loadCliente();
