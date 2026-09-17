@@ -6,6 +6,16 @@
   const Storage = window.Storage;
   const CFG = window.APP_CONFIG || null;
 
+  // Categorías ocultas del catálogo de CLIENTES (reversible: sacar la categoría de
+  // la lista para volver a mostrarla). Los productos ocultos siguen visibles y
+  // editables en el panel de administración, y NO se borran de la base ni del archivo.
+  const CATEGORIAS_OCULTAS = new Set(["farmacia"]);
+  // Ids de farmacia para el botón "Repetir último pedido" (los items del historial
+  // no traen categoría, solo el id de producto).
+  const IDS_FARMACIA = new Set(
+    (window.PRODUCTS || []).filter((p) => p.categoria === "farmacia").map((p) => p.id)
+  );
+
   const EMPRESA = {
     razonSocial: "EL SUPER DE LA BEBIDA S.R.L.",
     rubro: "Distribuidora de bebidas",
@@ -89,7 +99,7 @@
   // caché y archivo local para que la vista de clientes sea siempre la misma.
   function aplicarOverlay(productos) {
     const ov = window.SABORES_OVERLAY;
-    if (!ov || !Array.isArray(productos)) return productos;
+    if (!ov || !Array.isArray(productos)) return (productos || []).filter((p) => !CATEGORIAS_OCULTAS.has(p.categoria));
     const ocultos = new Set(ov.ocultar || []);
     const categorias = ov.categorias || {};
     const cantidades = ov.cantidad || {};
@@ -130,7 +140,8 @@
           };
         }
         return out;
-      });
+      })
+      .filter((p) => !CATEGORIAS_OCULTAS.has(p.categoria));
   }
 
   async function cargarCatalogo() {
@@ -306,7 +317,9 @@
         carrito.length === 0 ||
         window.confirm("¿Reemplazar el carrito actual por el último pedido del cliente?");
       if (!reemplazar) return;
-      carrito = items.map((i) => ({ ...i }));
+      carrito = items
+        .filter((i) => !IDS_FARMACIA.has(i.productoId))
+        .map((i) => ({ ...i }));
       Storage.saveCart(carrito);
       updateContador();
       showVista("vista-carrito");
