@@ -1225,11 +1225,14 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 /* ── Impresión: solo el remito ── */
 @media print {
   @page { size: A4; margin: 8mm; }
-  body { background: #fff; }
+  body { background: #fff; display: block !important; }
   .no-print { display: none !important; }
-  body * { visibility: hidden; }
-  #zona-impresion, #zona-impresion * { visibility: visible; }
-  #zona-impresion { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
+  /* Ocultar TODO el contenido de la app (header, main, footer, modales…)
+     y dejar visible SOLO #zona-impresion. display:none (no visibility)
+     hace que el contenido oculto no ocupe altura en el documento,
+     evitando las páginas en blanco. */
+  body > *:not(#zona-impresion) { display: none !important; }
+  #zona-impresion { display: block !important; }
   .pedido-hoja { border: 0; box-shadow: none; padding: 0; page-break-after: always; }
   .pedido-hoja:last-child { page-break-after: auto; }
   .hoja-carga { page-break-after: always; }
