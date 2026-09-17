@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=42">
+  <link rel="stylesheet" href="css/style.css?v=44">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -33,6 +33,10 @@
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.4"/><circle cx="19" cy="21" r="1.4"/><path d="M2.5 3h2l2.6 12.4a2 2 0 0 0 2 1.6h9.3a2 2 0 0 0 2-1.6L22 7H6"/></svg>
           <span class="btn-carrito-texto">Mi carrito</span>
           <span id="contador-carrito" class="contador">0</span>
+        </button>
+        <button id="btn-mis-pedidos" class="btn-mis-pedidos" title="Mis pedidos">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          <span class="btn-mis-pedidos-texto">Mis pedidos</span>
         </button>
       </div>
     </div>
@@ -67,6 +71,10 @@
         <h2 class="seccion-label">Mi carrito</h2>
         <span class="seccion-info">Revisá cantidades antes de confirmar</span>
       </div>
+      <div id="aviso-modificacion" class="aviso-modificacion no-print" hidden>
+        <span id="aviso-modificacion-texto"></span>
+        <button type="button" id="btn-cancelar-modificacion" class="btn small outline">Salir</button>
+      </div>
       <div id="items-carrito"></div>
       <div id="total-carrito" class="total-box"></div>
       <div class="acciones">
@@ -75,7 +83,7 @@
           Seguir comprando
         </button>
         <button id="btn-confirmar" class="btn primary">
-          Confirmar pedido
+          <span id="btn-confirmar-texto">Confirmar pedido</span>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
         </button>
       </div>
@@ -133,6 +141,7 @@
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>
           Imprimir / PDF
         </button>
+        <button id="btn-modificar" class="btn secondary" hidden>✏️ Modificar pedido</button>
         <button id="btn-nuevo-pedido" class="btn secondary">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           Nuevo pedido
@@ -141,6 +150,23 @@
       <div class="historial no-print">
         <h3 class="seccion-label">Historial de pedidos</h3>
         <ul id="lista-historial"></ul>
+      </div>
+    </section>
+
+    <!-- ── Vista: Mis pedidos ── -->
+    <section id="vista-mis-pedidos" class="vista" hidden>
+      <div class="seccion-head">
+        <h2 class="seccion-label">Mis pedidos</h2>
+        <span class="seccion-info">Buscá los pedidos de un cliente por su Nº y nombre</span>
+      </div>
+      <div class="mis-pedidos-busqueda">
+        <input type="text" id="mp-nro" inputmode="numeric" placeholder="Nº de cliente (ej. 1042)">
+        <input type="text" id="mp-nombre" placeholder="Nombre exacto del cliente">
+        <button id="btn-mp-buscar" class="btn primary small">Buscar</button>
+      </div>
+      <p class="admin-ayuda">Los pedidos de HOY se pueden modificar con el botón ✏️. Si no hay conexión, se muestran solo los de este dispositivo.</p>
+      <div class="historial">
+        <ul id="mis-pedidos-lista"></ul>
       </div>
     </section>
 
@@ -364,22 +390,22 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=41"></script>
-  <script src="js/data/sabores.js?v=41"></script>
-  <script src="js/data/zonas.js?v=41"></script>
-  <script src="js/core/cart.js?v=41"></script>
-  <script src="js/core/order.js?v=41"></script>
-  <script src="js/core/storage.js?v=41"></script>
-  <script src="js/core/auth.js?v=41"></script>
-  <script src="js/core/reparto-core.js?v=41"></script>
-  <script src="js/config.js?v=41"></script>
-  <script src="js/ui/catalog.js?v=41"></script>
-  <script src="js/ui/cartView.js?v=41"></script>
-  <script src="js/ui/checkout.js?v=41"></script>
-  <script src="js/ui/admin.js?v=41"></script>
-  <script src="js/ui/clientes.js?v=41"></script>
-  <script src="js/ui/reparto.js?v=41"></script>
+  <script src="js/data/products.js?v=44"></script>
+  <script src="js/data/sabores.js?v=44"></script>
+  <script src="js/data/zonas.js?v=44"></script>
+  <script src="js/core/cart.js?v=44"></script>
+  <script src="js/core/order.js?v=44"></script>
+  <script src="js/core/storage.js?v=44"></script>
+  <script src="js/core/auth.js?v=44"></script>
+  <script src="js/core/reparto-core.js?v=44"></script>
+  <script src="js/config.js?v=44"></script>
+  <script src="js/ui/catalog.js?v=44"></script>
+  <script src="js/ui/cartView.js?v=44"></script>
+  <script src="js/ui/checkout.js?v=44"></script>
+  <script src="js/ui/admin.js?v=44"></script>
+  <script src="js/ui/clientes.js?v=44"></script>
+  <script src="js/ui/reparto.js?v=44"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=41"></script>
+  <script src="js/app.js?v=44"></script>
 </body>
 </html>

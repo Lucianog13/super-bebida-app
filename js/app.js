@@ -41,14 +41,16 @@
   let carrito = Storage.loadCart();
   let pedidoActual = null;
   let modoCatalogo = "local"; // "nube" | "local"
+  let modificacion = null; // { id, token, fecha, cliente } — pedido en edición ("Modificar pedido")
 
-  const VISTAS = ["vista-catalogo", "vista-carrito", "vista-checkout", "vista-pedido", "vista-admin"];
+  const VISTAS = ["vista-catalogo", "vista-carrito", "vista-checkout", "vista-pedido", "vista-mis-pedidos", "vista-admin"];
 
   function showVista(id) {
     VISTAS.forEach((v) => ($(v).hidden = v !== id));
     if (id === "vista-carrito") {
       CartUI.render($("items-carrito"), $("total-carrito"), carrito, cartHandlers);
       actualizarBotonConfirmar();
+      actualizarModoModificacion();
     }
     window.scrollTo({ top: 0 });
   }
@@ -202,6 +204,7 @@
           items: pedido.items,
           total: pedido.total,
           origen: "app",
+          token: pedido.token || null,
         }),
       });
       return res.ok;
@@ -219,6 +222,8 @@
     btn.title = falta > 0
       ? `Te faltan ${Order.formatMoney(falta)} para el pedido mínimo de ${Order.formatMoney(Order.MIN_PEDIDO)}`
       : "";
+    const lbl = $("btn-confirmar-texto");
+    if (lbl) lbl.textContent = modificacion ? "Confirmar modificación" : "Confirmar pedido";
   }
 
   const cartHandlers = {
@@ -230,6 +235,7 @@
       actualizarBotonConfirmar();
     },
     onConfirm() {
+      if (modificacion) return confirmarModificacion();
       if (!carrito.length) return toast("El carrito está vacío");
       const falta = Order.faltanteMinimo(Cart.total(carrito));
       if (falta > 0) {
@@ -298,7 +304,7 @@
     supabaseUrl: CFG.supabaseUrl,
     supabaseKey: CFG.supabaseKey,
     onGenerar(cliente) {
-      pedidoActual = Order.buildOrder(cliente, carrito);
+      pedidoActual = Order.buildOrder(cliente, carrito, new Date(), generarToken());
       Storage.saveOrder(pedidoActual);
       Storage.saveCliente(cliente);
       carrito = [];
@@ -327,20 +333,153 @@
     },
   });
 
+
+  // ── Modificar Pedido (cliente): agregar/quitar productos hasta las 23:59 del día ──
+  function generarToken() {
+    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+      return globalThis.crypto.randomUUID();
+    }
+    return "tok-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  function actualizarModoModificacion() {
+    const banner = $("aviso-modificacion");
+    if (banner) {
+      const txt = $("aviso-modificacion-texto");
+      if (modificacion) {
+        txt.textContent = `Modificando el pedido Nº ${modificacion.id} — agregá, quitá o cambiá cantidades. Tenés hasta las 23:59 de hoy.`;
+        banner.hidden = false;
+      } else {
+        banner.hidden = true;
+      }
+    }
+    actualizarBotonConfirmar();
+  }
+
+  function cancelarModificacion() {
+    modificacion = null;
+    carrito = [];
+    Storage.saveCart(carrito);
+    updateContador();
+    actualizarModoModificacion();
+  }
+
+  function iniciarModificacion(orden) {
+    if (!orden || !orden.token || !Order.puedeModificarse(orden.fecha)) {
+      toast("Este pedido ya no se puede modificar (el plazo es hasta las 23:59 del día del pedido)", "error");
+      return;
+    }
+    modificacion = { id: orden.id, token: orden.token, fecha: orden.fecha, cliente: orden.cliente };
+    carrito = (orden.items || []).map((i) => ({ ...i }));
+    Storage.saveCart(carrito);
+    updateContador();
+    actualizarModoModificacion();
+    CartUI.render($("items-carrito"), $("total-carrito"), carrito, cartHandlers);
+    showVista("vista-carrito");
+    toast(`Modificando el pedido Nº ${orden.id} — tenés hasta las 23:59`);
+  }
+
+  async function modificarEnNube(pedido) {
+    if (!CFG) return false;
+    try {
+      const res = await fetch(`${CFG.supabaseUrl}/rest/v1/rpc/modificar_pedido`, {
+        method: "POST",
+        headers: {
+          apikey: CFG.supabaseKey,
+          Authorization: "Bearer " + CFG.supabaseKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          p_id: pedido.id,
+          p_token: pedido.token,
+          p_items: pedido.items,
+          p_total: pedido.total,
+        }),
+      });
+      if (!res.ok) return false;
+      return (await res.text()).trim() === "true";
+    } catch {
+      return false;
+    }
+  }
+
+  async function confirmarModificacion() {
+    if (!modificacion) return;
+    if (!carrito.length) return toast("El pedido no puede quedar vacío", "error");
+    const falta = Order.faltanteMinimo(Cart.total(carrito));
+    if (falta > 0) {
+      return toast(`Te faltan ${Order.formatMoney(falta)} para llegar al pedido mínimo de ${Order.formatMoney(Order.MIN_PEDIDO)}`, "error");
+    }
+    if (!Order.puedeModificarse(modificacion.fecha)) {
+      cancelarModificacion();
+      showVista("vista-carrito");
+      return toast("El plazo para modificar venció (hasta las 23:59 del día del pedido)", "error");
+    }
+    const nuevo = Order.buildModificacion(modificacion, carrito);
+    const ok = await modificarEnNube(nuevo);
+    if (!ok) return toast("No se pudo modificar el pedido — probá de nuevo en un momento", "error");
+    Storage.updateOrder(nuevo);
+    pedidoActual = nuevo;
+    modificacion = null;
+    carrito = [];
+    Storage.saveCart(carrito);
+    updateContador();
+    actualizarModoModificacion();
+    renderPedido();
+    showVista("vista-pedido");
+    toast("Pedido modificado — mandalo de nuevo por WhatsApp para que el negocio vea la lista final");
+  }
+
   // ── Navegación global ──
   $("btn-carrito").addEventListener("click", () => showVista("vista-carrito"));
   $("btn-seguir-comprando").addEventListener("click", () => showVista("vista-catalogo"));
   $("btn-confirmar").addEventListener("click", cartHandlers.onConfirm);
   $("btn-volver-carrito").addEventListener("click", () => showVista("vista-carrito"));
-  $("btn-nuevo-pedido").addEventListener("click", () => showVista("vista-catalogo"));
+  $("btn-nuevo-pedido").addEventListener("click", () => {
+    if (modificacion) {
+      if (!window.confirm("¿Salir de la modificación del pedido actual?")) return;
+      cancelarModificacion();
+    }
+    showVista("vista-catalogo");
+  });
   $("btn-imprimir").addEventListener("click", () => {
     if (pedidoActual) imprimirRemitos([pedidoActual]);
+  });
+  $("btn-modificar").addEventListener("click", () => {
+    if (pedidoActual) iniciarModificacion(pedidoActual);
+  });
+  $("btn-cancelar-modificacion").addEventListener("click", () => {
+    cancelarModificacion();
+    showVista("vista-catalogo");
+  });
+
+  // ── Mis pedidos (búsqueda por Nº + nombre, nube + local) ──
+  $("btn-mis-pedidos").addEventListener("click", () => {
+    const prev = Storage.loadCliente();
+    if (prev) {
+      if (prev.nroCliente) $("mp-nro").value = prev.nroCliente;
+      if (prev.nombre) $("mp-nombre").value = prev.nombre;
+    }
+    showVista("vista-mis-pedidos");
+    if ($("mp-nro").value.trim()) buscarMisPedidos();
+  });
+  $("btn-mp-buscar").addEventListener("click", buscarMisPedidos);
+  ["mp-nro", "mp-nombre"].forEach((id) =>
+    $(id).addEventListener("keydown", (e) => {
+      if (e.key === "Enter") buscarMisPedidos();
+    })
+  );
+  $("mis-pedidos-lista").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-mod-id]");
+    if (!btn) return;
+    const orden = misPedidosActuales.find((o) => o.id === btn.dataset.modId);
+    if (orden) iniciarModificacion(orden);
   });
 
   // ── Copiar a WhatsApp ──
   $("btn-copiar").addEventListener("click", async () => {
     if (!pedidoActual) return;
-    const texto = Order.toWhatsAppText(pedidoActual);
+    const texto = Order.toWhatsAppText(pedidoActual, pedidoActual.modificado);
     try {
       await navigator.clipboard.writeText(texto);
       toast("Pedido copiado al portapapeles");
@@ -419,7 +558,7 @@
   function renderPedido() {
     if (!pedidoActual) return;
     $("resumen-pedido").innerHTML = remitoHTML(pedidoActual);
-    const link = waLink(pedidoActual.cliente.telefono, Order.toWhatsAppText(pedidoActual));
+    const link = waLink(pedidoActual.cliente.telefono, Order.toWhatsAppText(pedidoActual, pedidoActual.modificado));
     const btn = $("btn-wa");
     if (link) {
       btn.href = link;
@@ -428,6 +567,8 @@
       btn.removeAttribute("href");
       btn.setAttribute("disabled", "disabled");
     }
+    const btnMod = $("btn-modificar");
+    if (btnMod) btnMod.hidden = !(pedidoActual.token && Order.puedeModificarse(pedidoActual.fecha));
     renderHistorial();
   }
 
@@ -437,10 +578,97 @@
       ? orders
           .map(
             (o) =>
-              `<li><span><strong>${o.cliente.nombre}</strong> · ${Order.formatDate(o.fecha)} · ${o.items.length} items</span><strong>${Order.formatMoney(o.total)}</strong></li>`
+              `<li><span><strong>${o.cliente.nombre}</strong> · ${Order.formatDate(o.fecha)} · ${o.items.length} items` +
+              (o.token && Order.puedeModificarse(o.fecha)
+                ? ` <button type="button" class="btn small outline hist-modificar" data-mod-id="${o.id}">✏️ Modificar</button>`
+                : "") +
+              `</span><strong>${Order.formatMoney(o.total)}</strong></li>`
           )
           .join("")
       : "<li>Sin pedidos registrados.</li>";
+  }
+
+  $("lista-historial").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-mod-id]");
+    if (!btn) return;
+    const orden = Storage.loadOrders().find((o) => o.id === btn.dataset.modId);
+    if (orden) iniciarModificacion(orden);
+  });
+
+  // ── Mis pedidos ──
+  let misPedidosActuales = [];
+
+  async function buscarMisPedidos() {
+    const nro = $("mp-nro").value.trim();
+    const nombre = $("mp-nombre").value.trim();
+    const locales = Storage.loadOrders();
+
+    if (!nro) {
+      misPedidosActuales = Order.fusionarPedidos(locales, []);
+      if (!locales.length) {
+        renderMisPedidos("Ingresá el Nº de cliente para ver sus pedidos.");
+      } else {
+        renderMisPedidos(null);
+        toast("Sin Nº ingresado — mostrando los pedidos de este dispositivo");
+      }
+      return;
+    }
+
+    const nn = Order.normalizarTexto(nombre);
+    const localesFiltrados = locales.filter(
+      (o) =>
+        Order.normalizarTexto(o.cliente && o.cliente.nroCliente) === Order.normalizarTexto(nro) &&
+        (!nn || Order.normalizarTexto(o.cliente && o.cliente.nombre) === nn)
+    );
+
+    let nube = [];
+    let nubeOk = false;
+    if (CFG) {
+      try {
+        const res = await fetch(`${CFG.supabaseUrl}/rest/v1/rpc/mis_pedidos`, {
+          method: "POST",
+          headers: {
+            apikey: CFG.supabaseKey,
+            Authorization: "Bearer " + CFG.supabaseKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ p_nro: nro, p_nombre: nombre }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          nube = Array.isArray(data) ? data : [];
+          nubeOk = true;
+        }
+      } catch {
+        /* sin conexión */
+      }
+    }
+
+    misPedidosActuales = Order.fusionarPedidos(localesFiltrados, nube);
+    renderMisPedidos(null);
+    if (!nubeOk) toast("Sin conexión — mostrando solo los pedidos de este dispositivo");
+  }
+
+  function renderMisPedidos(msg) {
+    const lista = $("mis-pedidos-lista");
+    if (msg) {
+      lista.innerHTML = `<li>${msg}</li>`;
+      return;
+    }
+    if (!misPedidosActuales.length) {
+      lista.innerHTML = "<li>No hay pedidos para esa búsqueda.</li>";
+      return;
+    }
+    lista.innerHTML = misPedidosActuales
+      .map(
+        (o) =>
+          `<li><span><strong>${o.cliente.nombre}</strong> · Nº ${o.id} · ${Order.formatDate(o.fecha)} · ${o.items.length} items` +
+          (o.token && Order.puedeModificarse(o.fecha)
+            ? ` <button type="button" class="btn small outline" data-mod-id="${o.id}">✏️ Modificar</button>`
+            : "") +
+          `</span><strong>${Order.formatMoney(o.total)}</strong></li>`
+      )
+      .join("");
   }
 
   // ── Pedidos (vista admin: agrupar por fecha, seleccionar e imprimir) ──

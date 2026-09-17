@@ -35,9 +35,29 @@
     return (items || []).filter((i) => i.retornable).reduce((s, i) => s + i.cantidad, 0);
   }
 
-  function toWhatsAppText(pedido) {
+  // ¿El pedido se puede modificar? Regla: hasta las 23:59 del MISMO día (hora local del
+  // dispositivo). La nube re-valida con la hora de Argentina (ventana a prueba de reloj).
+  function puedeModificarse(fechaPedido, ahora) {
+    const d = fechaPedido instanceof Date ? fechaPedido : new Date(fechaPedido);
+    const n = ahora instanceof Date ? ahora : new Date(ahora || Date.now());
+    if (isNaN(d.getTime()) || isNaN(n.getTime())) return false;
+    return (
+      d.getFullYear() === n.getFullYear() &&
+      d.getMonth() === n.getMonth() &&
+      d.getDate() === n.getDate()
+    );
+  }
+
+  function toWhatsAppText(pedido, modificacion) {
     const lines = [];
-    lines.push(`*PEDIDO — ${NOMBRE_NEGOCIO} S.R.L.*`);
+    if (modificacion) {
+      const ref = pedido.cliente.nroCliente
+        ? `MODIFICACIÓN PEDIDO CLIENTE Nº: ${pedido.cliente.nroCliente}`
+        : `MODIFICACIÓN PEDIDO CLIENTE: ${pedido.cliente.nombre}`;
+      lines.push(`*${ref}*`);
+    } else {
+      lines.push(`*PEDIDO — ${NOMBRE_NEGOCIO} S.R.L.*`);
+    }
     lines.push(`Nº ${pedido.id}`);
     lines.push(`Fecha: ${formatDate(pedido.fecha)}`);
     lines.push(`Cliente: ${pedido.cliente.nombre}`);
@@ -57,7 +77,7 @@
     return lines.join("\n");
   }
 
-  function buildOrder(cliente, items, fecha) {
+  function buildOrder(cliente, items, fecha, token) {
     const d = fecha || new Date();
     return {
       id: generateId(d),
@@ -65,6 +85,20 @@
       cliente,
       items: (items || []).map((i) => ({ ...i })),
       total: (items || []).reduce((s, i) => s + i.precioUnit * i.cantidad, 0),
+      token: token || null,
+    };
+  }
+
+  // Arma el pedido modificado: mismo id/fecha/cliente/token, items y total nuevos.
+  function buildModificacion(original, items) {
+    return {
+      id: original.id,
+      fecha: original.fecha,
+      cliente: { ...(original.cliente || {}) },
+      items: (items || []).map((i) => ({ ...i })),
+      total: (items || []).reduce((s, i) => s + i.precioUnit * i.cantidad, 0),
+      token: original.token || null,
+      modificado: true,
     };
   }
 
@@ -76,6 +110,27 @@
       (orders || [])
         .filter((o) => (o.cliente.nombre || "").trim().toLowerCase() === n)
         .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))[0] || null
+    );
+  }
+
+  // Normaliza texto para comparar clientes (minúsculas, sin acentos ni puntuación).
+  // Mismo criterio que la función SQL mis_pedidos.
+  function normalizarTexto(s) {
+    return (s || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  // Fusiona pedidos locales con los de la nube: misma id → gana la nube (trae token).
+  function fusionarPedidos(locales, nube) {
+    const mapa = new Map();
+    (locales || []).forEach((o) => mapa.set(o.id, o));
+    (nube || []).forEach((o) => mapa.set(o.id, o));
+    return Array.from(mapa.values()).sort(
+      (a, b) => new Date(b.fecha) - new Date(a.fecha)
     );
   }
 
@@ -93,6 +148,10 @@
     envasesRetornables,
     toWhatsAppText,
     buildOrder,
+    buildModificacion,
+    puedeModificarse,
+    normalizarTexto,
+    fusionarPedidos,
     findLastOrder,
     MIN_PEDIDO,
     faltanteMinimo,

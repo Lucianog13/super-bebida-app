@@ -43,6 +43,14 @@
       set(KEYS.orders, list);
       return order;
     },
+    updateOrder: (order) => {
+      const list = get(KEYS.orders, []);
+      const idx = list.findIndex((o) => o.id === order.id);
+      if (idx >= 0) list[idx] = order;
+      else list.push(order);
+      set(KEYS.orders, list);
+      return order;
+    },
     loadOrders: () => get(KEYS.orders, []),
 
     saveCliente: (cliente) => set(KEYS.cliente, cliente),

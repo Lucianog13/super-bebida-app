@@ -1264,6 +1264,7 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   .topbar-der { gap: 6px; }
   .btn-admin-header { padding: 8px 10px; font-size: 0.7rem; }
   .btn-carrito { padding: 8px 10px; }
+  .btn-mis-pedidos { padding: 8px 10px; }
 }
 @media (max-width: 640px) {
   /* botón Administrar: solo el candado, imposible que se amontone */
@@ -1539,3 +1540,46 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ── Banner "Modificando pedido" (carrito) ── */
+.aviso-modificacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--navy-700);
+  color: #fff;
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+.aviso-modificacion .btn {
+  white-space: nowrap;
+  background: #fff;
+  color: var(--navy-700);
+  border-color: #fff;
+}
+
+/* ── Topbar: botón "Mis pedidos" (mismo estilo que Mi carrito) ── */
+.btn-mis-pedidos {
+  display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(180deg, #1d3d58, var(--navy-700));
+  color: #fff; border: 0; border-radius: var(--radius-sm);
+  padding: 9px 12px; font-size: 0.88rem; font-weight: 600;
+  cursor: pointer; font-family: var(--sans); white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(14, 34, 51, 0.18);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.btn-mis-pedidos:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-mis-pedidos-texto { display: none; }
+@media (min-width: 480px) { .btn-mis-pedidos-texto { display: inline; } }
+
+/* ── Vista "Mis pedidos": barra de búsqueda ── */
+.mis-pedidos-busqueda { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.mis-pedidos-busqueda input {
+  flex: 1 1 150px; padding: 10px 12px; border: 1px solid var(--border-dark);
+  border-radius: 8px; font-family: inherit; font-size: 0.9rem; min-width: 0;
+}
+.mis-pedidos-busqueda .btn { flex: 0 0 auto; }
