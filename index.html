@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=45">
+  <link rel="stylesheet" href="css/style.css?v=47">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -173,10 +173,11 @@
       </div>
       <div class="mis-pedidos-busqueda">
         <input type="text" id="mp-nro" inputmode="numeric" placeholder="Nº de cliente (ej. 1042)">
-        <input type="text" id="mp-nombre" placeholder="Nombre exacto del cliente">
+        <input type="text" id="mp-nombre" placeholder="Nombre del cliente (puede ser parcial)">
         <button id="btn-mp-buscar" class="btn primary small">Buscar</button>
       </div>
-      <p class="admin-ayuda">Los pedidos de HOY se pueden modificar con el botón ✏️. Si no hay conexión, se muestran solo los de este dispositivo.</p>
+      <p class="admin-ayuda" id="mis-pedidos-resumen" hidden></p>
+      <p class="admin-ayuda">Los pedidos de HOY se pueden modificar con el botón ✏️. Tocá «👁 Ver pedido» para ver el detalle completo de cada pedido. Si no hay conexión, se muestran solo los de este dispositivo.</p>
       <div class="historial">
         <ul id="mis-pedidos-lista"></ul>
       </div>
@@ -402,22 +403,22 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=45"></script>
-  <script src="js/data/sabores.js?v=45"></script>
-  <script src="js/data/zonas.js?v=45"></script>
-  <script src="js/core/cart.js?v=45"></script>
-  <script src="js/core/order.js?v=45"></script>
-  <script src="js/core/storage.js?v=45"></script>
-  <script src="js/core/auth.js?v=45"></script>
-  <script src="js/core/reparto-core.js?v=45"></script>
-  <script src="js/config.js?v=45"></script>
-  <script src="js/ui/catalog.js?v=45"></script>
-  <script src="js/ui/cartView.js?v=45"></script>
-  <script src="js/ui/checkout.js?v=45"></script>
-  <script src="js/ui/admin.js?v=45"></script>
-  <script src="js/ui/clientes.js?v=45"></script>
-  <script src="js/ui/reparto.js?v=45"></script>
+  <script src="js/data/products.js?v=47"></script>
+  <script src="js/data/sabores.js?v=47"></script>
+  <script src="js/data/zonas.js?v=47"></script>
+  <script src="js/core/cart.js?v=47"></script>
+  <script src="js/core/order.js?v=47"></script>
+  <script src="js/core/storage.js?v=47"></script>
+  <script src="js/core/auth.js?v=47"></script>
+  <script src="js/core/reparto-core.js?v=47"></script>
+  <script src="js/config.js?v=47"></script>
+  <script src="js/ui/catalog.js?v=47"></script>
+  <script src="js/ui/cartView.js?v=47"></script>
+  <script src="js/ui/checkout.js?v=47"></script>
+  <script src="js/ui/admin.js?v=47"></script>
+  <script src="js/ui/clientes.js?v=47"></script>
+  <script src="js/ui/reparto.js?v=47"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=45"></script>
+  <script src="js/app.js?v=47"></script>
 </body>
 </html>

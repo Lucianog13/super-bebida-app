@@ -124,6 +124,17 @@
       .replace(/[^a-z0-9]/g, "");
   }
 
+  // ¿El nombre tipeado coincide (laxo) con el guardado? Laxo = normalizados, uno es
+  // subcadena del otro. Tolera mayúsculas, acentos, puntuación y palabras/sufijos de más
+  // (ej. "Marcelo" vs "Marcelo González S.A.", o "Carlos R." vs "Carlos Rodríguez").
+  // Mismo criterio que la nueva versión de la función SQL mis_pedidos (19/09/2026).
+  function nombreCoincide(tipado, guardado) {
+    const a = normalizarTexto(tipado);
+    const b = normalizarTexto(guardado);
+    if (!a || !b) return false;
+    return a === b || a.includes(b) || b.includes(a);
+  }
+
   // Fusiona pedidos locales con los de la nube: misma id → gana la nube (trae token).
   function fusionarPedidos(locales, nube) {
     const mapa = new Map();
@@ -151,6 +162,7 @@
     buildModificacion,
     puedeModificarse,
     normalizarTexto,
+    nombreCoincide,
     fusionarPedidos,
     findLastOrder,
     MIN_PEDIDO,

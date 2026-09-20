@@ -476,10 +476,17 @@
     })
   );
   $("mis-pedidos-lista").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-mod-id]");
-    if (!btn) return;
-    const orden = misPedidosActuales.find((o) => o.id === btn.dataset.modId);
-    if (orden) iniciarModificacion(orden);
+    const modBtn = e.target.closest("[data-mod-id]");
+    if (modBtn) {
+      const orden = misPedidosActuales.find((o) => o.id === modBtn.dataset.modId);
+      if (orden) iniciarModificacion(orden);
+      return;
+    }
+    const verBtn = e.target.closest("[data-ver-id]");
+    if (verBtn) {
+      const orden = misPedidosActuales.find((o) => o.id === verBtn.dataset.verId);
+      if (orden) mostrarRemitoPedido(orden);
+    }
   });
 
   // ── Copiar a WhatsApp ──
@@ -624,7 +631,7 @@
     const localesFiltrados = locales.filter(
       (o) =>
         Order.normalizarTexto(o.cliente && o.cliente.nroCliente) === Order.normalizarTexto(nro) &&
-        (!nn || Order.normalizarTexto(o.cliente && o.cliente.nombre) === nn)
+        (!nn || Order.nombreCoincide(nombre, o.cliente && o.cliente.nombre))
     );
 
     let nube = [];
@@ -657,6 +664,8 @@
 
   function renderMisPedidos(msg) {
     const lista = $("mis-pedidos-lista");
+    const resumen = $("mis-pedidos-resumen");
+    if (resumen) resumen.hidden = true;
     if (msg) {
       lista.innerHTML = `<li>${msg}</li>`;
       return;
@@ -665,10 +674,18 @@
       lista.innerHTML = "<li>No hay pedidos para esa búsqueda.</li>";
       return;
     }
+    // Resumen del historial completo del cliente: cuántos pedidos + total acumulado.
+    const totalAcumulado = misPedidosActuales.reduce((s, o) => s + (Number(o.total) || 0), 0);
+    if (resumen) {
+      resumen.textContent =
+        `${misPedidosActuales.length} pedido${misPedidosActuales.length === 1 ? "" : "s"} encontrado${misPedidosActuales.length === 1 ? "" : "s"} · total acumulado ${Order.formatMoney(totalAcumulado)}`;
+      resumen.hidden = false;
+    }
     lista.innerHTML = misPedidosActuales
       .map(
         (o) =>
           `<li><span><strong>${o.cliente.nombre}</strong> · Nº ${o.id} · ${Order.formatDate(o.fecha)} · ${o.items.length} items` +
+          ` <button type="button" class="btn small outline" data-ver-id="${o.id}">👁 Ver pedido</button>` +
           (o.token && Order.puedeModificarse(o.fecha)
             ? ` <button type="button" class="btn small outline" data-mod-id="${o.id}">✏️ Modificar</button>`
             : "") +
@@ -868,12 +885,16 @@
     renderPedidos();
   }
 
-  /** Muestra el remito completo del pedido en un modal (sin imprimir). */
-  function verPedido(pid) {
-    const p = pedidosNube.find((x) => x.id === pid);
+  /** Muestra el remito completo del pedido en el modal "Ver pedido" (sin imprimir). */
+  function mostrarRemitoPedido(p) {
     if (!p) return;
     $("ver-pedido-contenido").innerHTML = `<div class="pedido-hoja">${remitoHTML(p)}</div>`;
     $("modal-ver-pedido").hidden = false;
+  }
+
+  // Desde el panel "Pedidos" del admin (busca en la lista ya cargada en pedidosNube).
+  function verPedido(pid) {
+    mostrarRemitoPedido(pedidosNube.find((x) => x.id === pid));
   }
 
   // ── Pestañas del admin (Productos | Pedidos) ──
