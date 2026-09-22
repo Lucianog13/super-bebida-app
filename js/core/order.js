@@ -15,6 +15,8 @@
   }
 
   function formatDate(fecha) {
+    const D = (typeof window !== "undefined" && window.Dia) || globalThis.Dia;
+    if (D && typeof D.formatFechaCorta === "function") return D.formatFechaCorta(fecha);
     const d = fecha instanceof Date ? fecha : new Date(/^\d{4}-\d{2}-\d{2}$/.test(fecha) ? fecha + "T00:00:00" : fecha);
     return new Intl.DateTimeFormat("es-AR", {
       day: "2-digit",

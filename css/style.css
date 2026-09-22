@@ -1588,3 +1588,22 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 /* ── Botón "← Volver" en encabezados de sección (usa .btn.primary.small) ── */
 .seccion-titulo { display: flex; align-items: center; gap: 10px; }
 .seccion-titulo .btn { flex: 0 0 auto; }
+
+/* ── Selector de día (chips Hoy/Ayer/Todos en Pedidos y Reparto) ── */
+.dia-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.chip-dia {
+  padding: 7px 16px; border-radius: 999px; border: 1.5px solid var(--border-dark);
+  background: var(--surface); color: var(--ink); font-size: 0.85rem; font-weight: 600;
+  font-family: inherit; cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.chip-dia:hover { border-color: var(--navy-700); }
+.chip-dia.active { background: var(--navy-700); border-color: var(--navy-700); color: #fff; }
+
+/* ── Editor de zona manual en la vista Pedidos ── */
+.pedido-zona-editor { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+
+/* ── Aviso de pedidos sin zona en las impresiones ── */
+.hc-aviso {
+  background: #fff7e6; border: 1px solid var(--gold); color: #8a5a00;
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.8rem;
+}

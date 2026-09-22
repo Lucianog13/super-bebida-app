@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=47">
+  <link rel="stylesheet" href="css/style.css?v=48">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -246,6 +246,11 @@
       <div id="lista-admin" class="lista-admin"></div>
       </div>
       <div id="panel-pedidos" hidden>
+        <div class="dia-selector" role="group" aria-label="Día de los pedidos">
+          <button type="button" class="chip-dia active" data-dia="hoy">📅 Hoy</button>
+          <button type="button" class="chip-dia" data-dia="ayer">📅 Ayer</button>
+          <button type="button" class="chip-dia" data-dia="todos">🗓 Todos</button>
+        </div>
         <div class="pedidos-acciones">
           <button id="btn-imprimir-seleccion" class="btn primary small">🖨 Imprimir seleccionados</button>
           <button id="btn-imprimir-todo" class="btn secondary small">🖨 Imprimir todo</button>
@@ -255,8 +260,12 @@
         <div id="lista-pedidos" class="lista-pedidos"></div>
       </div>
       <div id="panel-reparto" hidden>
+        <div class="dia-selector" role="group" aria-label="Día del reparto">
+          <button type="button" class="chip-dia active" data-dia="0">📅 Hoy</button>
+          <button type="button" class="chip-dia" data-dia="-1">📅 Ayer</button>
+        </div>
         <div class="pedidos-acciones">
-          <button id="btn-reparto-cargar" class="btn primary small">↻ Cargar pedidos de hoy</button>
+          <button id="btn-reparto-cargar" class="btn primary small">↻ Cargar pedidos</button>
           <button id="btn-unificar" class="btn small outline">🔗 Unificar en una sola carga</button>
           <button id="btn-carga-z1" class="btn small secondary">🖨 Carga Z1</button>
           <button id="btn-carga-z2" class="btn small secondary">🖨 Carga Z2</button>
@@ -403,22 +412,23 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=47"></script>
-  <script src="js/data/sabores.js?v=47"></script>
-  <script src="js/data/zonas.js?v=47"></script>
-  <script src="js/core/cart.js?v=47"></script>
-  <script src="js/core/order.js?v=47"></script>
-  <script src="js/core/storage.js?v=47"></script>
-  <script src="js/core/auth.js?v=47"></script>
-  <script src="js/core/reparto-core.js?v=47"></script>
-  <script src="js/config.js?v=47"></script>
-  <script src="js/ui/catalog.js?v=47"></script>
-  <script src="js/ui/cartView.js?v=47"></script>
-  <script src="js/ui/checkout.js?v=47"></script>
-  <script src="js/ui/admin.js?v=47"></script>
-  <script src="js/ui/clientes.js?v=47"></script>
-  <script src="js/ui/reparto.js?v=47"></script>
+  <script src="js/data/products.js?v=48"></script>
+  <script src="js/data/sabores.js?v=48"></script>
+  <script src="js/data/zonas.js?v=48"></script>
+  <script src="js/core/cart.js?v=48"></script>
+  <script src="js/core/dia.js?v=48"></script>
+  <script src="js/core/order.js?v=48"></script>
+  <script src="js/core/storage.js?v=48"></script>
+  <script src="js/core/auth.js?v=48"></script>
+  <script src="js/core/reparto-core.js?v=48"></script>
+  <script src="js/config.js?v=48"></script>
+  <script src="js/ui/catalog.js?v=48"></script>
+  <script src="js/ui/cartView.js?v=48"></script>
+  <script src="js/ui/checkout.js?v=48"></script>
+  <script src="js/ui/admin.js?v=48"></script>
+  <script src="js/ui/clientes.js?v=48"></script>
+  <script src="js/ui/reparto.js?v=48"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=47"></script>
+  <script src="js/app.js?v=48"></script>
 </body>
 </html>

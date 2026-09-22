@@ -13,6 +13,7 @@
   const zonaOverride = {}; // pid -> zona (1|2)
   let unificado = false;
   let toastFn = () => {};
+  let diaOffset = 0; // 0 = hoy, -1 = ayer (selector de día del panel Reparto)
 
   const CFG = () => window.APP_CONFIG;
   const Z = () => window.ZONAS;
@@ -30,12 +31,8 @@
     };
   })();
 
-  function esDeHoy(p) {
-    const h = new Date();
-    const f = new Date(p.fecha);
-    return f.getFullYear() === h.getFullYear() && f.getMonth() === h.getMonth() && f.getDate() === h.getDate();
-  }
-  function delDia() { return pedidos.filter(esDeHoy); }
+  // Pedidos del día mostrado, comparando la fecha en hora argentina (Dia.mismoDia).
+  function delDia() { return Dia.filtrarDia(pedidos, diaOffset); }
 
   async function cargar() {
     if (!window.Auth || !window.Auth.getSession()) return;
@@ -102,6 +99,7 @@
   }
 
   function zonaDe(p) {
+    if (p.zona === 1 || p.zona === 2) return p.zona; // zona manual guardada en la nube
     if (zonaOverride[p.id]) return zonaOverride[p.id];
     if (p._geo) return asignarZona(p._geo.lat, p._geo.lon);
     return 0; // sin dirección → sin zona (asignar a mano)
@@ -110,6 +108,7 @@
   // Zona disponible SIN geocodificar (solo caché + _geo). Rápida, para la vista
   // "Pedidos"; si no está resuelta devuelve 0 y la resuelve detectarZonas().
   function zonaCacheada(p) {
+    if (p.zona === 1 || p.zona === 2) return p.zona; // zona manual guardada en la nube
     if (zonaOverride[p.id]) return zonaOverride[p.id];
     const dir = (p.cliente && p.cliente.direccion) || "";
     const g = p._geo || (dir ? geocache.get(dir) : null);
@@ -257,10 +256,26 @@
     }
   }
 
-  function cambiarZona(pid, zona) {
+  async function cambiarZona(pid, zona) {
+    const p = pedidos.find((x) => x.id === pid);
+    if (!p) return;
     zonaOverride[pid] = zona;
+    p.zona = zona;
     render();
     toastFn("Pedido movido a Zona " + zona);
+    const t = await window.Auth.token();
+    if (!t) { toastFn("Ojo: sin sesión — la zona no se guardó en la nube", "error"); return; }
+    const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
+      method: "PATCH",
+      headers: {
+        apikey: CFG().supabaseKey,
+        Authorization: "Bearer " + t,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ zona }),
+    });
+    if (!res.ok) toastFn("La zona quedó en esta pantalla pero no se guardó en la nube (HTTP " + res.status + ")", "error");
   }
 
   function alternarUnificar() {
@@ -292,7 +307,7 @@
       <div class="hc-head">
         <div class="hc-titulo">El Super de la Bebida S.R.L.</div>
         <div class="hc-sub">Control de Carga</div>
-        <div class="hc-fecha">${RC().nombreDiaLargo(fecha)}</div>
+        <div class="hc-fecha">${Dia.nombreDiaLargo(fecha)}</div>
       </div>
       <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${tituloZona}</div>
       <table class="hc-tabla">
@@ -327,7 +342,7 @@
       <div class="hc-head">
         <div class="hc-titulo">El Super de la Bebida S.R.L.</div>
         <div class="hc-sub">Hoja por Cliente — ${tituloZona}</div>
-        <div class="hc-fecha">${RC().nombreDiaLargo(fecha)}</div>
+        <div class="hc-fecha">${Dia.nombreDiaLargo(fecha)}</div>
       </div>
       <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${ps.length} cliente${ps.length === 1 ? "" : "s"}</div>
       ${bloques || '<p class="hc-vacio">Sin pedidos</p>'}
@@ -355,7 +370,7 @@
       <div class="hc-head">
         <div class="hc-titulo">El Super de la Bebida S.R.L.</div>
         <div class="hc-sub">Hoja de Clientes — ${tituloZona}</div>
-        <div class="hc-fecha">${Order.formatDate(new Date())}</div>
+        <div class="hc-fecha">${Dia.formatFechaCorta(new Date())}</div>
       </div>
       <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${ps.length} cliente${ps.length === 1 ? "" : "s"}</div>
       <table class="hc-tabla">
@@ -375,13 +390,24 @@
     window.print();
   }
 
+  // Pedidos del día sin zona: al imprimir cargas por zona, van aparte al final
+  // para que ningún cliente "desaparezca" (pedido de Lisandro, 22/09/2026).
+  function hojaSinZona() {
+    if (unificado) return ""; // en carga única ya van incluidos
+    const sin = delDia().filter((p) => zonaDe(p) === 0);
+    if (!sin.length) return "";
+    return hojaIndividualHTML(sin, "Sin zona — revisar dirección");
+  }
+
   function imprimirCarga(zonaNum) {
+    if (!delDia().length) { toastFn("No hay pedidos para el día seleccionado", "error"); return; }
     const t = unificado ? "Carga única (unificada)" : "Zona " + zonaNum;
-    imprimir(hojaCargaHTML(pedidosDeZona(zonaNum), t));
+    imprimir(hojaCargaHTML(pedidosDeZona(zonaNum), t) + hojaSinZona());
   }
   function imprimirClientes(zonaNum) {
+    if (!delDia().length) { toastFn("No hay pedidos para el día seleccionado", "error"); return; }
     const t = unificado ? "Clientes — carga única (unificada)" : "Zona " + zonaNum;
-    imprimir(hojaClientesHTML(zonaNum, t));
+    imprimir(hojaClientesHTML(zonaNum, t) + hojaSinZona());
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -389,6 +415,14 @@
     toastFn = o.toast || toastFn;
     document.getElementById("btn-reparto-cargar").addEventListener("click", cargar);
     document.getElementById("btn-unificar").addEventListener("click", alternarUnificar);
+    document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((chip) =>
+      chip.addEventListener("click", () => {
+        diaOffset = parseInt(chip.dataset.dia, 10);
+        document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((x) => x.classList.toggle("active", x === chip));
+        toastFn(diaOffset === 0 ? "Mostrando pedidos de hoy" : "Mostrando pedidos de ayer");
+        preparar().then(render); // geocodifica las direcciones que falten del día elegido
+      })
+    );
     document.getElementById("btn-carga-z1").addEventListener("click", () => imprimirCarga(1));
     document.getElementById("btn-carga-z2").addEventListener("click", () => imprimirCarga(2));
     document.getElementById("btn-clientes-z1").addEventListener("click", () => imprimirClientes(1));
