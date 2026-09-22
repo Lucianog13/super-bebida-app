@@ -778,6 +778,7 @@
     }
     pedidosNube = await res.json();
     renderPedidos();
+    actualizarAvisoMismaCarga();
     detectarZonasFondo();
   }
 
@@ -810,6 +811,13 @@
 
   function pedidosMarcados() {
     return pedidosNube.filter((p) => pedidosSeleccion.has(p.id));
+  }
+
+  // Aviso en la vista Pedidos: hoy y ayer tienen la MISMA carga (mismos productos y cantidades).
+  function actualizarAvisoMismaCarga() {
+    const el = $("aviso-misma-carga-pedidos");
+    if (!el) return;
+    el.hidden = !RepartoCore.mismaCarga(Dia.filtrarDias(pedidosNube, [0]), Dia.filtrarDias(pedidosNube, [-1]));
   }
 
   function zonaLabel(z) {
@@ -861,6 +869,16 @@
     let sel = pedidosMarcados();
     if (!sel.length) sel = pedidosDelDia(); // sin selección manual → todo el día elegido
     if (!sel.length) { toast("No hay pedidos para el día seleccionado", "error"); return; }
+    // Sin selección manual y carga de hoy == ayer → preguntar qué día imprimir.
+    if (!pedidosMarcados().length && RepartoCore.mismaCarga(Dia.filtrarDias(pedidosNube, [0]), Dia.filtrarDias(pedidosNube, [-1]))) {
+      Reparto.preguntarDiaImprimir((dias) => generarCargaSeleccion(Dia.filtrarDias(pedidosNube, dias)));
+      return;
+    }
+    generarCargaSeleccion(sel);
+  }
+
+  async function generarCargaSeleccion(sel) {
+    if (!sel.length) { toast("No hay pedidos para ese día", "error"); return; }
     await ubicarSeleccion(sel);
     const porZona = separarPorZona(sel);
     const partes = [];

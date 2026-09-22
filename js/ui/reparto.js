@@ -148,6 +148,13 @@
     renderMapa();
     renderLista();
     renderResumen();
+    renderAvisoMismaCarga();
+  }
+
+  function renderAvisoMismaCarga() {
+    const el = document.getElementById("aviso-misma-carga");
+    if (!el) return;
+    el.hidden = !RC().mismaCarga(Dia.filtrarDias(pedidos, [0]), Dia.filtrarDias(pedidos, [-1]));
   }
 
   function renderMapa() {
@@ -285,10 +292,10 @@
   }
 
   // ── Hojas de carga ────────────────────────────────────────────────────────
-  function pedidosDeZona(zona) {
-    const hoy = delDia();
-    if (unificado) return hoy;
-    return hoy.filter((p) => zonaDe(p) === zona);
+  function pedidosDeZona(zona, lista) {
+    const ps = lista || delDia();
+    if (unificado) return ps;
+    return ps.filter((p) => zonaDe(p) === zona);
   }
 
   // Control de Carga (sumado por producto). Recibe los pedidos explícitos; la
@@ -353,8 +360,8 @@
     </div>`;
   }
 
-  function hojaClientesHTML(zonaNum, tituloZona) {
-    const ps = pedidosDeZona(zonaNum);
+  function hojaClientesHTML(zonaNum, tituloZona, lista) {
+    const ps = lista || pedidosDeZona(zonaNum);
     const totalCarga = ps.reduce((s, p) => s + (p.total || 0), 0);
     const filas = ps.map((p) => {
       const c = p.cliente || {};
@@ -392,24 +399,40 @@
 
   // Pedidos del día sin zona: al imprimir cargas por zona, van aparte al final
   // para que ningún cliente "desaparezca" (pedido de Lisandro, 22/09/2026).
-  function hojaSinZona() {
+  function hojaSinZona(lista) {
     if (unificado) return ""; // en carga única ya van incluidos
-    const sin = delDia().filter((p) => zonaDe(p) === 0);
+    const sin = (lista || delDia()).filter((p) => zonaDe(p) === 0);
     if (!sin.length) return "";
     return hojaIndividualHTML(sin, "Sin zona — revisar dirección");
   }
 
-  function imprimirCarga(zonaNum) {
-    if (!delDia().length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
-    const sufijo = diaDias.length > 1 ? " · ayer + hoy" : "";
-    const t = (unificado ? "Carga única (unificada)" : "Zona " + zonaNum) + sufijo;
-    imprimir(hojaCargaHTML(pedidosDeZona(zonaNum), t) + hojaSinZona());
+  let impresionPendiente = null; // fn(dias) a ejecutar cuando se elige día en el modal
+
+  // Si la carga de hoy y ayer es la MISMA (mismos productos y cantidades),
+  // pregunta qué día imprimir; si no, imprime directo con los días actuales.
+  function preguntarDiaImprimir(fn) {
+    const misma = RC().mismaCarga(Dia.filtrarDias(pedidos, [0]), Dia.filtrarDias(pedidos, [-1]));
+    if (!misma) { fn(diaDias); return; }
+    impresionPendiente = fn;
+    const m = document.getElementById("modal-elegir-dia");
+    if (m) m.hidden = false;
   }
-  function imprimirClientes(zonaNum) {
-    if (!delDia().length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
-    const sufijo = diaDias.length > 1 ? " · ayer + hoy" : "";
+
+  function imprimirCarga(zonaNum, dias) {
+    const d = dias || diaDias;
+    const lista = Dia.filtrarDias(pedidos, d);
+    if (!lista.length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
+    const sufijo = d.length > 1 ? " · ayer + hoy" : "";
+    const t = (unificado ? "Carga única (unificada)" : "Zona " + zonaNum) + sufijo;
+    imprimir(hojaCargaHTML(pedidosDeZona(zonaNum, lista), t) + hojaSinZona(lista));
+  }
+  function imprimirClientes(zonaNum, dias) {
+    const d = dias || diaDias;
+    const lista = Dia.filtrarDias(pedidos, d);
+    if (!lista.length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
+    const sufijo = d.length > 1 ? " · ayer + hoy" : "";
     const t = (unificado ? "Clientes — carga única (unificada)" : "Zona " + zonaNum) + sufijo;
-    imprimir(hojaClientesHTML(zonaNum, t) + hojaSinZona());
+    imprimir(hojaClientesHTML(zonaNum, t, lista) + hojaSinZona(lista));
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -426,10 +449,25 @@
         preparar().then(render); // geocodifica las direcciones que falten de los días elegidos
       })
     );
-    document.getElementById("btn-carga-z1").addEventListener("click", () => imprimirCarga(1));
-    document.getElementById("btn-carga-z2").addEventListener("click", () => imprimirCarga(2));
-    document.getElementById("btn-clientes-z1").addEventListener("click", () => imprimirClientes(1));
-    document.getElementById("btn-clientes-z2").addEventListener("click", () => imprimirClientes(2));
+    document.getElementById("btn-carga-z1").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCarga(1, d)));
+    document.getElementById("btn-carga-z2").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCarga(2, d)));
+    document.getElementById("btn-clientes-z1").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirClientes(1, d)));
+    document.getElementById("btn-clientes-z2").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirClientes(2, d)));
+    const modalDia = document.getElementById("modal-elegir-dia");
+    if (modalDia) {
+      modalDia.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-dia-print]");
+        if (btn) {
+          const val = btn.dataset.diaPrint;
+          modalDia.hidden = true;
+          const fn = impresionPendiente;
+          impresionPendiente = null;
+          if (val !== "cancelar" && fn) fn(val === "ambos" ? [0, -1] : [parseInt(val, 10)]);
+          return;
+        }
+        if (e.target === modalDia) { modalDia.hidden = true; impresionPendiente = null; } // click fuera cancela
+      });
+    }
     document.getElementById("lista-reparto").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-accion='zona']");
       if (!btn) return;
@@ -446,5 +484,6 @@
     hojaCargaHTML,
     hojaIndividualHTML,
     imprimirHTML: imprimir,
+    preguntarDiaImprimir,
   };
 });

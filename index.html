@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=51">
+  <link rel="stylesheet" href="css/style.css?v=52">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -258,6 +258,7 @@
           <button id="btn-hoja-carga" class="btn secondary small">🖨 Hoja de carga</button>
           <button id="btn-recargar-pedidos" class="btn small outline">↻ Actualizar</button>
         </div>
+        <p id="aviso-misma-carga-pedidos" class="admin-ayuda" hidden>⚠️ La carga de hoy y ayer es la misma — si ya imprimiste una hoja, no hace falta la otra.</p>
         <div id="lista-pedidos" class="lista-pedidos"></div>
       </div>
       <div id="panel-reparto" hidden>
@@ -275,6 +276,7 @@
           <button id="btn-clientes-z2" class="btn small secondary">🖨 Clientes Z2</button>
         </div>
         <p id="sugerencia-unificar" class="admin-ayuda" hidden>💡 Una zona trae pocos pedidos — podés unificar todo en una sola carga.</p>
+        <p id="aviso-misma-carga" class="admin-ayuda" hidden>⚠️ Hoy y ayer tienen la MISMA carga — elegí el día con los botones de arriba (no hace falta imprimir las dos).</p>
         <div id="reparto-resumen" class="reparto-resumen"></div>
         <div id="mapa-reparto" class="mapa-reparto"></div>
         <div id="lista-reparto" class="lista-reparto"></div>
@@ -390,6 +392,19 @@
     </div>
   </div>
 
+  <div id="modal-elegir-dia" class="modal" hidden>
+    <div class="modal-caja">
+      <h3>⚠️ Hoy y ayer tienen la misma carga</h3>
+      <p class="modal-sub">¿Qué hoja imprimís?</p>
+      <div class="modal-dia-botones">
+        <button type="button" class="btn primary" data-dia-print="0">📅 Hoy</button>
+        <button type="button" class="btn secondary" data-dia-print="-1">📅 Ayer</button>
+        <button type="button" class="btn secondary" data-dia-print="ambos">📅 Ayer + Hoy</button>
+        <button type="button" class="btn outline" data-dia-print="cancelar">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-sabores" class="modal" hidden>
     <div class="modal-caja modal-sabores">
       <div class="modal-sabores-head">
@@ -414,23 +429,23 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=51"></script>
-  <script src="js/data/sabores.js?v=51"></script>
-  <script src="js/data/zonas.js?v=51"></script>
-  <script src="js/core/cart.js?v=51"></script>
-  <script src="js/core/dia.js?v=51"></script>
-  <script src="js/core/order.js?v=51"></script>
-  <script src="js/core/storage.js?v=51"></script>
-  <script src="js/core/auth.js?v=51"></script>
-  <script src="js/core/reparto-core.js?v=51"></script>
-  <script src="js/config.js?v=51"></script>
-  <script src="js/ui/catalog.js?v=51"></script>
-  <script src="js/ui/cartView.js?v=51"></script>
-  <script src="js/ui/checkout.js?v=51"></script>
-  <script src="js/ui/admin.js?v=51"></script>
-  <script src="js/ui/clientes.js?v=51"></script>
-  <script src="js/ui/reparto.js?v=51"></script>
+  <script src="js/data/products.js?v=52"></script>
+  <script src="js/data/sabores.js?v=52"></script>
+  <script src="js/data/zonas.js?v=52"></script>
+  <script src="js/core/cart.js?v=52"></script>
+  <script src="js/core/dia.js?v=52"></script>
+  <script src="js/core/order.js?v=52"></script>
+  <script src="js/core/storage.js?v=52"></script>
+  <script src="js/core/auth.js?v=52"></script>
+  <script src="js/core/reparto-core.js?v=52"></script>
+  <script src="js/config.js?v=52"></script>
+  <script src="js/ui/catalog.js?v=52"></script>
+  <script src="js/ui/cartView.js?v=52"></script>
+  <script src="js/ui/checkout.js?v=52"></script>
+  <script src="js/ui/admin.js?v=52"></script>
+  <script src="js/ui/clientes.js?v=52"></script>
+  <script src="js/ui/reparto.js?v=52"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=51"></script>
+  <script src="js/app.js?v=52"></script>
 </body>
 </html>

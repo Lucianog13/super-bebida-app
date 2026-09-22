@@ -52,6 +52,25 @@
     }));
   }
 
+  // ¿Dos conjuntos de pedidos forman la MISMA carga? Compara el agregado de
+  // productos (nombre|presentacion|unidad → cantidad total) exactamente igual.
+  // Sirve para avisar "hoy y ayer repartís lo mismo" (pedido de Lisandro, 22/09/2026).
+  function mismaCarga(ordersA, ordersB) {
+    const a = agregarItems(ordersA);
+    const b = agregarItems(ordersB);
+    if (!a.length || !b.length) return false; // un día sin pedidos no es "la misma carga"
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (
+        a[i].nombre !== b[i].nombre ||
+        a[i].presentacion !== b[i].presentacion ||
+        a[i].unidad !== b[i].unidad ||
+        a[i].cantidad !== b[i].cantidad
+      ) return false;
+    }
+    return true;
+  }
+
   // Zona cuyo centroide queda más cerca de (lat, lon).
   // zonas = { 1: {centro:{lat,lon}}, 2: {...} }.
   function asignarZona(lat, lon, zonas) {
@@ -76,5 +95,5 @@
     return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
   }
 
-  return { agregarItems, agruparPorCliente, asignarZona, nombreDiaLargo };
+  return { agregarItems, agruparPorCliente, asignarZona, nombreDiaLargo, mismaCarga };
 });

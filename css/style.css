@@ -1607,3 +1607,6 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   background: #fff7e6; border: 1px solid var(--gold); color: #8a5a00;
   border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.8rem;
 }
+
+/* ── Modal "¿Qué hoja imprimís?" (misma carga hoy/ayer) ── */
+.modal-dia-botones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
