@@ -869,9 +869,10 @@
 
   function imprimirRemitos(pedidos) {
     if (!pedidos || !pedidos.length) {
-      toast("No hay pedidos para imprimir");
+      toast("No hay pedidos para imprimir", "error");
       return;
     }
+    toast(`Imprimiendo ${pedidos.length} pedido${pedidos.length === 1 ? "" : "s"}…`);
     $("zona-impresion").innerHTML = pedidos
       .map((p) => `<div class="pedido-hoja">${remitoHTML(p)}</div>`)
       .join("");
