@@ -18,25 +18,38 @@
     return [...agg.values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
 
-  // Cliente por cliente con sus productos (sumados por línea). Devuelve:
-  // [{ id, cliente, items: [{nombre, presentacion, unidad, cantidad}], total }]
+  // Cliente por cliente con sus productos (sumados por línea). Si el MISMO cliente
+  // (mismo Nº de cliente, o mismo nombre + dirección) aparece en varios pedidos,
+  // se FUSIONA en un solo bloque para no duplicarlo en la hoja (pedido de
+  // Lisandro, 22/09/2026: unificar ayer + hoy sin duplicar clientes).
+  // Devuelve: [{ id, cliente, items: [{nombre, presentacion, unidad, cantidad}], total }]
   function agruparPorCliente(orders) {
-    return (orders || []).map((p) => {
-      const m = new Map();
+    const mapa = new Map();
+    (orders || []).forEach((p) => {
+      const c = p.cliente || {};
+      const clave = c.nroCliente
+        ? "N:" + String(c.nroCliente).trim()
+        : "C:" + (c.nombre || "").trim().toLowerCase() + "|" + (c.direccion || "").trim().toLowerCase();
+      let bloque = mapa.get(clave);
+      if (!bloque) {
+        bloque = { id: p.id, cliente: c, items: new Map(), total: 0 };
+        mapa.set(clave, bloque);
+      }
       (p.items || []).forEach((it) => {
-        const clave = `${it.nombre}|${it.presentacion || ""}|${it.unidad || ""}`;
-        if (!m.has(clave)) {
-          m.set(clave, { nombre: it.nombre, presentacion: it.presentacion || "", unidad: it.unidad || "", cantidad: 0 });
+        const k = `${it.nombre}|${it.presentacion || ""}|${it.unidad || ""}`;
+        if (!bloque.items.has(k)) {
+          bloque.items.set(k, { nombre: it.nombre, presentacion: it.presentacion || "", unidad: it.unidad || "", cantidad: 0 });
         }
-        m.get(clave).cantidad += it.cantidad;
+        bloque.items.get(k).cantidad += it.cantidad;
       });
-      return {
-        id: p.id,
-        cliente: p.cliente || {},
-        items: [...m.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)),
-        total: p.total || 0,
-      };
+      bloque.total += (p.total || 0);
     });
+    return [...mapa.values()].map((b) => ({
+      id: b.id,
+      cliente: b.cliente,
+      items: [...b.items.values()].sort((a, b) => a.nombre.localeCompare(b.nombre)),
+      total: b.total,
+    }));
   }
 
   // Zona cuyo centroide queda más cerca de (lat, lon).

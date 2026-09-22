@@ -697,7 +697,7 @@
   // ── Pedidos (vista admin: agrupar por fecha, seleccionar e imprimir) ──
   let pedidosNube = [];
   const pedidosSeleccion = new Set();
-  let diaSeleccion = "hoy"; // hoy | ayer | todos — selector de día del panel Pedidos
+  let diaSeleccion = "hoy"; // hoy | ayer | ayer-hoy | todos — selector de día del panel Pedidos
 
   function fechaClave(fecha) {
     return Dia.fechaClave(fecha); // clave de día en hora argentina (js/core/dia.js)
@@ -781,9 +781,10 @@
     detectarZonasFondo();
   }
 
-  // Pedidos del día seleccionado (hoy/ayer por fecha argentina; todos = sin filtro).
+  // Pedidos del día seleccionado (hoy/ayer/ayer+hoy por fecha argentina; todos = sin filtro).
   function pedidosDelDia() {
     if (diaSeleccion === "todos") return pedidosNube;
+    if (diaSeleccion === "ayer-hoy") return Dia.filtrarDias(pedidosNube, [0, -1]);
     return Dia.filtrarDia(pedidosNube, diaSeleccion === "hoy" ? 0 : -1);
   }
 
@@ -795,7 +796,7 @@
     }
     const delDia = pedidosDelDia();
     if (!delDia.length) {
-      const diaTxt = diaSeleccion === "hoy" ? "hoy" : diaSeleccion === "ayer" ? "ayer" : "mostrar";
+      const diaTxt = { hoy: "hoy", ayer: "ayer", "ayer-hoy": "ayer y hoy" }[diaSeleccion] || "mostrar";
       el.innerHTML = `<p class="carrito-vacio">No hay pedidos para ${diaTxt} todavía.</p>`;
       return;
     }
@@ -980,7 +981,8 @@
       diaSeleccion = chip.dataset.dia;
       document.querySelectorAll("#dia-selector-pedidos .chip-dia").forEach((x) => x.classList.toggle("active", x === chip));
       pedidosSeleccion.clear();
-      $("btn-imprimir-todo").textContent = diaSeleccion === "todos" ? "🖨 Imprimir todo" : "🖨 Imprimir " + (diaSeleccion === "hoy" ? "hoy" : "ayer");
+      const lbl = { hoy: "hoy", ayer: "ayer", "ayer-hoy": "ayer + hoy" }[diaSeleccion] || "";
+      $("btn-imprimir-todo").textContent = diaSeleccion === "todos" ? "🖨 Imprimir todo" : "🖨 Imprimir " + lbl;
       renderPedidos();
     })
   );

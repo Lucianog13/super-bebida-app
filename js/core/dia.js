@@ -61,6 +61,19 @@
     return (orders || []).filter((p) => p && mismoDia(p.fecha, offset, ahora));
   }
 
+  // ¿La fecha cae en alguno de los días "hoy + offset"? offsets [0,-1] = hoy y ayer.
+  function enDias(fecha, offsets, ahora) {
+    const k = claveDia(fecha);
+    if (!k) return false;
+    return (offsets || []).some((o) => mismaClave(k, claveDiaOffset(o, ahora)));
+  }
+
+  // Filtra pedidos cuya fecha cae en CUALQUIERA de los días pedidos (ej. [0,-1]).
+  // Preserva el orden de entrada (la nube ya viene ordenada por fecha desc).
+  function filtrarDias(orders, offsets, ahora) {
+    return (orders || []).filter((p) => p && enDias(p.fecha, offsets, ahora));
+  }
+
   // "22 de septiembre de 2026" — etiqueta para agrupar en la vista Pedidos.
   function fechaClave(fecha) {
     const d = aFecha(fecha);
@@ -109,6 +122,8 @@
     mismaClave,
     mismoDia,
     filtrarDia,
+    enDias,
+    filtrarDias,
     fechaClave,
     formatFechaCorta,
     nombreDiaLargo,

@@ -13,7 +13,7 @@
   const zonaOverride = {}; // pid -> zona (1|2)
   let unificado = false;
   let toastFn = () => {};
-  let diaOffset = 0; // 0 = hoy, -1 = ayer (selector de día del panel Reparto)
+  let diaDias = [0]; // offsets de días mostrados: [0] hoy, [-1] ayer, [0,-1] ayer + hoy
 
   const CFG = () => window.APP_CONFIG;
   const Z = () => window.ZONAS;
@@ -31,8 +31,8 @@
     };
   })();
 
-  // Pedidos del día mostrado, comparando la fecha en hora argentina (Dia.mismoDia).
-  function delDia() { return Dia.filtrarDia(pedidos, diaOffset); }
+  // Pedidos de los días mostrados (hoy/ayer/ambos), comparando la fecha en hora argentina.
+  function delDia() { return Dia.filtrarDias(pedidos, diaDias); }
 
   async function cargar() {
     if (!window.Auth || !window.Auth.getSession()) return;
@@ -400,13 +400,15 @@
   }
 
   function imprimirCarga(zonaNum) {
-    if (!delDia().length) { toastFn("No hay pedidos para el día seleccionado", "error"); return; }
-    const t = unificado ? "Carga única (unificada)" : "Zona " + zonaNum;
+    if (!delDia().length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
+    const sufijo = diaDias.length > 1 ? " · ayer + hoy" : "";
+    const t = (unificado ? "Carga única (unificada)" : "Zona " + zonaNum) + sufijo;
     imprimir(hojaCargaHTML(pedidosDeZona(zonaNum), t) + hojaSinZona());
   }
   function imprimirClientes(zonaNum) {
-    if (!delDia().length) { toastFn("No hay pedidos para el día seleccionado", "error"); return; }
-    const t = unificado ? "Clientes — carga única (unificada)" : "Zona " + zonaNum;
+    if (!delDia().length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
+    const sufijo = diaDias.length > 1 ? " · ayer + hoy" : "";
+    const t = (unificado ? "Clientes — carga única (unificada)" : "Zona " + zonaNum) + sufijo;
     imprimir(hojaClientesHTML(zonaNum, t) + hojaSinZona());
   }
 
@@ -417,10 +419,11 @@
     document.getElementById("btn-unificar").addEventListener("click", alternarUnificar);
     document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((chip) =>
       chip.addEventListener("click", () => {
-        diaOffset = parseInt(chip.dataset.dia, 10);
+        diaDias = chip.dataset.dia === "ambos" ? [0, -1] : [parseInt(chip.dataset.dia, 10)];
         document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((x) => x.classList.toggle("active", x === chip));
-        toastFn(diaOffset === 0 ? "Mostrando pedidos de hoy" : "Mostrando pedidos de ayer");
-        preparar().then(render); // geocodifica las direcciones que falten del día elegido
+        const txt = diaDias.length > 1 ? "Mostrando pedidos de ayer y hoy" : diaDias[0] === 0 ? "Mostrando pedidos de hoy" : "Mostrando pedidos de ayer";
+        toastFn(txt);
+        preparar().then(render); // geocodifica las direcciones que falten de los días elegidos
       })
     );
     document.getElementById("btn-carga-z1").addEventListener("click", () => imprimirCarga(1));
