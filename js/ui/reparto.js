@@ -14,6 +14,7 @@
   let unificado = false;
   let toastFn = () => {};
   let diaDias = [0]; // offsets de días mostrados: [0] hoy, [-1] ayer, [0,-1] ayer + hoy
+  let zonasClientes = {}; // nroCliente (string) -> zona (1|2|0) — persistida en `clientes`
 
   const CFG = () => window.APP_CONFIG;
   const Z = () => window.ZONAS;
@@ -38,6 +39,7 @@
     if (!window.Auth || !window.Auth.getSession()) return;
     const t = await window.Auth.token();
     if (!t) { toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error"); return; }
+    await cargarZonasClientes();
     const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?select=*&order=fecha.desc`, {
       headers: { apikey: CFG().supabaseKey, Authorization: "Bearer " + t },
     });
@@ -98,22 +100,68 @@
     return RC().asignarZona(lat, lon, Z().zonas);
   }
 
+  // Zona fija del cliente (persistida en la tabla `clientes`), si la tiene. Así
+  // los clientes a los que se les asignó Z1/Z2 se organizan solos en sus zonas.
+  function zonaCliente(p) {
+    const nro = (p.cliente && p.cliente.nroCliente) || "";
+    if (!nro) return 0;
+    const z = zonasClientes[String(nro).trim()];
+    return z === 1 || z === 2 ? z : 0;
+  }
+
   function zonaDe(p) {
-    if (p.zona === 1 || p.zona === 2) return p.zona; // zona manual guardada en la nube
-    if (zonaOverride[p.id]) return zonaOverride[p.id];
-    if (p._geo) return asignarZona(p._geo.lat, p._geo.lon);
-    return 0; // sin dirección → sin zona (asignar a mano)
+    const geo = p._geo ? asignarZona(p._geo.lat, p._geo.lon) : 0;
+    return RC().prioridadZona(p.zona, zonaOverride[p.id], zonaCliente(p), geo);
   }
 
   // Zona disponible SIN geocodificar (solo caché + _geo). Rápida, para la vista
   // "Pedidos"; si no está resuelta devuelve 0 y la resuelve detectarZonas().
   function zonaCacheada(p) {
-    if (p.zona === 1 || p.zona === 2) return p.zona; // zona manual guardada en la nube
-    if (zonaOverride[p.id]) return zonaOverride[p.id];
     const dir = (p.cliente && p.cliente.direccion) || "";
     const g = p._geo || (dir ? geocache.get(dir) : null);
-    if (g) return asignarZona(g.lat, g.lon);
-    return 0;
+    const geo = g ? asignarZona(g.lat, g.lon) : 0;
+    return RC().prioridadZona(p.zona, zonaOverride[p.id], zonaCliente(p), geo);
+  }
+
+  // Carga la zona fija de cada cliente (tabla `clientes`) a un mapa en memoria.
+  async function cargarZonasClientes() {
+    try {
+      const cfg = CFG();
+      const t = window.Auth ? await window.Auth.token() : null;
+      const h = { apikey: cfg.supabaseKey, Authorization: "Bearer " + (t || cfg.supabaseKey) };
+      const res = await fetch(`${cfg.supabaseUrl}/rest/v1/clientes?select=codigo,zona`, { headers: h });
+      if (!res.ok) return;
+      const rows = await res.json();
+      const mapa = {};
+      rows.forEach((c) => {
+        const nro = String(c.codigo == null ? "" : c.codigo).trim();
+        if (nro) mapa[nro] = c.zona === 1 || c.zona === 2 ? c.zona : 0;
+      });
+      zonasClientes = mapa;
+    } catch { /* sin red: se usa geocodificación como fallback */ }
+  }
+
+  // Guarda la zona de un cliente en la nube (tabla `clientes`) para que sus
+  // próximos pedidos se organicen automáticamente. zona = 1|2|null.
+  async function guardarZonaCliente(p, zona) {
+    const nro = (p && p.cliente && p.cliente.nroCliente) || "";
+    if (!nro) return;
+    const z = zona === 1 || zona === 2 ? zona : null;
+    const t = window.Auth ? await window.Auth.token() : null;
+    if (!t) return;
+    try {
+      const res = await fetch(`${CFG().supabaseUrl}/rest/v1/clientes?codigo=eq.${encodeURIComponent(String(nro).trim())}`, {
+        method: "PATCH",
+        headers: {
+          apikey: CFG().supabaseKey,
+          Authorization: "Bearer " + t,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ zona: z }),
+      });
+      if (res.ok) zonasClientes[String(nro).trim()] = z || 0;
+    } catch { /* no crítico: si falla, el pedido igual queda con su zona manual */ }
   }
 
   // Geocodifica (con rate limit de 1 req/seg) los pedidos sin zona y avisa por
@@ -283,6 +331,7 @@
       body: JSON.stringify({ zona }),
     });
     if (!res.ok) toastFn("La zona quedó en esta pantalla pero no se guardó en la nube (HTTP " + res.status + ")", "error");
+    await guardarZonaCliente(p, zona);
   }
 
   function alternarUnificar() {
@@ -432,7 +481,7 @@
     if (!lista.length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
     const sufijo = d.length > 1 ? " · ayer + hoy" : "";
     const t = (unificado ? "Clientes — carga única (unificada)" : "Zona " + zonaNum) + sufijo;
-    imprimir(hojaClientesHTML(zonaNum, t, lista) + hojaSinZona(lista));
+    imprimir(hojaClientesHTML(zonaNum, t, pedidosDeZona(zonaNum, lista)) + hojaSinZona(lista));
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -481,6 +530,8 @@
     // Helpers para la vista "Pedidos" (app.js):
     zonaCacheada,
     detectarZonas,
+    cargarZonasClientes,
+    guardarZonaCliente,
     hojaCargaHTML,
     hojaIndividualHTML,
     imprimirHTML: imprimir,

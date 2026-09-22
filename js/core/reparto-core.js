@@ -95,5 +95,16 @@
     return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
   }
 
-  return { agregarItems, agruparPorCliente, asignarZona, nombreDiaLargo, mismaCarga };
+  // Prioridad de la zona de un pedido (pedido de Tincho/Lisandro, 22/09/2026):
+  // 1) zona manual del pedido, 2) override de sesión, 3) zona del cliente
+  // (persistida), 4) zona por geocodificación. Devuelve 1 | 2 | 0.
+  function prioridadZona(zonaPedido, zonaOverride, zonaCliente, zonaGeo) {
+    if (zonaPedido === 1 || zonaPedido === 2) return zonaPedido;
+    if (zonaOverride === 1 || zonaOverride === 2) return zonaOverride;
+    if (zonaCliente === 1 || zonaCliente === 2) return zonaCliente;
+    if (zonaGeo === 1 || zonaGeo === 2) return zonaGeo;
+    return 0;
+  }
+
+  return { agregarItems, agruparPorCliente, asignarZona, nombreDiaLargo, mismaCarga, prioridadZona };
 });

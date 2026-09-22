@@ -769,6 +769,7 @@
       toast("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
+    await Reparto.cargarZonasClientes();
     const res = await fetch(`${CFG.supabaseUrl}/rest/v1/pedidos?select=*&order=fecha.desc`, {
       headers: { apikey: CFG.supabaseKey, Authorization: "Bearer " + t },
     });
@@ -958,6 +959,7 @@
       return;
     }
     p.zona = valor;
+    await Reparto.guardarZonaCliente(p, valor);
     toast(valor ? `Pedido asignado a Zona ${valor} ✔` : "Zona quitada ✔");
     renderPedidos();
   }
