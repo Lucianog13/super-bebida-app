@@ -800,6 +800,11 @@
       el.innerHTML = `<p class="carrito-vacio">No hay pedidos para ${diaTxt} todavía.</p>`;
       return;
     }
+    // "Ayer + Hoy" va en UN solo grupo (no separado por día), con título combinado.
+    if (diaSeleccion === "ayer-hoy") {
+      el.innerHTML = grupoHTML({ fecha: Dia.etiquetaRangoDias([0, -1]), pedidos: delDia });
+      return;
+    }
     el.innerHTML = agruparPorFecha(delDia).map(grupoHTML).join("");
   }
 

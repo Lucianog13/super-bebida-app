@@ -114,6 +114,29 @@
     return `${cap(g("weekday"))} ${g("day")} de ${cap(g("month"))} de ${g("year")}`;
   }
 
+  const MESES_AR = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+  // Etiqueta combinada para un grupo de varios días (offsets [0,-1] = hoy y ayer):
+  // "Hoy 22 y ayer 21 de septiembre de 2026" (mismo mes)
+  // "Hoy 1 de octubre y ayer 30 de septiembre de 2026" (meses distintos)
+  // "Hoy 1 de enero de 2027 y ayer 31 de diciembre de 2026" (años distintos)
+  function etiquetaRangoDias(offsets, ahora) {
+    const claves = (offsets || []).map((o) => claveDiaOffset(o, ahora)).filter(Boolean);
+    if (!claves.length) return "";
+    if (claves.length === 1) {
+      const k = claves[0];
+      return `${k.d} de ${MESES_AR[k.m - 1]} de ${k.y}`;
+    }
+    const [hoy, ayer] = claves;
+    if (hoy.m === ayer.m && hoy.y === ayer.y) {
+      return `Hoy ${hoy.d} y ayer ${ayer.d} de ${MESES_AR[hoy.m - 1]} de ${hoy.y}`;
+    }
+    if (hoy.y === ayer.y) {
+      return `Hoy ${hoy.d} de ${MESES_AR[hoy.m - 1]} y ayer ${ayer.d} de ${MESES_AR[ayer.m - 1]} de ${hoy.y}`;
+    }
+    return `Hoy ${hoy.d} de ${MESES_AR[hoy.m - 1]} de ${hoy.y} y ayer ${ayer.d} de ${MESES_AR[ayer.m - 1]} de ${ayer.y}`;
+  }
+
   return {
     TZ_ARG,
     aFecha,
@@ -127,5 +150,6 @@
     fechaClave,
     formatFechaCorta,
     nombreDiaLargo,
+    etiquetaRangoDias,
   };
 });
