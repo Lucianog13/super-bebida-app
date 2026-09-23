@@ -467,21 +467,23 @@
     if (m) m.hidden = false;
   }
 
-  function imprimirCarga(zonaNum, dias) {
+  // Botón único por zona: Control de Carga + Pedidos (hoja por cliente) +
+  // Hoja de Clientes en UNA sola impresión (pedido de Lisandro, 23/09/2026).
+  function imprimirCompleto(zonaNum, dias) {
     const d = dias || diaDias;
     const lista = Dia.filtrarDias(pedidos, d);
     if (!lista.length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
+    const zona = pedidosDeZona(zonaNum, lista);
+    if (!unificado && !zona.length) { toastFn("No hay pedidos en Zona " + zonaNum + " para los días seleccionados", "error"); return; }
     const sufijo = d.length > 1 ? " · ayer + hoy" : "";
     const t = (unificado ? "Carga única (unificada)" : "Zona " + zonaNum) + sufijo;
-    imprimir(hojaCargaHTML(pedidosDeZona(zonaNum, lista), t) + hojaSinZona(lista));
-  }
-  function imprimirClientes(zonaNum, dias) {
-    const d = dias || diaDias;
-    const lista = Dia.filtrarDias(pedidos, d);
-    if (!lista.length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
-    const sufijo = d.length > 1 ? " · ayer + hoy" : "";
-    const t = (unificado ? "Clientes — carga única (unificada)" : "Zona " + zonaNum) + sufijo;
-    imprimir(hojaClientesHTML(zonaNum, t, pedidosDeZona(zonaNum, lista)) + hojaSinZona(lista));
+    toastFn("Imprimiendo " + t + ": carga + pedidos + clientes…");
+    imprimir(
+      hojaCargaHTML(zona, t) +
+      hojaIndividualHTML(zona, t) +
+      hojaClientesHTML(zonaNum, t, zona) +
+      hojaSinZona(lista)
+    );
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -498,10 +500,8 @@
         preparar().then(render); // geocodifica las direcciones que falten de los días elegidos
       })
     );
-    document.getElementById("btn-carga-z1").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCarga(1, d)));
-    document.getElementById("btn-carga-z2").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCarga(2, d)));
-    document.getElementById("btn-clientes-z1").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirClientes(1, d)));
-    document.getElementById("btn-clientes-z2").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirClientes(2, d)));
+    document.getElementById("btn-todo-z1").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCompleto(1, d)));
+    document.getElementById("btn-todo-z2").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCompleto(2, d)));
     const modalDia = document.getElementById("modal-elegir-dia");
     if (modalDia) {
       modalDia.addEventListener("click", (e) => {
