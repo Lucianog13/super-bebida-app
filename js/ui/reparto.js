@@ -13,7 +13,9 @@
   const zonaOverride = {}; // pid -> zona (1|2)
   let unificado = false;
   let toastFn = () => {};
+  let verPedidoFn = null; // callback (p) => … abre el modal "Ver pedido" (lo pasa app.js)
   let diaDias = [0]; // offsets de días mostrados: [0] hoy, [-1] ayer, [0,-1] ayer + hoy
+  let diaTodos = false; // chip "Todos": lista completa de pedidos (historial)
   let zonasClientes = {}; // nroCliente (string) -> zona (1|2|0) — persistida en `clientes`
 
   const CFG = () => window.APP_CONFIG;
@@ -32,8 +34,8 @@
     };
   })();
 
-  // Pedidos de los días mostrados (hoy/ayer/ambos), comparando la fecha en hora argentina.
-  function delDia() { return Dia.filtrarDias(pedidos, diaDias); }
+  // Pedidos de los días mostrados (hoy/ayer/ambos/todos), comparando la fecha en hora argentina.
+  function delDia() { return diaTodos ? pedidos : Dia.filtrarDias(pedidos, diaDias); }
 
   async function cargar() {
     if (!window.Auth || !window.Auth.getSession()) return;
@@ -71,6 +73,7 @@
   }
 
   async function preparar() {
+    if (diaTodos) return; // "Todos" es historial: no geocodificar (sería 1 req/seg por cada dirección)
     const hoy = delDia();
     const faltan = hoy.filter((p) => {
       const dir = (p.cliente && p.cliente.direccion) || "";
@@ -193,8 +196,15 @@
 
   // ── Render ────────────────────────────────────────────────────────────────
   function render() {
-    renderMapa();
+    // En "Todos" (historial) el mapa, el resumen de zonas y el aviso no aportan:
+    // se muestran solo la lista para buscar y el modal "Ver pedido".
+    const mapa = document.getElementById("mapa-reparto");
+    const resumen = document.getElementById("reparto-resumen");
+    if (mapa) mapa.hidden = diaTodos;
+    if (resumen) resumen.hidden = diaTodos;
     renderLista();
+    if (diaTodos) return;
+    renderMapa();
     renderResumen();
     renderAvisoMismaCarga();
   }
@@ -202,6 +212,7 @@
   function renderAvisoMismaCarga() {
     const el = document.getElementById("aviso-misma-carga");
     if (!el) return;
+    if (diaTodos) { el.hidden = true; return; }
     el.hidden = !RC().mismaCarga(Dia.filtrarDias(pedidos, [0]), Dia.filtrarDias(pedidos, [-1]));
   }
 
@@ -277,12 +288,19 @@
           <div class="rep-cliente"><strong>${c.nombre || "—"}</strong>${c.nroCliente ? " · Nº " + c.nroCliente : ""}</div>
           <div class="rep-dir">${c.direccion || "sin dirección"}${c.telefono ? " · " + c.telefono : ""}</div>
           <div class="rep-items">${n} item${n === 1 ? "" : "s"} · ${Order.formatMoney(p.total)}</div>
+          <div class="rep-nro-editor">
+            Nº de cliente
+            <input type="text" class="in-nro-cliente" value="${c.nroCliente || ""}" placeholder="—">
+            <button class="btn small outline" data-accion="guardar-nro">Guardar</button>
+            <button class="btn small outline" data-accion="ver-pedido">👁 Ver pedido</button>
+          </div>
         </div>
         <div class="rep-zona">
           <span class="rep-zona-label" style="color:${colorZona(z)}">${z ? "Zona " + z : "Sin zona"}</span>
           <div class="rep-zona-botones">
             <button class="btn mini ${z === 1 ? "primary" : "outline"}" data-accion="zona" data-zona="1">Z1</button>
             <button class="btn mini ${z === 2 ? "primary" : "outline"}" data-accion="zona" data-zona="2">Z2</button>
+            ${z === 1 || z === 2 ? `<button class="btn mini outline" data-accion="zona" data-zona="0" title="Quitar zona manual">✕</button>` : ""}
           </div>
         </div>
       </div>`;
@@ -314,10 +332,11 @@
   async function cambiarZona(pid, zona) {
     const p = pedidos.find((x) => x.id === pid);
     if (!p) return;
+    const valor = zona === 0 ? null : zona; // 0 = quitar la zona manual (se guarda null)
     zonaOverride[pid] = zona;
-    p.zona = zona;
+    p.zona = valor;
     render();
-    toastFn("Pedido movido a Zona " + zona);
+    toastFn(valor ? `Pedido movido a Zona ${valor} ✔` : "Zona quitada ✔");
     const t = await window.Auth.token();
     if (!t) { toastFn("Ojo: sin sesión — la zona no se guardó en la nube", "error"); return; }
     const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
@@ -328,10 +347,41 @@
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       },
-      body: JSON.stringify({ zona }),
+      body: JSON.stringify({ zona: valor }),
     });
     if (!res.ok) toastFn("La zona quedó en esta pantalla pero no se guardó en la nube (HTTP " + res.status + ")", "error");
     await guardarZonaCliente(p, zona);
+  }
+
+  // Guarda el Nº de cliente del pedido en la nube (misma lógica que tenía la vista "Pedidos").
+  async function guardarNroCliente(pid) {
+    const p = pedidos.find((x) => x.id === pid);
+    const fila = document.querySelector(`.rep-fila[data-id="${CSS.escape(pid)}"]`);
+    if (!p || !fila) return;
+    const valor = fila.querySelector(".in-nro-cliente").value.trim();
+    const t = await window.Auth.token();
+    if (!t) {
+      toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
+      return;
+    }
+    const cliente = { ...(p.cliente || {}), nroCliente: valor };
+    const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
+      method: "PATCH",
+      headers: {
+        apikey: CFG().supabaseKey,
+        Authorization: "Bearer " + t,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ cliente }),
+    });
+    if (!res.ok) {
+      toastFn(res.status === 401 || res.status === 403 ? "No autorizado — cerrá sesión y volvé a entrar" : "Error al guardar (HTTP " + res.status + ")", "error");
+      return;
+    }
+    p.cliente = cliente;
+    toastFn("Nº de cliente guardado ✔");
+    render();
   }
 
   function alternarUnificar() {
@@ -470,6 +520,7 @@
   // Botón único por zona: Control de Carga + Pedidos (hoja por cliente) +
   // Hoja de Clientes en UNA sola impresión (pedido de Lisandro, 23/09/2026).
   function imprimirCompleto(zonaNum, dias) {
+    if (diaTodos) { toastFn("En \"Todos\" no se imprime — elegí Hoy, Ayer o Ayer + Hoy", "error"); return; }
     const d = dias || diaDias;
     const lista = Dia.filtrarDias(pedidos, d);
     if (!lista.length) { toastFn("No hay pedidos para los días seleccionados", "error"); return; }
@@ -489,19 +540,33 @@
   // ── Init ──────────────────────────────────────────────────────────────────
   function init(o) {
     toastFn = o.toast || toastFn;
+    verPedidoFn = o.verPedido || verPedidoFn;
     document.getElementById("btn-reparto-cargar").addEventListener("click", cargar);
     document.getElementById("btn-unificar").addEventListener("click", alternarUnificar);
     document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((chip) =>
       chip.addEventListener("click", () => {
-        diaDias = chip.dataset.dia === "ambos" ? [0, -1] : [parseInt(chip.dataset.dia, 10)];
+        const val = chip.dataset.dia;
+        diaTodos = val === "todos";
+        diaDias = val === "ambos" ? [0, -1] : [parseInt(val, 10)] || [0];
         document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((x) => x.classList.toggle("active", x === chip));
-        const txt = diaDias.length > 1 ? "Mostrando pedidos de ayer y hoy" : diaDias[0] === 0 ? "Mostrando pedidos de hoy" : "Mostrando pedidos de ayer";
+        const txt = diaTodos
+          ? "Mostrando todos los pedidos (historial)"
+          : diaDias.length > 1
+          ? "Mostrando pedidos de ayer y hoy"
+          : diaDias[0] === 0
+          ? "Mostrando pedidos de hoy"
+          : "Mostrando pedidos de ayer";
         toastFn(txt);
-        preparar().then(render); // geocodifica las direcciones que falten de los días elegidos
+        // "Todos" no geocodifica (preparar() lo saltea); el resto geocodifica lo que falte.
+        preparar().then(render);
       })
     );
-    document.getElementById("btn-todo-z1").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCompleto(1, d)));
-    document.getElementById("btn-todo-z2").addEventListener("click", () => preguntarDiaImprimir((d) => imprimirCompleto(2, d)));
+    const imprimirZonaBtn = (num) => {
+      if (diaTodos) { toastFn("En \"Todos\" no se imprime — elegí Hoy, Ayer o Ayer + Hoy", "error"); return; }
+      preguntarDiaImprimir((d) => imprimirCompleto(num, d));
+    };
+    document.getElementById("btn-todo-z1").addEventListener("click", () => imprimirZonaBtn(1));
+    document.getElementById("btn-todo-z2").addEventListener("click", () => imprimirZonaBtn(2));
     const modalDia = document.getElementById("modal-elegir-dia");
     if (modalDia) {
       modalDia.addEventListener("click", (e) => {
@@ -518,10 +583,15 @@
       });
     }
     document.getElementById("lista-reparto").addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-accion='zona']");
+      const btn = e.target.closest("[data-accion]");
       if (!btn) return;
       const pid = btn.closest(".rep-fila").dataset.id;
-      cambiarZona(pid, parseInt(btn.dataset.zona, 10));
+      if (btn.dataset.accion === "zona") cambiarZona(pid, parseInt(btn.dataset.zona, 10));
+      if (btn.dataset.accion === "guardar-nro") guardarNroCliente(pid);
+      if (btn.dataset.accion === "ver-pedido") {
+        const p = pedidos.find((x) => x.id === pid);
+        if (p && verPedidoFn) verPedidoFn(p);
+      }
     });
   }
 

@@ -1198,6 +1198,8 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .rep-zona { text-align: right; flex-shrink: 0; }
 .rep-zona-label { display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px; }
 .rep-zona-botones { display: flex; gap: 4px; justify-content: flex-end; }
+.rep-nro-editor { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+.rep-nro-editor input { width: 90px; padding: 5px 7px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 0.8rem; }
 .btn.mini { padding: 4px 9px; font-size: 0.72rem; border-radius: 7px; }
 
 /* Hojas de carga (Control de Carga + Hoja de Clientes) */
@@ -1238,6 +1240,19 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   .pedido-hoja:last-child { page-break-after: auto; }
   .hoja-carga { page-break-after: always; }
   .hoja-carga:last-child { page-break-after: auto; }
+  /* Cada cliente sale ENTERO en una página (nada de "empieza en una y termina
+     en otra"). El encabezado nunca queda huérfano al pie de página. */
+  .hc-cliente { break-inside: avoid; page-break-inside: avoid; }
+  .hc-tabla tr { break-inside: avoid; page-break-inside: avoid; }
+  .hc-head, .hc-repartidor { break-after: avoid; page-break-after: avoid; }
+  /* Compacto de impresión: entran más clientes por hoja (menos papel). */
+  .hoja-carga { font-size: 0.76rem; }
+  .hc-titulo { font-size: 0.98rem; }
+  .hc-head { padding-bottom: 6px; margin-bottom: 8px; }
+  .hc-repartidor { margin-bottom: 8px; }
+  .hc-tabla td { padding: 4px 3px; }
+  .hc-cliente { padding: 6px 8px; margin-bottom: 6px; }
+  .hc-total-carga { margin-top: 8px; padding-top: 8px; }
 }
 
 /* El atributo hidden siempre gana (evita que display:flex/block lo pise) */

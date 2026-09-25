@@ -694,204 +694,14 @@
       .join("");
   }
 
-  // ── Pedidos (vista admin: agrupar por fecha, seleccionar e imprimir) ──
-  let pedidosNube = [];
-  const pedidosSeleccion = new Set();
-  let diaSeleccion = "hoy"; // hoy | ayer | ayer-hoy | todos — selector de día del panel Pedidos
-
-  function fechaClave(fecha) {
-    return Dia.fechaClave(fecha); // clave de día en hora argentina (js/core/dia.js)
+  /** Muestra el remito completo del pedido en el modal "Ver pedido" (sin imprimir). */
+  function mostrarRemitoPedido(p) {
+    if (!p) return;
+    $("ver-pedido-contenido").innerHTML = `<div class="pedido-hoja">${remitoHTML(p)}</div>`;
+    $("modal-ver-pedido").hidden = false;
   }
 
-  function agruparPorFecha(pedidos) {
-    const grupos = [];
-    const mapa = new Map();
-    pedidos.forEach((p) => {
-      const clave = fechaClave(p.fecha);
-      if (!mapa.has(clave)) {
-        const g = { fecha: clave, pedidos: [] };
-        mapa.set(clave, g);
-        grupos.push(g);
-      }
-      mapa.get(clave).pedidos.push(p);
-    });
-    return grupos;
-  }
-
-  function pedidoResumen(p) {
-    const n = (p.items || []).length;
-    const c = p.cliente || {};
-    const z = Reparto.zonaCacheada(p);
-    const zBoton = (num, label) =>
-      `<button class="btn mini ${z === num ? "primary" : "outline"}" data-accion="zona" data-zona="${num}">${label}</button>`;
-    return `
-    <div class="pedido-fila" data-id="${p.id}">
-      <input type="checkbox" class="pedido-check" ${pedidosSeleccion.has(p.id) ? "checked" : ""}>
-      <div class="pedido-cuerpo">
-        <div class="pedido-cliente">
-          <strong>${c.nombre || "—"}</strong>
-          ${zonaBadgeHTML(p)}
-          ${c.nroCliente ? `<span class="pedido-nro">Nº ${c.nroCliente}</span>` : ""}
-          ${c.telefono ? `<span>· ${c.telefono}</span>` : ""}
-          ${c.direccion ? `<span>· ${c.direccion}</span>` : ""}
-        </div>
-        <div class="pedido-items">${n} item${n === 1 ? "" : "s"} · ${Order.formatMoney(p.total)}</div>
-        <div class="pedido-nro-editor">
-          Nº de cliente
-          <input type="text" class="in-nro-cliente" value="${c.nroCliente || ""}" placeholder="—">
-          <button class="btn small outline" data-accion="guardar-nro">Guardar</button>
-          <button class="btn small outline" data-accion="ver-pedido">👁 Ver pedido</button>
-        </div>
-        <div class="pedido-zona-editor">
-          ${zBoton(1, "Z1")}${zBoton(2, "Z2")}
-          ${z === 1 || z === 2 ? `<button class="btn mini outline" data-accion="zona" data-zona="0" title="Quitar zona manual">✕</button>` : ""}
-        </div>
-      </div>
-    </div>`;
-  }
-
-  function grupoHTML(g) {
-    const selTodos = g.pedidos.every((p) => pedidosSeleccion.has(p.id));
-    return `
-    <div class="pedido-grupo" data-fecha="${g.fecha}">
-      <div class="pedido-fecha">
-        <label><input type="checkbox" class="pedido-check-fecha" ${selTodos ? "checked" : ""}> <strong>${g.fecha}</strong></label>
-        <span class="pedido-fecha-count">${g.pedidos.length} pedido${g.pedidos.length === 1 ? "" : "s"}</span>
-      </div>
-      ${g.pedidos.map(pedidoResumen).join("")}
-    </div>`;
-  }
-
-  async function cargarPedidos() {
-    if (!CFG || !Auth.getSession()) return;
-    const t = await Auth.token();
-    if (!t) {
-      toast("Sesión vencida — cerrá sesión y volvé a entrar", "error");
-      return;
-    }
-    await Reparto.cargarZonasClientes();
-    const res = await fetch(`${CFG.supabaseUrl}/rest/v1/pedidos?select=*&order=fecha.desc`, {
-      headers: { apikey: CFG.supabaseKey, Authorization: "Bearer " + t },
-    });
-    if (!res.ok) {
-      toast("No se pudieron cargar los pedidos (HTTP " + res.status + ")", "error");
-      return;
-    }
-    pedidosNube = await res.json();
-    renderPedidos();
-    actualizarAvisoMismaCarga();
-    detectarZonasFondo();
-  }
-
-  // Pedidos del día seleccionado (hoy/ayer/ayer+hoy por fecha argentina; todos = sin filtro).
-  function pedidosDelDia() {
-    if (diaSeleccion === "todos") return pedidosNube;
-    if (diaSeleccion === "ayer-hoy") return Dia.filtrarDias(pedidosNube, [0, -1]);
-    return Dia.filtrarDia(pedidosNube, diaSeleccion === "hoy" ? 0 : -1);
-  }
-
-  function renderPedidos() {
-    const el = $("lista-pedidos");
-    if (!pedidosNube.length) {
-      el.innerHTML = '<p class="carrito-vacio">Todavía no hay pedidos registrados.</p>';
-      return;
-    }
-    const delDia = pedidosDelDia();
-    if (!delDia.length) {
-      const diaTxt = { hoy: "hoy", ayer: "ayer", "ayer-hoy": "ayer y hoy" }[diaSeleccion] || "mostrar";
-      el.innerHTML = `<p class="carrito-vacio">No hay pedidos para ${diaTxt} todavía.</p>`;
-      return;
-    }
-    // "Ayer + Hoy" va en UN solo grupo (no separado por día), con título combinado.
-    if (diaSeleccion === "ayer-hoy") {
-      el.innerHTML = grupoHTML({ fecha: Dia.etiquetaRangoDias([0, -1]), pedidos: delDia });
-      return;
-    }
-    el.innerHTML = agruparPorFecha(delDia).map(grupoHTML).join("");
-  }
-
-  function pedidosMarcados() {
-    return pedidosNube.filter((p) => pedidosSeleccion.has(p.id));
-  }
-
-  // Aviso en la vista Pedidos: hoy y ayer tienen la MISMA carga (mismos productos y cantidades).
-  function actualizarAvisoMismaCarga() {
-    const el = $("aviso-misma-carga-pedidos");
-    if (!el) return;
-    el.hidden = !RepartoCore.mismaCarga(Dia.filtrarDias(pedidosNube, [0]), Dia.filtrarDias(pedidosNube, [-1]));
-  }
-
-  function zonaLabel(z) {
-    return z === 1 ? "Zona 1" : z === 2 ? "Zona 2" : "Sin zona";
-  }
-
-  function zonaBadgeHTML(p) {
-    const z = Reparto.zonaCacheada(p);
-    const cls = z === 1 ? "z1" : z === 2 ? "z2" : "sin";
-    const txt = z ? zonaLabel(z) : ((p.cliente && p.cliente.direccion) ? "…" : "Sin zona");
-    return `<span class="pedido-zona ${cls}" data-zona-for="${p.id}">${txt}</span>`;
-  }
-
-  function actualizarZonaBadge(pid, zona) {
-    document.querySelectorAll(`[data-zona-for="${CSS.escape(pid)}"]`).forEach((el) => {
-      el.textContent = zonaLabel(zona);
-      el.className = "pedido-zona " + (zona === 1 ? "z1" : zona === 2 ? "z2" : "sin");
-    });
-  }
-
-  // Geocodifica en segundo plano las direcciones que faltan y va pintando las zonas.
-  function detectarZonasFondo() {
-    const faltan = pedidosNube.filter(
-      (p) => Reparto.zonaCacheada(p) === 0 && p.cliente && p.cliente.direccion
-    );
-    if (!faltan.length) return;
-    Reparto.detectarZonas(pedidosNube, (pid, zona) => actualizarZonaBadge(pid, zona))
-      .then((n) => { if (n) toast(`Zonas detectadas: ${n} dirección${n === 1 ? "" : "es"}`); });
-  }
-
-  // ── Hojas de carga / por cliente desde la selección de "Pedidos" ──
-  async function ubicarSeleccion(sel) {
-    const faltan = sel.filter(
-      (p) => Reparto.zonaCacheada(p) === 0 && p.cliente && p.cliente.direccion
-    );
-    if (faltan.length) {
-      toast(`Ubicando direcciones para detectar zonas… (${faltan.length})`);
-      await Reparto.detectarZonas(sel);
-    }
-  }
-
-  function separarPorZona(sel) {
-    const porZona = { 1: [], 2: [], 0: [] };
-    sel.forEach((p) => porZona[Reparto.zonaCacheada(p)].push(p));
-    return porZona;
-  }
-
-  async function imprimirCargaSeleccion() {
-    let sel = pedidosMarcados();
-    if (!sel.length) sel = pedidosDelDia(); // sin selección manual → todo el día elegido
-    if (!sel.length) { toast("No hay pedidos para el día seleccionado", "error"); return; }
-    // Sin selección manual y carga de hoy == ayer → preguntar qué día imprimir.
-    if (!pedidosMarcados().length && RepartoCore.mismaCarga(Dia.filtrarDias(pedidosNube, [0]), Dia.filtrarDias(pedidosNube, [-1]))) {
-      Reparto.preguntarDiaImprimir((dias) => generarCargaSeleccion(Dia.filtrarDias(pedidosNube, dias)));
-      return;
-    }
-    generarCargaSeleccion(sel);
-  }
-
-  async function generarCargaSeleccion(sel) {
-    if (!sel.length) { toast("No hay pedidos para ese día", "error"); return; }
-    await ubicarSeleccion(sel);
-    const porZona = separarPorZona(sel);
-    const partes = [];
-    if (porZona[0].length) {
-      partes.push(`<div class="hc-aviso">⚠️ ${porZona[0].length} pedido${porZona[0].length === 1 ? "" : "s"} sin zona asignada — va${porZona[0].length === 1 ? "" : "n"} al final. Asignales Z1 o Z2 desde la lista y reimprimí.</div>`);
-    }
-    if (porZona[1].length) partes.push(Reparto.hojaCargaHTML(porZona[1], "Zona 1"));
-    if (porZona[2].length) partes.push(Reparto.hojaCargaHTML(porZona[2], "Zona 2"));
-    if (porZona[0].length) partes.push(Reparto.hojaIndividualHTML(porZona[0], "Sin zona — revisar dirección"));
-    Reparto.imprimirHTML(partes.join(""));
-  }
-
+  // Impresión de remitos (la usa el botón "Imprimir / PDF" del checkout).
   function imprimirRemitos(pedidos) {
     if (!pedidos || !pedidos.length) {
       toast("No hay pedidos para imprimir", "error");
@@ -904,89 +714,14 @@
     window.print();
   }
 
-  async function guardarNroCliente(pid) {
-    const p = pedidosNube.find((x) => x.id === pid);
-    const fila = document.querySelector(`.pedido-fila[data-id="${CSS.escape(pid)}"]`);
-    if (!p || !fila) return;
-    const valor = fila.querySelector(".in-nro-cliente").value.trim();
-    const t = await Auth.token();
-    if (!t) {
-      toast("Sesión vencida — cerrá sesión y volvé a entrar", "error");
-      return;
-    }
-    const cliente = { ...(p.cliente || {}), nroCliente: valor };
-    const res = await fetch(`${CFG.supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
-      method: "PATCH",
-      headers: {
-        apikey: CFG.supabaseKey,
-        Authorization: "Bearer " + t,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ cliente }),
-    });
-    if (!res.ok) {
-      toast(res.status === 401 || res.status === 403 ? "No autorizado — cerrá sesión y volvé a entrar" : "Error al guardar (HTTP " + res.status + ")", "error");
-      return;
-    }
-    p.cliente = cliente;
-    toast("Nº de cliente guardado ✔");
-    renderPedidos();
-  }
-
-  // Asigna/quita la zona manual de un pedido (se guarda en Supabase, campo zona).
-  async function cambiarZonaPedido(pid, zona) {
-    const p = pedidosNube.find((x) => x.id === pid);
-    if (!p) return;
-    const valor = zona === 0 ? null : zona;
-    const t = await Auth.token();
-    if (!t) {
-      toast("Sesión vencida — cerrá sesión y volvé a entrar", "error");
-      return;
-    }
-    const res = await fetch(`${CFG.supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
-      method: "PATCH",
-      headers: {
-        apikey: CFG.supabaseKey,
-        Authorization: "Bearer " + t,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ zona: valor }),
-    });
-    if (!res.ok) {
-      toast(res.status === 401 || res.status === 403 ? "No autorizado — cerrá sesión y volvé a entrar" : "No se pudo guardar la zona (HTTP " + res.status + ")", "error");
-      return;
-    }
-    p.zona = valor;
-    await Reparto.guardarZonaCliente(p, valor);
-    toast(valor ? `Pedido asignado a Zona ${valor} ✔` : "Zona quitada ✔");
-    renderPedidos();
-  }
-
-  /** Muestra el remito completo del pedido en el modal "Ver pedido" (sin imprimir). */
-  function mostrarRemitoPedido(p) {
-    if (!p) return;
-    $("ver-pedido-contenido").innerHTML = `<div class="pedido-hoja">${remitoHTML(p)}</div>`;
-    $("modal-ver-pedido").hidden = false;
-  }
-
-  // Desde el panel "Pedidos" del admin (busca en la lista ya cargada en pedidosNube).
-  function verPedido(pid) {
-    mostrarRemitoPedido(pedidosNube.find((x) => x.id === pid));
-  }
-
-  // ── Pestañas del admin (Productos | Pedidos) ──
+  // ── Pestañas del admin (Productos | Reparto | Clientes) ──
   function mostrarPanelAdmin(panel) {
     $("panel-productos").hidden = panel !== "productos";
-    $("panel-pedidos").hidden = panel !== "pedidos";
     $("panel-reparto").hidden = panel !== "reparto";
     $("panel-clientes").hidden = panel !== "clientes";
     $("tab-productos").classList.toggle("active", panel === "productos");
-    $("tab-pedidos").classList.toggle("active", panel === "pedidos");
     $("tab-reparto").classList.toggle("active", panel === "reparto");
     $("tab-clientes").classList.toggle("active", panel === "clientes");
-    if (panel === "pedidos") cargarPedidos();
     if (panel === "reparto") Reparto.cargar();
     if (panel === "clientes") {
       ClientesUI.cargar()
@@ -996,47 +731,8 @@
   }
 
   $("tab-productos").addEventListener("click", () => mostrarPanelAdmin("productos"));
-  $("tab-pedidos").addEventListener("click", () => mostrarPanelAdmin("pedidos"));
   $("tab-reparto").addEventListener("click", () => mostrarPanelAdmin("reparto"));
   $("tab-clientes").addEventListener("click", () => mostrarPanelAdmin("clientes"));
-  $("btn-imprimir-seleccion").addEventListener("click", () => imprimirRemitos(pedidosMarcados()));
-  $("btn-imprimir-todo").addEventListener("click", () => imprimirRemitos(pedidosDelDia()));
-  document.querySelectorAll("#dia-selector-pedidos .chip-dia").forEach((chip) =>
-    chip.addEventListener("click", () => {
-      diaSeleccion = chip.dataset.dia;
-      document.querySelectorAll("#dia-selector-pedidos .chip-dia").forEach((x) => x.classList.toggle("active", x === chip));
-      pedidosSeleccion.clear();
-      const lbl = { hoy: "hoy", ayer: "ayer", "ayer-hoy": "ayer + hoy" }[diaSeleccion] || "";
-      $("btn-imprimir-todo").textContent = diaSeleccion === "todos" ? "🖨 Imprimir todo" : "🖨 Imprimir " + lbl;
-      renderPedidos();
-    })
-  );
-  $("btn-recargar-pedidos").addEventListener("click", cargarPedidos);
-  $("btn-hoja-carga").addEventListener("click", imprimirCargaSeleccion);
-
-  $("lista-pedidos").addEventListener("change", (e) => {
-    if (e.target.classList.contains("pedido-check")) {
-      const fila = e.target.closest(".pedido-fila");
-      if (e.target.checked) pedidosSeleccion.add(fila.dataset.id);
-      else pedidosSeleccion.delete(fila.dataset.id);
-      return;
-    }
-    if (e.target.classList.contains("pedido-check-fecha")) {
-      const grupo = e.target.closest(".pedido-grupo");
-      const ids = [...grupo.querySelectorAll(".pedido-fila")].map((f) => f.dataset.id);
-      ids.forEach((id) => (e.target.checked ? pedidosSeleccion.add(id) : pedidosSeleccion.delete(id)));
-      grupo.querySelectorAll(".pedido-check").forEach((c) => (c.checked = e.target.checked));
-    }
-  });
-
-  $("lista-pedidos").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-accion]");
-    if (!btn) return;
-    const pid = btn.closest(".pedido-fila").dataset.id;
-    if (btn.dataset.accion === "guardar-nro") guardarNroCliente(pid);
-    if (btn.dataset.accion === "ver-pedido") verPedido(pid);
-    if (btn.dataset.accion === "zona") cambiarZonaPedido(pid, parseInt(btn.dataset.zona, 10));
-  });
 
   $("btn-ver-pedido-cerrar").addEventListener("click", () => {
     $("modal-ver-pedido").hidden = true;
@@ -1093,7 +789,7 @@
   });
 
   AdminUI.init({ lista: $("lista-admin"), busqueda: $("admin-busqueda"), toast });
-  Reparto.init({ toast });
+  Reparto.init({ toast, verPedido: (p) => mostrarRemitoPedido(p) });
   ClientesUI.init({ lista: $("lista-clientes"), busqueda: $("cliente-busqueda"), toast });
 
   $("btn-admin-cerrar").addEventListener("click", () => {

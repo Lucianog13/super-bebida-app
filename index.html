@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=54">
+  <link rel="stylesheet" href="css/style.css?v=55">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -195,7 +195,6 @@
       </div>
       <div class="admin-tabs">
         <button id="tab-productos" class="tab active">Productos</button>
-        <button id="tab-pedidos" class="tab">Pedidos</button>
         <button id="tab-reparto" class="tab">Reparto</button>
         <button id="tab-clientes" class="tab">Clientes</button>
       </div>
@@ -245,27 +244,12 @@
       </div>
       <div id="lista-admin" class="lista-admin"></div>
       </div>
-      <div id="panel-pedidos" hidden>
-        <div class="dia-selector" id="dia-selector-pedidos" role="group" aria-label="Día de los pedidos">
-          <button type="button" class="chip-dia active" data-dia="hoy">📅 Hoy</button>
-          <button type="button" class="chip-dia" data-dia="ayer">📅 Ayer</button>
-          <button type="button" class="chip-dia" data-dia="ayer-hoy">📅 Ayer + Hoy</button>
-          <button type="button" class="chip-dia" data-dia="todos">🗓 Todos</button>
-        </div>
-        <div class="pedidos-acciones">
-          <button id="btn-imprimir-seleccion" class="btn primary small">🖨 Imprimir seleccionados</button>
-          <button id="btn-imprimir-todo" class="btn secondary small">🖨 Imprimir todo</button>
-          <button id="btn-hoja-carga" class="btn secondary small">🖨 Hoja de carga</button>
-          <button id="btn-recargar-pedidos" class="btn small outline">↻ Actualizar</button>
-        </div>
-        <p id="aviso-misma-carga-pedidos" class="admin-ayuda" hidden>⚠️ La carga de hoy y ayer es la misma — si ya imprimiste una hoja, no hace falta la otra.</p>
-        <div id="lista-pedidos" class="lista-pedidos"></div>
-      </div>
       <div id="panel-reparto" hidden>
         <div class="dia-selector" id="dia-selector-reparto" role="group" aria-label="Día del reparto">
           <button type="button" class="chip-dia active" data-dia="0">📅 Hoy</button>
           <button type="button" class="chip-dia" data-dia="-1">📅 Ayer</button>
           <button type="button" class="chip-dia" data-dia="ambos">📅 Ayer + Hoy</button>
+          <button type="button" class="chip-dia" data-dia="todos">🗓 Todos</button>
         </div>
         <div class="pedidos-acciones">
           <button id="btn-reparto-cargar" class="btn primary small">↻ Cargar pedidos</button>
@@ -427,23 +411,23 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=54"></script>
-  <script src="js/data/sabores.js?v=54"></script>
-  <script src="js/data/zonas.js?v=54"></script>
-  <script src="js/core/cart.js?v=54"></script>
-  <script src="js/core/dia.js?v=54"></script>
-  <script src="js/core/order.js?v=54"></script>
-  <script src="js/core/storage.js?v=54"></script>
-  <script src="js/core/auth.js?v=54"></script>
-  <script src="js/core/reparto-core.js?v=54"></script>
-  <script src="js/config.js?v=54"></script>
-  <script src="js/ui/catalog.js?v=54"></script>
-  <script src="js/ui/cartView.js?v=54"></script>
-  <script src="js/ui/checkout.js?v=54"></script>
-  <script src="js/ui/admin.js?v=54"></script>
-  <script src="js/ui/clientes.js?v=54"></script>
-  <script src="js/ui/reparto.js?v=54"></script>
+  <script src="js/data/products.js?v=55"></script>
+  <script src="js/data/sabores.js?v=55"></script>
+  <script src="js/data/zonas.js?v=55"></script>
+  <script src="js/core/cart.js?v=55"></script>
+  <script src="js/core/dia.js?v=55"></script>
+  <script src="js/core/order.js?v=55"></script>
+  <script src="js/core/storage.js?v=55"></script>
+  <script src="js/core/auth.js?v=55"></script>
+  <script src="js/core/reparto-core.js?v=55"></script>
+  <script src="js/config.js?v=55"></script>
+  <script src="js/ui/catalog.js?v=55"></script>
+  <script src="js/ui/cartView.js?v=55"></script>
+  <script src="js/ui/checkout.js?v=55"></script>
+  <script src="js/ui/admin.js?v=55"></script>
+  <script src="js/ui/clientes.js?v=55"></script>
+  <script src="js/ui/reparto.js?v=55"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=54"></script>
+  <script src="js/app.js?v=55"></script>
 </body>
 </html>
