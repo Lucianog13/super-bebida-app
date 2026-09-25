@@ -1427,7 +1427,12 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .pedido-grupo { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
 .pedido-fecha { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--navy-50); border-bottom: 1px solid var(--border); }
 .pedido-fecha label { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--navy-700); cursor: pointer; }
+.pedido-fecha > strong { font-size: 0.85rem; color: var(--navy-700); }
 .pedido-fecha-count { font-size: 0.72rem; color: var(--muted); }
+/* Filas de Reparto dentro de un grupo por día ("Todos") */
+.pedido-grupo .rep-fila { margin: 8px 10px; }
+.pedido-grupo .rep-fila:first-of-type { margin-top: 10px; }
+.pedido-grupo .rep-fila:last-of-type { margin-bottom: 10px; }
 .pedido-fila { display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); align-items: flex-start; }
 .pedido-fila:last-child { border-bottom: 0; }
 .pedido-check { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--navy-700); flex-shrink: 0; }

@@ -270,41 +270,78 @@
     } catch {}
   }
 
+  // Fila de un pedido (la misma en la vista normal y dentro de los grupos por día).
+  function filaHTML(p) {
+    const z = zonaDe(p);
+    const c = p.cliente || {};
+    const n = (p.items || []).length;
+    return `
+    <div class="rep-fila" data-id="${p.id}">
+      <span class="rep-punto" style="background:${colorZona(z)}"></span>
+      <div class="rep-cuerpo">
+        <div class="rep-cliente"><strong>${c.nombre || "—"}</strong>${c.nroCliente ? " · Nº " + c.nroCliente : ""}</div>
+        <div class="rep-dir">${c.direccion || "sin dirección"}${c.telefono ? " · " + c.telefono : ""}</div>
+        <div class="rep-items">${n} item${n === 1 ? "" : "s"} · ${Order.formatMoney(p.total)}</div>
+        <div class="rep-nro-editor">
+          Nº de cliente
+          <input type="text" class="in-nro-cliente" value="${c.nroCliente || ""}" placeholder="—">
+          <button class="btn small outline" data-accion="guardar-nro">Guardar</button>
+          <button class="btn small outline" data-accion="ver-pedido">👁 Ver pedido</button>
+        </div>
+      </div>
+      <div class="rep-zona">
+        <span class="rep-zona-label" style="color:${colorZona(z)}">${z ? "Zona " + z : "Sin zona"}</span>
+        <div class="rep-zona-botones">
+          <button class="btn mini ${z === 1 ? "primary" : "outline"}" data-accion="zona" data-zona="1">Z1</button>
+          <button class="btn mini ${z === 2 ? "primary" : "outline"}" data-accion="zona" data-zona="2">Z2</button>
+          ${z === 1 || z === 2 ? `<button class="btn mini outline" data-accion="zona" data-zona="0" title="Quitar zona manual">✕</button>` : ""}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Agrupa pedidos por día (clave en hora argentina), preservando el orden fecha-desc.
+  function agruparPorFecha(pedidos) {
+    const grupos = [];
+    const mapa = new Map();
+    pedidos.forEach((p) => {
+      const clave = Dia.fechaClave(p.fecha);
+      if (!mapa.has(clave)) {
+        const g = { fecha: clave, pedidos: [] };
+        mapa.set(clave, g);
+        grupos.push(g);
+      }
+      mapa.get(clave).pedidos.push(p);
+    });
+    return grupos;
+  }
+
   function renderLista() {
     const el = document.getElementById("lista-reparto");
     const hoy = delDia();
     if (!hoy.length) {
-      el.innerHTML = '<p class="carrito-vacio">No hay pedidos para hoy todavía.</p>';
+      el.innerHTML = diaTodos
+        ? '<p class="carrito-vacio">Todavía no hay pedidos registrados.</p>'
+        : '<p class="carrito-vacio">No hay pedidos para hoy todavía.</p>';
       return;
     }
-    el.innerHTML = hoy.map((p) => {
-      const z = zonaDe(p);
-      const c = p.cliente || {};
-      const n = (p.items || []).length;
-      return `
-      <div class="rep-fila" data-id="${p.id}">
-        <span class="rep-punto" style="background:${colorZona(z)}"></span>
-        <div class="rep-cuerpo">
-          <div class="rep-cliente"><strong>${c.nombre || "—"}</strong>${c.nroCliente ? " · Nº " + c.nroCliente : ""}</div>
-          <div class="rep-dir">${c.direccion || "sin dirección"}${c.telefono ? " · " + c.telefono : ""}</div>
-          <div class="rep-items">${n} item${n === 1 ? "" : "s"} · ${Order.formatMoney(p.total)}</div>
-          <div class="rep-nro-editor">
-            Nº de cliente
-            <input type="text" class="in-nro-cliente" value="${c.nroCliente || ""}" placeholder="—">
-            <button class="btn small outline" data-accion="guardar-nro">Guardar</button>
-            <button class="btn small outline" data-accion="ver-pedido">👁 Ver pedido</button>
+    // "Todos": agrupado por día con encabezado de fecha (como la vieja vista Pedidos).
+    if (diaTodos) {
+      el.innerHTML = agruparPorFecha(hoy)
+        .map(
+          (g) => `
+        <div class="pedido-grupo" data-fecha="${g.fecha}">
+          <div class="pedido-fecha">
+            <strong>${g.fecha}</strong>
+            <span class="pedido-fecha-count">${g.pedidos.length} pedido${g.pedidos.length === 1 ? "" : "s"}</span>
           </div>
-        </div>
-        <div class="rep-zona">
-          <span class="rep-zona-label" style="color:${colorZona(z)}">${z ? "Zona " + z : "Sin zona"}</span>
-          <div class="rep-zona-botones">
-            <button class="btn mini ${z === 1 ? "primary" : "outline"}" data-accion="zona" data-zona="1">Z1</button>
-            <button class="btn mini ${z === 2 ? "primary" : "outline"}" data-accion="zona" data-zona="2">Z2</button>
-            ${z === 1 || z === 2 ? `<button class="btn mini outline" data-accion="zona" data-zona="0" title="Quitar zona manual">✕</button>` : ""}
-          </div>
-        </div>
-      </div>`;
-    }).join("");
+          ${g.pedidos.map(filaHTML).join("")}
+        </div>`
+        )
+        .join("");
+      return;
+    }
+    el.innerHTML = hoy.map(filaHTML).join("");
   }
 
   function renderResumen() {
