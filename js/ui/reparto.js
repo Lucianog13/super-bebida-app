@@ -425,10 +425,11 @@
   }
 
   // Hoja individual: cliente por cliente con sus productos (nombre + zona).
+  // Sin "TOTAL DE LA CARGA" al pie (pedido de Lisandro vía Tincho, 25/09): el total
+  // general ya está en el Control de Carga; acá interesa cada cliente por separado.
   function hojaIndividualHTML(orders, tituloZona) {
     const ps = orders || [];
     const fecha = (ps[0] && ps[0].fecha) || new Date();
-    const totalCarga = ps.reduce((s, p) => s + (p.total || 0), 0);
     const porId = new Map(ps.map((p) => [p.id, p]));
     const bloques = RC().agruparPorCliente(ps).map((c) => {
       const cli = c.cliente || {};
@@ -452,10 +453,6 @@
       </div>
       <div class="hc-repartidor">Repartidor: ________ &nbsp;·&nbsp; ${ps.length} cliente${ps.length === 1 ? "" : "s"}</div>
       ${bloques || '<p class="hc-vacio">Sin pedidos</p>'}
-      <div class="hc-total-carga">
-        <span>${ps.length} pedido${ps.length === 1 ? "" : "s"}</span>
-        <strong>TOTAL DE LA CARGA: ${Order.formatMoney(totalCarga)}</strong>
-      </div>
     </div>`;
   }
 
