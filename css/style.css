@@ -1221,6 +1221,9 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 .hc-c-dir { font-size: 0.78rem; color: var(--muted); margin: 2px 0 4px; }
 .hc-item { font-size: 0.82rem; }
 .hc-c-total { font-weight: 700; margin-top: 4px; text-align: right; }
+.hc-tabla.hc-tabla-cliente { margin: 2px 0 0; }
+.hc-tabla.hc-tabla-cliente th, .hc-tabla.hc-tabla-cliente td { padding-left: 10px; padding-right: 10px; }
+.hc-tabla.hc-tabla-cliente th:first-child, .hc-tabla.hc-tabla-cliente td:first-child { padding-left: 0; }
 .hc-total-carga { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 3px solid var(--gold); font-size: 0.85rem; }
 .hc-total-carga strong { font-size: 1.1rem; color: var(--navy-900); }
 .hc-vacio { color: var(--muted); }

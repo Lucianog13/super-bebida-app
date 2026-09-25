@@ -22,7 +22,7 @@
   // (mismo Nº de cliente, o mismo nombre + dirección) aparece en varios pedidos,
   // se FUSIONA en un solo bloque para no duplicarlo en la hoja (pedido de
   // Lisandro, 22/09/2026: unificar ayer + hoy sin duplicar clientes).
-  // Devuelve: [{ id, cliente, items: [{nombre, presentacion, unidad, cantidad}], total }]
+  // Devuelve: [{ id, cliente, items: [{nombre, presentacion, unidad, cantidad, precioUnit, total}], total }]
   function agruparPorCliente(orders) {
     const mapa = new Map();
     (orders || []).forEach((p) => {
@@ -38,9 +38,11 @@
       (p.items || []).forEach((it) => {
         const k = `${it.nombre}|${it.presentacion || ""}|${it.unidad || ""}`;
         if (!bloque.items.has(k)) {
-          bloque.items.set(k, { nombre: it.nombre, presentacion: it.presentacion || "", unidad: it.unidad || "", cantidad: 0 });
+          bloque.items.set(k, { nombre: it.nombre, presentacion: it.presentacion || "", unidad: it.unidad || "", cantidad: 0, precioUnit: it.precioUnit || 0, total: 0 });
         }
-        bloque.items.get(k).cantidad += it.cantidad;
+        const linea = bloque.items.get(k);
+        linea.cantidad += it.cantidad;
+        linea.total += (it.precioUnit || 0) * it.cantidad;
       });
       bloque.total += (p.total || 0);
     });

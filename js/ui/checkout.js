@@ -31,6 +31,7 @@
       btnRepetir,
       loadOrders,
       loadCliente,
+      saveCliente,
       onGenerar,
       onRepetir,
       supabaseUrl,
@@ -45,6 +46,17 @@
       nombreInput.value = prev.nombre || "";
       direccionInput.value = prev.direccion || "";
       if (nroClienteInput) nroClienteInput.value = prev.nroCliente || "";
+    }
+
+    // Guardar el Nº de cliente apenas se completa, aunque no se envíe el pedido
+    // (pedido de Lisandro vía Tincho, 25/09): queda cargado para la próxima.
+    if (nroClienteInput && typeof saveCliente === "function") {
+      nroClienteInput.addEventListener("change", () => {
+        const nro = nroClienteInput.value.trim();
+        if (!nro) return; // vacío: no pisar el guardado
+        const p = loadCliente() || {};
+        if (String(p.nroCliente || "") !== nro) saveCliente({ ...p, nroCliente: nro });
+      });
     }
 
     function checkRepetir() {

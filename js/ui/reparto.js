@@ -472,12 +472,21 @@
       const cli = c.cliente || {};
       const z = zonaDe(porId.get(c.id));
       const zTxt = z ? "Zona " + z : "Sin zona";
-      const filas = c.items.map((it) => `<div class="hc-item">${it.nombre} — <strong>${it.cantidad}</strong></div>`).join("");
+      const filas = c.items.map((it) => `
+        <tr>
+          <td>${it.nombre}</td>
+          <td class="num">${it.cantidad}</td>
+          <td class="num">${Order.formatMoney(it.precioUnit)}</td>
+          <td class="num">${Order.formatMoney(it.total)}</td>
+        </tr>`).join("");
       return `
       <div class="hc-cliente">
         <div class="hc-c-nombre">${cli.nombre || "—"}${cli.nroCliente ? ' <span class="hc-nro">Nº ' + cli.nroCliente + "</span>" : ""} <span class="hc-nro">· ${zTxt}</span></div>
         <div class="hc-c-dir">${cli.direccion || ""}${cli.telefono ? " · " + cli.telefono : ""}</div>
-        ${filas}
+        <table class="hc-tabla hc-tabla-cliente">
+          <thead><tr><th>Artículo</th><th class="num">Cantidad</th><th class="num">Precio U.</th><th class="num">Total</th></tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
         <div class="hc-c-total">${Order.formatMoney(c.total)}</div>
       </div>`;
     }).join("");

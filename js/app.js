@@ -301,6 +301,7 @@
     btnRepetir: $("btn-repetir"),
     loadOrders: Storage.loadOrders,
     loadCliente: Storage.loadCliente,
+    saveCliente: Storage.saveCliente,
     supabaseUrl: CFG.supabaseUrl,
     supabaseKey: CFG.supabaseKey,
     onGenerar(cliente) {
@@ -475,6 +476,14 @@
       if (e.key === "Enter") buscarMisPedidos();
     })
   );
+  // Guardar el Nº apenas se escribe (pedido de Lisandro vía Tincho, 25/09):
+  // queda cargado para la próxima, igual que en el checkout.
+  $("mp-nro").addEventListener("change", () => {
+    const nro = $("mp-nro").value.trim();
+    if (!nro) return;
+    const prev = Storage.loadCliente() || {};
+    if (String(prev.nroCliente || "") !== nro) Storage.saveCliente({ ...prev, nroCliente: nro });
+  });
   $("mis-pedidos-lista").addEventListener("click", (e) => {
     const modBtn = e.target.closest("[data-mod-id]");
     if (modBtn) {
@@ -613,6 +622,11 @@
 
   async function buscarMisPedidos() {
     const nro = $("mp-nro").value.trim();
+    // El Nº también se guarda al buscar (Enter o botón, sin necesidad de blur).
+    if (nro) {
+      const prev = Storage.loadCliente() || {};
+      if (String(prev.nroCliente || "") !== nro) Storage.saveCliente({ ...prev, nroCliente: nro });
+    }
     const nombre = $("mp-nombre").value.trim();
     const locales = Storage.loadOrders();
 
