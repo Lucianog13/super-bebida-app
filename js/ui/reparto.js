@@ -18,10 +18,6 @@
   let diaTodos = false; // chip "Todos": lista completa de pedidos (historial)
   let zonasClientes = {}; // nroCliente (string) -> zona (1|2|0) — persistida en `clientes`
 
-  // Pedidos "grandes" (muchas líneas): al imprimir arrancan en página propia;
-  // los chicos se acomodan juntos para no dejar espacios vacíos (Lisandro, 25/09).
-  const ITEMS_PEDIDO_GRANDE = 8;
-
   const CFG = () => window.APP_CONFIG;
   const Z = () => window.ZONAS;
   const RC = () => window.RepartoCore;
@@ -472,29 +468,34 @@
     const ps = orders || [];
     const fecha = (ps[0] && ps[0].fecha) || new Date();
     const porId = new Map(ps.map((p) => [p.id, p]));
-    const bloques = RC().agruparPorCliente(ps).map((c, i) => {
-      const cli = c.cliente || {};
-      const z = zonaDe(porId.get(c.id));
-      const zTxt = z ? "Zona " + z : "Sin zona";
-      const clases = "hc-cliente" + (i === 0 ? " hc-primero" : "") + (c.items.length >= ITEMS_PEDIDO_GRANDE ? " hc-cliente-grande" : "");
-      const filas = c.items.map((it) => `
-        <tr>
-          <td>${it.nombre}</td>
-          <td class="num">${it.cantidad}</td>
-          <td class="num">${Order.formatMoney(it.precioUnit)}</td>
-          <td class="num">${Order.formatMoney(it.total)}</td>
-        </tr>`).join("");
-      return `
-      <div class="${clases}">
-        <div class="hc-c-nombre">${cli.nombre || "—"}${cli.nroCliente ? ' <span class="hc-nro">Nº ' + cli.nroCliente + "</span>" : ""} <span class="hc-nro">· ${zTxt}</span></div>
-        <div class="hc-c-dir">${cli.direccion || ""}${cli.telefono ? " · " + cli.telefono : ""}</div>
-        <table class="hc-tabla hc-tabla-cliente">
-          <thead><tr><th>Artículo</th><th class="num">Cantidad</th><th class="num">Precio U.</th><th class="num">Total</th></tr></thead>
-          <tbody>${filas}</tbody>
-        </table>
-        <div class="hc-c-total">${Order.formatMoney(c.total)}</div>
-      </div>`;
-    }).join("");
+    // Empaca por tamaño (pedido de Lisandro vía Tincho, 25/09): los pedidos
+    // grandes arrancan página nueva y los chicos rellenan el espacio restante.
+    const paginas = RC().empacarHojas(RC().agruparPorCliente(ps));
+    const bloques = paginas.map((pag, pi) =>
+      pag.map((c, bi) => {
+        const cli = c.cliente || {};
+        const z = zonaDe(porId.get(c.id));
+        const zTxt = z ? "Zona " + z : "Sin zona";
+        const clases = "hc-cliente" + (pi > 0 && bi === 0 ? " hc-nueva-pagina" : "");
+        const filas = c.items.map((it) => `
+          <tr>
+            <td>${it.nombre}</td>
+            <td class="num">${it.cantidad}</td>
+            <td class="num">${Order.formatMoney(it.precioUnit)}</td>
+            <td class="num">${Order.formatMoney(it.total)}</td>
+          </tr>`).join("");
+        return `
+        <div class="${clases}">
+          <div class="hc-c-nombre">${cli.nombre || "—"}${cli.nroCliente ? ' <span class="hc-nro">Nº ' + cli.nroCliente + "</span>" : ""} <span class="hc-nro">· ${zTxt}</span></div>
+          <div class="hc-c-dir">${cli.direccion || ""}${cli.telefono ? " · " + cli.telefono : ""}</div>
+          <table class="hc-tabla hc-tabla-cliente">
+            <thead><tr><th>Artículo</th><th class="num">Cantidad</th><th class="num">Precio U.</th><th class="num">Total</th></tr></thead>
+            <tbody>${filas}</tbody>
+          </table>
+          <div class="hc-c-total">${Order.formatMoney(c.total)}</div>
+        </div>`;
+      }).join("")
+    ).join("");
     return `
     <div class="hoja-carga">
       <div class="hc-head">

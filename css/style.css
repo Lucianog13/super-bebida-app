@@ -1248,11 +1248,9 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
   .hc-cliente { break-inside: avoid; page-break-inside: avoid; }
   .hc-tabla tr { break-inside: avoid; page-break-inside: avoid; }
   .hc-head, .hc-repartidor { break-after: avoid; page-break-after: avoid; }
-  /* Pedidos grandes → página propia; los chicos se acomodan juntos para
-     rellenar los huecos (pedido de Lisandro vía Tincho, 25/09).
-     .hc-primero = primer bloque de la hoja (no queremos dejar el encabezado
-     huérfano en la página 1). */
-  .hc-cliente-grande:not(.hc-primero) { break-before: page; page-break-before: always; }
+  /* Empaque: cada página nueva se marca con .hc-nueva-pagina desde el JS
+     (empacarHojas en reparto-core.js). */
+  .hc-nueva-pagina { break-before: page; page-break-before: always; }
   /* Compacto de impresión: entran más clientes por hoja (menos papel). */
   .hoja-carga { font-size: 0.76rem; }
   .hc-titulo { font-size: 0.98rem; }

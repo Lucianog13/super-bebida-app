@@ -108,5 +108,39 @@
     return 0;
   }
 
-  return { agregarItems, agruparPorCliente, asignarZona, nombreDiaLargo, mismaCarga, prioridadZona };
+  // ── Empaque de la Hoja por Cliente para imprimir ──────────────────────────
+  // Calibrado con PDF real (25/09/2026): altura de bloque ≈ BASE + PER_ITEM ×
+  // items; página A4 con márgenes 8mm ≈ 797pt utilizables (la primera página
+  // además lleva el encabezado de la hoja). Los pedidos GRANDES (muchas líneas)
+  // arrancan página nueva y se rellenan con los chicos más grandes que entren;
+  // los chicos restantes se empaquetan de mayor a menor. Minimiza espacios en
+  // blanco y ningún pedido se corta. Devuelve array de páginas (arrays de bloques).
+  function empacarHojas(bloques, cfg = {}) {
+    const BASE = cfg.base || 77;
+    const PER = cfg.per || 19;
+    const CAP = cfg.cap || 750;
+    const CAP_PRIMERA = cfg.capPrimera || 655;
+    const GRANDE = cfg.grande || 8;
+    const altura = (b) => BASE + PER * ((b.items && b.items.length) || 0);
+    const esGrande = (b) => ((b.items && b.items.length) || 0) >= GRANDE;
+    const lista = (bloques || []).slice();
+    const grandes = lista.filter(esGrande).sort((a, b) => b.items.length - a.items.length);
+    const chicos = lista.filter((b) => !esGrande(b)).sort((a, b) => b.items.length - a.items.length);
+    const paginas = [[]];
+    let cap = CAP_PRIMERA;
+    const abrir = () => { paginas.push([]); cap = CAP; };
+    const poner = (b) => { paginas[paginas.length - 1].push(b); cap -= altura(b); };
+    for (const g of grandes) {
+      if (paginas[paginas.length - 1].length && altura(g) > cap) abrir();
+      poner(g);
+      while (chicos.length && altura(chicos[0]) <= cap) poner(chicos.shift());
+    }
+    while (chicos.length) {
+      if (altura(chicos[0]) > cap) abrir();
+      poner(chicos.shift());
+    }
+    return paginas;
+  }
+
+  return { agregarItems, agruparPorCliente, asignarZona, nombreDiaLargo, mismaCarga, prioridadZona, empacarHojas };
 });
