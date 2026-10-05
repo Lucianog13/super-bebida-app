@@ -307,7 +307,9 @@
     onGenerar(cliente) {
       pedidoActual = Order.buildOrder(cliente, carrito, new Date(), generarToken());
       Storage.saveOrder(pedidoActual);
-      Storage.saveCliente(cliente);
+      // NOTA: el cliente ya NO se guarda acá — lo guarda el registro único (LoginUI)
+      // en la clave "cliente" con nombre/apellido separados. Guardarlo de nuevo pisaría
+      // el apellido con el nombre combinado.
       carrito = [];
       Storage.saveCart(carrito);
       updateContador();
@@ -430,6 +432,42 @@
     showVista("vista-pedido");
     toast("Pedido modificado — mandalo de nuevo por WhatsApp para que el negocio vea la lista final");
   }
+
+  // ── Registro único del cliente (login de datos) ──
+  // Al guardar, persiste y deja el checkout pre-rellenado con sus datos.
+  function aplicarClienteGuardado(cliente) {
+    Storage.saveCliente(cliente);
+    const nom = $("cliente-nombre");
+    const dir = $("cliente-direccion");
+    const nro = $("cliente-nro");
+    if (nom) nom.value = window.Cliente.nombreCompleto(cliente);
+    if (dir) dir.value = cliente.direccion || "";
+    if (nro) nro.value = cliente.nroCliente || "";
+    toast("Tus datos quedaron guardados en este dispositivo ✔");
+  }
+
+  const LoginCliente = LoginUI.init({
+    modal: $("modal-registro"),
+    form: $("form-registro"),
+    nroInput: $("reg-nro"),
+    nombreInput: $("reg-nombre"),
+    apellidoInput: $("reg-apellido"),
+    direccionInput: $("reg-direccion"),
+    verificadoBox: $("reg-verificado"),
+    errorBox: $("reg-error"),
+    btnWa: $("reg-btn-wa"),
+    btnGuardar: $("reg-btn-guardar"),
+    btnCancelar: $("reg-btn-cancelar"),
+    supabaseUrl: CFG.supabaseUrl,
+    supabaseKey: CFG.supabaseKey,
+    loadCliente: Storage.loadCliente,
+    saveCliente: Storage.saveCliente,
+    onGuardado: aplicarClienteGuardado,
+  });
+
+  $("btn-editar-datos").addEventListener("click", () => {
+    LoginCliente.mostrar({ editar: true });
+  });
 
   // ── Navegación global ──
   $("btn-carrito").addEventListener("click", () => showVista("vista-carrito"));
@@ -825,5 +863,10 @@
     const productos = await cargarCatalogo();
     initCatalog(productos);
     showVista("vista-catalogo");
+    // Registro único y obligatorio del cliente: se muestra al entrar si este
+    // dispositivo no tiene datos guardados. Con sesión de admin, no molesta.
+    if (!Auth.getSession() && !Storage.loadCliente()) {
+      LoginCliente.mostrar({ editar: false });
+    }
   })();
 })();

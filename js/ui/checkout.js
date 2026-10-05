@@ -40,10 +40,11 @@
 
     let ultimoPedido = null;
 
-    // Pre-relleno con el último cliente usado
+    // Pre-relleno con el último cliente usado (registro guardado en este dispositivo).
+    // El nombre se guarda separado del apellido (js/core/cliente.js); acá se combinan.
     const prev = loadCliente();
     if (prev) {
-      nombreInput.value = prev.nombre || "";
+      nombreInput.value = [prev.nombre, prev.apellido].filter(Boolean).join(" ").trim();
       direccionInput.value = prev.direccion || "";
       if (nroClienteInput) nroClienteInput.value = prev.nroCliente || "";
     }

@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=61">
+  <link rel="stylesheet" href="css/style.css?v=62">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
@@ -113,6 +113,10 @@
         <p id="aviso-repetir" class="aviso" hidden>
           El cliente tiene pedidos anteriores.
           <button type="button" id="btn-repetir" class="btn small outline">Repetir último pedido</button>
+        </p>
+        <p class="aviso">
+          Tus datos quedan guardados en este dispositivo.
+          <button type="button" id="btn-editar-datos" class="btn small outline">✏️ Editar mis datos</button>
         </p>
         <div class="acciones">
           <button type="button" id="btn-volver-carrito" class="btn secondary">
@@ -303,6 +307,36 @@
     </div>
   </footer>
 
+  <div id="modal-registro" class="modal" hidden>
+    <div class="modal-caja modal-login">
+      <h3>Registrate una sola vez</h3>
+      <p class="modal-sub">Con estos datos ya te reconocemos en cada pedido. Es una única vez.</p>
+      <form id="form-registro" novalidate>
+        <div class="form-grid login-grid">
+          <label class="campo">Nº de cliente *
+            <input type="text" id="reg-nro" inputmode="numeric" maxlength="10" placeholder="Ej. 1132" autocomplete="off">
+          </label>
+          <label class="campo">Nombre *
+            <input type="text" id="reg-nombre" maxlength="60" placeholder="Ej. Andrea" autocomplete="off">
+          </label>
+          <label class="campo">Apellido *
+            <input type="text" id="reg-apellido" maxlength="60" placeholder="Ej. Almeida" autocomplete="off">
+          </label>
+          <label class="campo">Dirección *
+            <input type="text" id="reg-direccion" maxlength="100" placeholder="Ej. Madariaga 1234" autocomplete="off">
+          </label>
+        </div>
+        <p id="reg-verificado" class="reg-verificado" hidden></p>
+        <div id="reg-error" class="reg-error" hidden></div>
+        <a id="reg-btn-wa" class="btn small outline reg-btn-wa" hidden target="_blank" rel="noopener">Soy cliente nuevo — avisar por WhatsApp</a>
+        <div class="acciones">
+          <button type="button" id="reg-btn-cancelar" class="btn secondary" hidden>Cancelar</button>
+          <button type="submit" id="reg-btn-guardar" class="btn primary">Guardar mis datos</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="modal-admin" class="modal" hidden>
     <div class="modal-caja">
       <h3>Modo administrador</h3>
@@ -411,23 +445,25 @@
 
   <div id="zona-impresion" aria-hidden="true"></div>
 
-  <script src="js/data/products.js?v=61"></script>
-  <script src="js/data/sabores.js?v=61"></script>
-  <script src="js/data/zonas.js?v=61"></script>
-  <script src="js/core/cart.js?v=61"></script>
-  <script src="js/core/dia.js?v=61"></script>
-  <script src="js/core/order.js?v=61"></script>
-  <script src="js/core/storage.js?v=61"></script>
-  <script src="js/core/auth.js?v=61"></script>
-  <script src="js/core/reparto-core.js?v=61"></script>
-  <script src="js/config.js?v=61"></script>
-  <script src="js/ui/catalog.js?v=61"></script>
-  <script src="js/ui/cartView.js?v=61"></script>
-  <script src="js/ui/checkout.js?v=61"></script>
-  <script src="js/ui/admin.js?v=61"></script>
-  <script src="js/ui/clientes.js?v=61"></script>
-  <script src="js/ui/reparto.js?v=61"></script>
+  <script src="js/data/products.js?v=62"></script>
+  <script src="js/data/sabores.js?v=62"></script>
+  <script src="js/data/zonas.js?v=62"></script>
+  <script src="js/core/cart.js?v=62"></script>
+  <script src="js/core/dia.js?v=62"></script>
+  <script src="js/core/order.js?v=62"></script>
+  <script src="js/core/storage.js?v=62"></script>
+  <script src="js/core/auth.js?v=62"></script>
+  <script src="js/core/cliente.js?v=62"></script>
+  <script src="js/core/reparto-core.js?v=62"></script>
+  <script src="js/config.js?v=62"></script>
+  <script src="js/ui/catalog.js?v=62"></script>
+  <script src="js/ui/cartView.js?v=62"></script>
+  <script src="js/ui/checkout.js?v=62"></script>
+  <script src="js/ui/login.js?v=62"></script>
+  <script src="js/ui/admin.js?v=62"></script>
+  <script src="js/ui/clientes.js?v=62"></script>
+  <script src="js/ui/reparto.js?v=62"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="js/app.js?v=61"></script>
+  <script src="js/app.js?v=62"></script>
 </body>
 </html>

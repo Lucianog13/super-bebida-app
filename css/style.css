@@ -1636,3 +1636,74 @@ main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 16px 120px;
 
 /* ── Modal "¿Qué hoja imprimís?" (misma carga hoy/ayer) ── */
 .modal-dia-botones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+/* ── Modal de registro único del cliente (login de datos) ── */
+.modal-login {
+  max-width: 440px;
+  gap: 8px;
+}
+.login-grid {
+  margin-top: 6px;
+}
+.modal-login .campo {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.modal-login .campo input {
+  padding: 10px;
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--ink);
+  width: 100%;
+  background: #fff;
+  letter-spacing: 0;
+  text-align: left;
+}
+.modal-login .campo input:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 0;
+  border-color: var(--gold);
+}
+.modal-login .campo input.campo-error {
+  border-color: #c33;
+}
+.reg-verificado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: #1e7a4f;
+  background: rgba(46, 139, 87, 0.12);
+  border: 1px solid rgba(46, 139, 87, 0.4);
+  border-radius: 6px;
+}
+.reg-error {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: #a33;
+  background: rgba(200, 60, 60, 0.1);
+  border: 1px solid rgba(200, 60, 60, 0.35);
+  border-radius: 6px;
+}
+.reg-error.aviso {
+  color: #8a5d0b;
+  background: rgba(201, 138, 27, 0.12);
+  border-color: rgba(201, 138, 27, 0.4);
+}
+.reg-btn-wa {
+  margin-top: 4px;
+  align-self: flex-start;
+  white-space: normal;
+  text-align: left;
+}
