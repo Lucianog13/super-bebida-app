@@ -18,6 +18,7 @@ Aplicación web para que los clientes de la distribuidora **"El Super de la Bebi
 * **Envases retornables:** conteo automático en el resumen del pedido.
 * **Pedido por WhatsApp:** texto formal con el detalle completo (ítems con viñetas •, sin numeración para evitar confusiones), link directo precargado, y **remito imprimible** compacto que entra en una sola hoja A4.
 * **Funciona sin conexión:** el catálogo queda en caché y la app sigue operativa offline.
+* **Registro único del cliente (login de datos):** la primera vez que un cliente entra a la app se le pide **Nº de cliente, nombre, apellido y dirección** (una sola vez; queda guardado en el dispositivo). El Nº se **verifica contra el listado de clientes**: si existe, autocompleta nombre y dirección; si no existe, se bloquea el registro y se ofrece avisar por WhatsApp para pedir el alta (sin conexión, se permite continuar con aviso). Desde el checkout se puede corregir con **"✏️ Editar mis datos"**, y cada pedido sale con el Nº de cliente cargado.
 * **Panel de administración con login real** (Supabase Auth, solo usuarios habilitados): editar precios, promos, fotos, nombre y descripción, agregar productos, marcar stock, gestionar clientes y ver/imprimir los pedidos recibidos.
 * **Reparto con mapa:** pestaña "Reparto" con mapa (OpenStreetMap) que ubica los pedidos del día por su dirección, los divide automáticamente en **Zona 1** y **Zona 2** (con ajuste manual por pedido), y genera las **hojas de carga** — Control de Carga (productos) y Hoja de Clientes (con total de carga) — por zona, listas para imprimir en A4. Incluye **unificación en una sola carga** cuando una zona trae poco.
 * **Gestión de clientes:** pestaña "Clientes" en el admin para agregar, buscar, editar y eliminar clientes (N°, nombre y apellido, dirección, número de domicilio y teléfono celular). El checkout los autocompleta por nombre, dirección o N° al tipear.
@@ -47,12 +48,12 @@ distribuidora-bebidas/
 ├── js/
 │   ├── app.js              # router de vistas e inicialización
 │   ├── config.js           # credenciales públicas de Supabase
-│   ├── core/               # lógica PURA (sin DOM → testeable): auth, cart, order, storage
+│   ├── core/               # lógica PURA (sin DOM → testeable): auth, cart, cliente, order, storage, reparto-core, dia
 │   ├── data/
 │   │   ├── products.js     # catálogo local (fallback offline)
 │   │   ├── sabores.js      # overlay de sabores (productos con variedades)
 │   │   └── zonas.js        # zonas de reparto
-│   └── ui/                 # capa de presentación: admin, clientes, catalog, cartView, checkout, reparto
+│   └── ui/                 # capa de presentación: admin, clientes, catalog, cartView, checkout, login, reparto
 ├── scripts/                # parseo de lista de precios, deploy, Supabase, imágenes
 ├── tests/                  # tests de lógica (node:test)
 ├── docs/                   # lista de precios PDF, análisis de referencia
