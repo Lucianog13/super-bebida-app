@@ -176,6 +176,14 @@
         nombre: "Palitos Julicroc Sabor 150GR",
         sabores: ["Jamón", "Pizza"],
       },
+      // ── Papas 70GR (pedido de Lucho, 05/10/2026) ──
+      "papas-sabores-julicroc-70gr-u": {
+        nombre: "Papas Sabores Julicroc 70GR",
+        sabores: [
+          "Cheddar", "Asado Criollo", "Crema y Ciboulette", "Huevo Frito",
+          "Panceta Cheddar y Verdeo", "Ketchup", "Provenzal", "Jalapeño y Limon",
+        ],
+      },
       "fideos-ramen-pollo-carne-u": {
         nombre: "Fideos Ramen",
         sabores: ["Carne", "Pollo"],
