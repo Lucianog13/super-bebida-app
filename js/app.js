@@ -863,6 +863,9 @@
     const productos = await cargarCatalogo();
     initCatalog(productos);
     showVista("vista-catalogo");
+    // Limpia el registro viejo ("cliente"): todos los dispositivos que ya usaban
+    // la app quedan sin registro y les aparece el login de datos.
+    Storage.removeLegacyCliente();
     // Registro único y obligatorio del cliente: se muestra al entrar si este
     // dispositivo no tiene datos guardados. Con sesión de admin, no molesta.
     if (!Auth.getSession() && !Storage.loadCliente()) {

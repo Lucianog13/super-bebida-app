@@ -4,7 +4,7 @@
   if (typeof module !== "undefined" && module.exports) module.exports = factory();
   else root.Storage = factory();
 })(typeof window !== "undefined" ? window : globalThis, function () {
-  const KEYS = { cart: "carrito", orders: "pedidos", cliente: "cliente" };
+  const KEYS = { cart: "carrito", orders: "pedidos", cliente: "registro" };
 
   function hasLS() {
     try {
@@ -55,5 +55,17 @@
 
     saveCliente: (cliente) => set(KEYS.cliente, cliente),
     loadCliente: () => get(KEYS.cliente, null),
+
+    // Borra el registro viejo (clave "cliente", datos de "último cliente usado"):
+    // desde el login de datos (2026-10-05) el registro vive en "registro", así que
+    // el dato viejo no aporta nada y puede confundir.
+    removeLegacyCliente: () => {
+      if (!hasLS()) return;
+      try {
+        localStorage.removeItem("cliente");
+      } catch {
+        /* bloqueado: se ignora */
+      }
+    },
   };
 });

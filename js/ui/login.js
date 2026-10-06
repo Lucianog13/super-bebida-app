@@ -3,7 +3,7 @@
 //   - existe        → badge verde + autocompleta la dirección.
 //   - no existe     → BLOQUEA el guardado y ofrece "avisar por WhatsApp" (cliente nuevo).
 //   - sin conexión / servicio caído → permite seguir con aviso (no bloquea a un cliente real).
-// Guarda con Storage.saveCliente (clave "cliente") y avisa con onGuardado.
+// Guarda con Storage.saveCliente (clave "registro" de localStorage) y avisa con onGuardado.
 // Solo toca el DOM; la validación pura vive en js/core/cliente.js.
 (function (root, factory) {
   if (typeof module !== "undefined" && module.exports) module.exports = factory();
