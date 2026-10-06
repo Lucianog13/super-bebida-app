@@ -31,6 +31,8 @@
     let codigoVerificado = "";      // último Nº confirmado contra la lista
     let estadoGuardado = "libre";    // "libre" | "verificando" | "listo" | "bloqueado"
     let modoEdicion = false;
+    let continuarActual = null;      // callback al guardar OK (ej. seguir al checkout)
+    let cancelarActual = null;       // callback al cancelar (ej. volver al carrito)
 
     function nroActual() {
       return nroInput.value.replace(/\D/g, "");
@@ -135,14 +137,17 @@
       }
     }
 
-    // Abre el modal. { editar: true } = modo "Editar mis datos" (pre-rellena lo guardado).
-    // El botón Cancelar solo aparece en modo edición (el registro inicial es estricto).
+    // Abre el modal. Opciones: { editar: true } = modo "Editar mis datos" (pre-rellena
+    // lo guardado); { continuar, cancelar } = callbacks al guardar/cancelar (se usan
+    // cuando el registro se pide al finalizar el pedido, no al abrir la app).
     function mostrar(opciones) {
       modoEdicion = !!(opciones && opciones.editar);
+      continuarActual = (opciones && opciones.continuar) || null;
+      cancelarActual = (opciones && opciones.cancelar) || null;
       limpiarMensajes();
       codigoVerificado = "";
       form.reset();
-      btnCancelar.hidden = !modoEdicion;
+      btnCancelar.hidden = false; // siempre se puede volver (la app se navega libre)
       const prev = loadCliente();
       if (modoEdicion && prev) {
         // Registro actual: nombre/apellido separados. Legado: nombre ya combinado.
@@ -170,6 +175,11 @@
       saveCliente(r.cliente);
       modal.hidden = true;
       if (onGuardado) onGuardado(r.cliente, modoEdicion);
+      if (continuarActual) {
+        const f = continuarActual;
+        continuarActual = null;
+        f();
+      }
     }
 
     // Al salir del campo Nº, verifica contra la lista (si el valor cambió).
@@ -189,9 +199,14 @@
       }
     });
 
-    // Cancelar: solo existe en modo edición (el registro inicial es estricto, sin salida).
+    // Cancelar: cierra el modal y ejecuta el callback si se pidió (volver al carrito).
     btnCancelar.addEventListener("click", () => {
       modal.hidden = true;
+      if (cancelarActual) {
+        const f = cancelarActual;
+        cancelarActual = null;
+        f();
+      }
     });
 
     form.addEventListener("submit", async (e) => {

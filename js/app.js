@@ -241,6 +241,17 @@
       if (falta > 0) {
         return toast(`Te faltan ${Order.formatMoney(falta)} para llegar al pedido mínimo de ${Order.formatMoney(Order.MIN_PEDIDO)}`);
       }
+      // El registro de datos se pide recién ACA (antes de finalizar el pedido):
+      // la app se abre libre para navegar y ver precios/productos. Al registrarse,
+      // sigue directo al checkout; si cancela, vuelve al carrito.
+      if (!Auth.getSession() && !Storage.loadCliente()) {
+        LoginCliente.mostrar({
+          editar: false,
+          continuar: () => showVista("vista-checkout"),
+          cancelar: () => showVista("vista-carrito"),
+        });
+        return;
+      }
       showVista("vista-checkout");
     },
   };
@@ -864,12 +875,7 @@
     initCatalog(productos);
     showVista("vista-catalogo");
     // Limpia el registro viejo ("cliente"): todos los dispositivos que ya usaban
-    // la app quedan sin registro y les aparece el login de datos.
+    // la app quedan sin registro y les aparece el login de datos al finalizar el pedido.
     Storage.removeLegacyCliente();
-    // Registro único y obligatorio del cliente: se muestra al entrar si este
-    // dispositivo no tiene datos guardados. Con sesión de admin, no molesta.
-    if (!Auth.getSession() && !Storage.loadCliente()) {
-      LoginCliente.mostrar({ editar: false });
-    }
   })();
 })();
