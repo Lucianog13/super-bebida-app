@@ -852,7 +852,7 @@
   });
 
   AdminUI.init({ lista: $("lista-admin"), busqueda: $("admin-busqueda"), toast });
-  Reparto.init({ toast, verPedido: (p) => mostrarRemitoPedido(p) });
+  Reparto.init({ toast, verPedido: (p) => mostrarRemitoPedido(p), imprimirBoleta: (p) => imprimirRemitos([p]) });
   ClientesUI.init({ lista: $("lista-clientes"), busqueda: $("cliente-busqueda"), toast });
 
   $("btn-admin-cerrar").addEventListener("click", () => {

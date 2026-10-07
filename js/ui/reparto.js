@@ -14,6 +14,7 @@
   let unificado = false;
   let toastFn = () => {};
   let verPedidoFn = null; // callback (p) => … abre el modal "Ver pedido" (lo pasa app.js)
+  let imprimirBoletaFn = null; // callback (p) => … imprime SOLO la boleta de ese pedido (lo pasa app.js)
   let diaDias = [0]; // offsets de días mostrados: [0] hoy, [-1] ayer, [0,-1] ayer + hoy
   let diaTodos = false; // chip "Todos": lista completa de pedidos (historial)
   let zonasClientes = {}; // nroCliente (string) -> zona (1|2|0) — persistida en `clientes`
@@ -287,6 +288,7 @@
           <input type="text" class="in-nro-cliente" value="${c.nroCliente || ""}" placeholder="—">
           <button class="btn small outline" data-accion="guardar-nro">Guardar</button>
           <button class="btn small outline" data-accion="ver-pedido">👁 Ver pedido</button>
+          <button class="btn small outline" data-accion="imprimir-boleta" title="Imprimir solo la boleta de este pedido">🖨 Imprimir</button>
         </div>
       </div>
       <div class="rep-zona">
@@ -590,6 +592,7 @@
   function init(o) {
     toastFn = o.toast || toastFn;
     verPedidoFn = o.verPedido || verPedidoFn;
+    imprimirBoletaFn = o.imprimirBoleta || imprimirBoletaFn;
     document.getElementById("btn-reparto-cargar").addEventListener("click", cargar);
     document.getElementById("btn-unificar").addEventListener("click", alternarUnificar);
     document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((chip) =>
@@ -640,6 +643,10 @@
       if (btn.dataset.accion === "ver-pedido") {
         const p = pedidos.find((x) => x.id === pid);
         if (p && verPedidoFn) verPedidoFn(p);
+      }
+      if (btn.dataset.accion === "imprimir-boleta") {
+        const p = pedidos.find((x) => x.id === pid);
+        if (p && imprimirBoletaFn) imprimirBoletaFn(p);
       }
     });
   }
