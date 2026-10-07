@@ -141,7 +141,7 @@
       // ── Familias nuevas (pedido de Tincho, 12/09/2026) ──
       "power-500ml-manzana-rojo-azul-pack-x6": {
         nombre: "Power 500ML",
-        sabores: ["Azul", "Manzana", "Rojo"],
+        sabores: ["Rojo", "Azul", "Manzana"],
       },
       "amarula-mtbp0obe": {
         nombre: "Amarula",
@@ -293,7 +293,7 @@
       },
       "estancia-mza-cab-mal-u": {
         nombre: "Estancia Mza",
-        sabores: ["Cabernet", "Chardonnay", "Chenin", "Dulce", "Malbec"],
+        sabores: ["Cabernet-Malbec", "Chenin", "Blanco Dulce"],
       },
       "licor-new-stile-1lts-melon-u": {
         nombre: "Licor New Style 1LT",
