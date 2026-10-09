@@ -37,12 +37,24 @@
 
   async function cargar() {
     const cfg = API();
-    const res = await fetch(
-      `${cfg.supabaseUrl}/rest/v1/clientes?select=*&order=codigo.asc`,
-      { headers: { apikey: cfg.supabaseKey, Authorization: "Bearer " + cfg.supabaseKey } }
-    );
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    clientes = await res.json();
+    const base = `${cfg.supabaseUrl}/rest/v1/clientes?select=*&order=codigo.asc`;
+    const headers = { apikey: cfg.supabaseKey, Authorization: "Bearer " + cfg.supabaseKey };
+    const todos = [];
+    const TAM = 1000;
+    let desde = 0;
+    // PostgREST devuelve máx 1000 filas por pedido. Hay 1259 clientes: sin paginar,
+    // los que ordenan después del 1000 (ej. Nº 643) quedan invisibles en la búsqueda
+    // y el listado, pero siguen existiendo en la base y bloquean el alta (409).
+    while (true) {
+      const res = await fetch(base, { headers: { ...headers, Range: `${desde}-${desde + TAM - 1}` } });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) break;
+      todos.push(...data);
+      if (data.length < TAM) break;
+      desde += TAM;
+    }
+    clientes = todos;
   }
 
   function filaHTML(c) {

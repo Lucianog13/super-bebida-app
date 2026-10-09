@@ -133,14 +133,23 @@
       const cfg = CFG();
       const t = window.Auth ? await window.Auth.token() : null;
       const h = { apikey: cfg.supabaseKey, Authorization: "Bearer " + (t || cfg.supabaseKey) };
-      const res = await fetch(`${cfg.supabaseUrl}/rest/v1/clientes?select=codigo,zona`, { headers: h });
-      if (!res.ok) return;
-      const rows = await res.json();
+      const base = `${cfg.supabaseUrl}/rest/v1/clientes?select=codigo,zona&order=codigo.asc`;
       const mapa = {};
-      rows.forEach((c) => {
-        const nro = String(c.codigo == null ? "" : c.codigo).trim();
-        if (nro) mapa[nro] = c.zona === 1 || c.zona === 2 ? c.zona : 0;
-      });
+      const TAM = 1000;
+      let desde = 0;
+      // Paginar: hay más de 1000 clientes y PostgREST corta en 1000 por pedido.
+      while (true) {
+        const res = await fetch(base, { headers: { ...h, Range: `${desde}-${desde + TAM - 1}` } });
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (!Array.isArray(rows) || rows.length === 0) break;
+        rows.forEach((c) => {
+          const nro = String(c.codigo == null ? "" : c.codigo).trim();
+          if (nro) mapa[nro] = c.zona === 1 || c.zona === 2 ? c.zona : 0;
+        });
+        if (rows.length < TAM) break;
+        desde += TAM;
+      }
       zonasClientes = mapa;
     } catch { /* sin red: se usa geocodificación como fallback */ }
   }
