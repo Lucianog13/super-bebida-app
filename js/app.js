@@ -152,14 +152,21 @@
       return aplicarOverlay(window.PRODUCTS);
     }
     const cacheKey = "catalogo_cache";
-    // La caché vence a las 24 h: si el fetch a la nube falla y la copia guardada es
-    // más vieja, se descarta y se cae al archivo local. Así ningún cliente queda
-    // pegado a un precio viejo (bug reportado: cliente 1000, Canciller $15.000 vs $13.500).
-    const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+    // Los precios SIEMPRE se piden frescos a la nube: cache:"no-store" impide que el
+    // navegador sirva una respuesta HTTP cacheada (causa del bug "a algunos les aparece
+    // el precio viejo y a otros no"). La copia en localStorage es SOLO para modo sin
+    // conexión y vence a los 15 minutos: nadie queda pegado a un precio viejo más que eso.
+    const CACHE_TTL_MS = 15 * 60 * 1000;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
     try {
       const res = await fetch(
         `${CFG.supabaseUrl}/rest/v1/productos?select=*&order=nombre.asc`,
-        { headers: { apikey: CFG.supabaseKey, Authorization: "Bearer " + CFG.supabaseKey } }
+        {
+          cache: "no-store",
+          signal: controller.signal,
+          headers: { apikey: CFG.supabaseKey, Authorization: "Bearer " + CFG.supabaseKey },
+        }
       );
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
@@ -169,19 +176,21 @@
         localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), productos }));
       } catch {}
       modoCatalogo = "nube";
-      updateEstado("● En línea — catálogo sincronizado");
+      updateEstado("● En línea — precios actualizados");
       return productos;
     } catch {
       try {
         const c = JSON.parse(localStorage.getItem(cacheKey) || "null");
         const cacheFresca = c && typeof c.t === "number" && (Date.now() - c.t) < CACHE_TTL_MS;
         if (cacheFresca && Array.isArray(c.productos) && c.productos.length) {
-          updateEstado("● Sin conexión — catálogo en caché");
+          updateEstado("● Sin conexión — precios pueden estar desactualizados");
           return aplicarOverlay(c.productos);
         }
       } catch {}
       updateEstado("● Sin conexión — catálogo local");
       return aplicarOverlay(window.PRODUCTS);
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
