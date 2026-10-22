@@ -93,6 +93,10 @@
       sabores: Array.isArray(row.sabores) ? row.sabores : [],
       sabores_sin_stock: Array.isArray(row.sabores_sin_stock) ? row.sabores_sin_stock : [],
       saboresPromo: Array.isArray(row.sabores_promo) ? row.sabores_promo : [],
+      sabores_precios:
+        row.sabores_precios && typeof row.sabores_precios === "object" && !Array.isArray(row.sabores_precios)
+          ? row.sabores_precios
+          : null,
     };
   }
 
@@ -121,7 +125,12 @@
             nombre: desdeDb ? p.nombre : fam.nombre,
             sabores: desdeDb ? p.sabores : fam.sabores,
             activo: fam.activar ? true : p.activo,
-            sabores_precios: desdeDb ? null : (fam.precios || null),
+            // Precio por sabor: la nube (columna sabores_precios) manda cuando tiene
+            // datos; si no, cae al hardcode del overlay (modo offline/legacy).
+            sabores_precios:
+              p.sabores_precios && typeof p.sabores_precios === "object" && !Array.isArray(p.sabores_precios) && Object.keys(p.sabores_precios).length
+                ? p.sabores_precios
+                : (fam.precios || null),
             saboresLabel: fam.saboresLabel || "",
           };
         }

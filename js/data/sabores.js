@@ -182,6 +182,7 @@
         sabores: [
           "Cheddar", "Asado Criollo", "Crema y Ciboulette", "Huevo Frito",
           "Panceta Cheddar y Verdeo", "Ketchup", "Provenzal", "Jalapeño y Limon",
+          "Papas Clásicas",
         ],
       },
       "fideos-ramen-pollo-carne-u": {
@@ -287,8 +288,8 @@
         nombre: "Toro Tetra",
         sabores: ["Blanco", "Tinto"],
         precios: {
-          "Blanco": 19500,
-          "Tinto": 23000,
+          "Blanco": 22000,
+          "Tinto": 25000,
         },
       },
       "estancia-mza-cab-mal-u": {

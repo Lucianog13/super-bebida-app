@@ -101,6 +101,14 @@
         <label class="campo">Anterior $<input type="number" class="in-anterior" value="${p.precio_anterior || ""}" min="0" step="100"></label>` : ""}
       </div>
       ${tieneSabores ? `
+      <div class="sabores-admin">
+        <span class="sabores-label">Precio por sabor (vacío = usa el precio general):</span>
+        ${p.sabores.map((s) => {
+          const precio = p.sabores_precios && typeof p.sabores_precios === "object" && p.sabores_precios[s] != null ? p.sabores_precios[s] : "";
+          return `<label class="campo campo-precio-sabor">${s} <input type="number" class="in-sabor-precio" data-sabor="${s}" value="${precio}" min="0" step="100" placeholder="= general"></label>`;
+        }).join("")}
+      </div>` : ""}
+      ${tieneSabores ? `
       <div class="sabores-admin promo-admin">
         <span class="sabores-label">Promo (tocá el sabor y poné su precio):</span>
         ${p.sabores.map((s) => {
@@ -188,6 +196,7 @@
     let enPromo = false;
     let precioAnterior = null;
     let saboresPromo = [];
+    let saboresPrecios = {};
     if (tieneSabores) {
       const items = [...fila.querySelectorAll(".promo-item.activo")];
       for (const it of items) {
@@ -203,6 +212,15 @@
         saboresPromo.push({ sabor, precio: precioPromo });
       }
       enPromo = saboresPromo.length > 0;
+      // Precio por sabor (base): solo los sabores con precio cargado; el resto usa el general.
+      fila.querySelectorAll(".in-sabor-precio").forEach((inp) => {
+        const s = inp.dataset.sabor;
+        const raw = inp.value.trim();
+        if (raw) {
+          const v = parseInt(raw, 10);
+          if (Number.isFinite(v) && v > 0) saboresPrecios[s] = v;
+        }
+      });
     } else {
       enPromo = fila.querySelector(".in-promo").checked;
       const anteriorRaw = fila.querySelector(".in-anterior").value.trim();
@@ -241,7 +259,7 @@
         headers: { ...h, Prefer: "return=minimal" },
         body: JSON.stringify(
           tieneSabores
-            ? { precio, en_promo: enPromo, precio_anterior: null, sabores_promo: saboresPromo, descripcion }
+            ? { precio, en_promo: enPromo, precio_anterior: null, sabores_promo: saboresPromo, sabores_precios: saboresPrecios, descripcion }
             : { precio, en_promo: enPromo, precio_anterior: precioAnterior, descripcion }
         ),
       }
@@ -256,6 +274,7 @@
     p.en_promo = enPromo;
     p.precio_anterior = precioAnterior;
     p.sabores_promo = saboresPromo;
+    p.sabores_precios = saboresPrecios;
     p.descripcion = descripcion;
     marcarEstado(pid, "✔ guardado", "ok");
     toastFn("Guardado ✔ — visible para todos los dispositivos");
