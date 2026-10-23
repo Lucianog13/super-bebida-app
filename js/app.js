@@ -641,7 +641,8 @@
       <div class="remito-total">
         <span class="detalle">${p.items.length} items${ret ? " · Envases retornables: " + ret : ""}</span>
         <strong>${Order.formatMoney(p.total)}</strong>
-      </div>`;
+      </div>
+      <div class="remito-pie">CONTROLE SU MERCADERIA NO HAY RECLAMO</div>`;
   }
 
   function renderPedido() {
