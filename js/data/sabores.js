@@ -324,6 +324,15 @@
         nombre: "Caram Butter",
         sabores: ["Águila", "Bon o Bon", "Chocolate", "Dulce de Leche"],
       },
+      // ── Budines (pedido de Lucho, 28/10/2026) ──
+      "budin-fantasia-180gs-mvmhvf65": {
+        nombre: "Budín Fantasía 180gs",
+        sabores: ["Limón", "Chocolate"],
+      },
+      "budin-buon-natale-170gr-mvjilz22": {
+        nombre: "Budín Buon Natale 170gr",
+        sabores: ["Con Frutas", "Común", "Marmolado"],
+      },
     },
     categorias: {
       "aceite-girasol-fraud-bidon-4-5lt-u": "almacen",
