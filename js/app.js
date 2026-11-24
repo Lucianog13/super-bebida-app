@@ -42,6 +42,8 @@
   let pedidoActual = null;
   let modoCatalogo = "local"; // "nube" | "local"
   let modificacion = null; // { id, token, fecha, cliente } — pedido en edición ("Modificar pedido")
+  let catalogoListo = false; // catálogo inicial ya renderizado (lo setea initCatalog)
+  let cargaEnCurso = null; // promesa de cargarCatalogo() en vuelo — refrescos idempotentes
 
   const VISTAS = ["vista-catalogo", "vista-carrito", "vista-checkout", "vista-pedido", "vista-mis-pedidos", "vista-admin"];
 
@@ -71,6 +73,61 @@
   function updateEstado(msg) {
     const el = $("estado-catalogo");
     if (el) el.textContent = msg;
+  }
+
+  // Marca el catálogo como "sin conexión": mensaje + clase roja en el footer.
+  function marcarOffline(mensaje) {
+    updateEstado(mensaje);
+    const el = $("estado-catalogo");
+    if (el) el.classList.add("estado-offline");
+  }
+
+  // Quita la marca de sin conexión cuando la carga de la nube volvió a andar.
+  function marcarOnline() {
+    const el = $("estado-catalogo");
+    if (el) el.classList.remove("estado-offline");
+  }
+
+  // ── Helpers de red (js/core/net.js) ──
+  // net.js se carga acá mismo (sin tocar index.html): si el script ya llegó por otro
+  // lado (window.Net definido) no se duplica. Si no llega a cargar en 10 s, el boot
+  // sigue igual: fetchCatalogCloud cae al fetch clásico con timeout, sin reintento.
+  function asegurarNet() {
+    if (window.Net) return Promise.resolve();
+    return new Promise((resolve) => {
+      let listo = false;
+      const fin = () => {
+        if (listo) return;
+        listo = true;
+        clearTimeout(reloj);
+        resolve();
+      };
+      const reloj = setTimeout(fin, 10000);
+      const s = document.createElement("script");
+      s.src = "js/core/net.js";
+      s.onload = fin;
+      s.onerror = fin;
+      document.head.appendChild(s);
+    });
+  }
+
+  // Fetch del catálogo a Supabase: SIEMPRE con cache:"no-store" (frescura de precios),
+  // timeout de 12 s y 1 reintento ante rechazo. Si net.js no está, fallback sin retry.
+  function fetchCatalogCloud() {
+    const url = `${CFG.supabaseUrl}/rest/v1/productos?select=*&order=nombre.asc`;
+    const headers = { apikey: CFG.supabaseKey, Authorization: "Bearer " + CFG.supabaseKey };
+    const Net = window.Net;
+    if (Net && typeof Net.fetchConTimeout === "function") {
+      return Net.conReintento(
+        () => Net.fetchConTimeout(url, { cache: "no-store", headers }, 12000),
+        { intentos: 2, demoraMs: 1500 }
+      );
+    }
+    // Fallback (deploy sin net.js): mismo comportamiento previo, sin reintento.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    return fetch(url, { cache: "no-store", headers, signal: controller.signal })
+      .finally(() => clearTimeout(timeout));
   }
 
   // ── Catálogo: nube primero, caché, luego archivo local ──
@@ -125,12 +182,17 @@
             nombre: desdeDb ? p.nombre : fam.nombre,
             sabores: desdeDb ? p.sabores : fam.sabores,
             activo: fam.activar ? true : p.activo,
-            // Precio por sabor: la nube (columna sabores_precios) manda cuando tiene
-            // datos; si no, cae al hardcode del overlay (modo offline/legacy).
-            sabores_precios:
-              p.sabores_precios && typeof p.sabores_precios === "object" && !Array.isArray(p.sabores_precios) && Object.keys(p.sabores_precios).length
-                ? p.sabores_precios
-                : (fam.precios || null),
+            // Precio por sabor: con datos de nube, la columna sabores_precios manda
+            // SIEMPRE (si está vacía, el sabor usa el precio general de la nube).
+            // El hardcode del overlay (fam.precios) es SOLO modo offline: usarlo
+            // online recrearía el bug de precios viejos que no se impactan.
+            sabores_precios: desdeDb
+              ? (p.sabores_precios && typeof p.sabores_precios === "object" && !Array.isArray(p.sabores_precios) && Object.keys(p.sabores_precios).length
+                  ? p.sabores_precios
+                  : null)
+              : (p.sabores_precios && typeof p.sabores_precios === "object" && !Array.isArray(p.sabores_precios) && Object.keys(p.sabores_precios).length
+                  ? p.sabores_precios
+                  : (fam.precios || null)),
             saboresLabel: fam.saboresLabel || "",
           };
         }
@@ -155,7 +217,18 @@
       .filter((p) => !CATEGORIAS_OCULTAS.has(p.categoria));
   }
 
+  // Idempotente: si ya hay una carga en vuelo, los llamados concurrentes comparten
+  // esa misma promesa (un solo fetch a la nube). El orden de respaldo no cambia:
+  // nube fresca (cache:"no-store") → localStorage (máx. 15 min) → window.PRODUCTS.
   async function cargarCatalogo() {
+    if (cargaEnCurso) return cargaEnCurso;
+    cargaEnCurso = cargarCatalogoInterno().finally(() => {
+      cargaEnCurso = null;
+    });
+    return cargaEnCurso;
+  }
+
+  async function cargarCatalogoInterno() {
     if (!CFG) {
       updateEstado("Modo local");
       return aplicarOverlay(window.PRODUCTS);
@@ -166,17 +239,10 @@
     // el precio viejo y a otros no"). La copia en localStorage es SOLO para modo sin
     // conexión y vence a los 15 minutos: nadie queda pegado a un precio viejo más que eso.
     const CACHE_TTL_MS = 15 * 60 * 1000;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
     try {
-      const res = await fetch(
-        `${CFG.supabaseUrl}/rest/v1/productos?select=*&order=nombre.asc`,
-        {
-          cache: "no-store",
-          signal: controller.signal,
-          headers: { apikey: CFG.supabaseKey, Authorization: "Bearer " + CFG.supabaseKey },
-        }
-      );
+      // fetchConTimeout (12 s) + conReintento (1 reintento): una señal mala no deja
+      // el catálogo colgado y los precios siempre salen frescos de la nube.
+      const res = await fetchCatalogCloud();
       if (!res.ok) throw new Error("HTTP " + res.status);
       const rows = await res.json();
       if (!Array.isArray(rows) || rows.length === 0) throw new Error("catálogo vacío");
@@ -185,6 +251,7 @@
         localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), productos }));
       } catch {}
       modoCatalogo = "nube";
+      marcarOnline();
       updateEstado("● En línea — precios actualizados");
       return productos;
     } catch {
@@ -192,14 +259,12 @@
         const c = JSON.parse(localStorage.getItem(cacheKey) || "null");
         const cacheFresca = c && typeof c.t === "number" && (Date.now() - c.t) < CACHE_TTL_MS;
         if (cacheFresca && Array.isArray(c.productos) && c.productos.length) {
-          updateEstado("● Sin conexión — precios pueden estar desactualizados");
+          marcarOffline("● Sin conexión — precios pueden estar desactualizados");
           return aplicarOverlay(c.productos);
         }
       } catch {}
-      updateEstado("● Sin conexión — catálogo local");
+      marcarOffline("● Sin conexión — catálogo local");
       return aplicarOverlay(window.PRODUCTS);
-    } finally {
-      clearTimeout(timeout);
     }
   }
 
@@ -318,7 +383,39 @@
         toast(`${unidades} unidad${unidades === 1 ? "" : "es"} de "${producto.nombre}" agregada${unidades === 1 ? "" : "s"} al pedido`);
       },
     });
+    catalogoListo = true;
   }
+
+  // ── Refresco automático del catálogo (frescura de precios) ──
+  // Idempotente: cargarCatalogo comparte la carga en vuelo, así que un refresco que
+  // coincide con otro fetch no duplica la petición. Nunca corre antes del boot
+  // (catalogoListo) ni dentro del admin (que maneja su propia lista de productos).
+  function enPanelAdmin() {
+    const admin = $("vista-admin");
+    return !!admin && !admin.hidden;
+  }
+
+  async function refrescarCatalogo() {
+    if (!catalogoListo || enPanelAdmin()) return;
+    try {
+      const productos = await cargarCatalogo();
+      if (productos && Array.isArray(productos)) CatalogUI.refresh(productos);
+    } catch {
+      /* si algo falla, el próximo refresco (visibilidad o interval) lo reintenta */
+    }
+  }
+
+  // Al volver a la pestaña, refrescar los precios (la gente suele dejar la app abierta).
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    refrescarCatalogo();
+  });
+
+  // Cada 10 minutos, y SOLO con la pestaña visible: refresco de precios en segundo plano.
+  setInterval(() => {
+    if (document.visibilityState !== "visible") return;
+    refrescarCatalogo();
+  }, 10 * 60 * 1000);
 
   // ── Checkout ──
   CheckoutUI.init({
@@ -890,6 +987,7 @@
   // ── Inicio (async: primero el catálogo) ──
   (async function boot() {
     updateContador();
+    await asegurarNet(); // js/core/net.js antes de la primera carga (timeout de seguridad 10 s)
     const productos = await cargarCatalogo();
     initCatalog(productos);
     showVista("vista-catalogo");

@@ -48,7 +48,7 @@ distribuidora-bebidas/
 ├── js/
 │   ├── app.js              # router de vistas e inicialización
 │   ├── config.js           # credenciales públicas de Supabase
-│   ├── core/               # lógica PURA (sin DOM → testeable): auth, cart, cliente, order, storage, reparto-core, dia
+│   ├── core/               # lógica PURA (sin DOM → testeable): net (fetch con timeout+retry), precios (reconciliación por sabor), auth, cart, cliente, order, storage, reparto-core, dia
 │   ├── data/
 │   │   ├── products.js     # catálogo local (fallback offline)
 │   │   ├── sabores.js      # overlay de sabores (productos con variedades)
@@ -76,7 +76,12 @@ distribuidora-bebidas/
 python scripts/deploy_github.py "mensaje del cambio"
 ```
 
-Copia la app al repo clonado, commitea y pushea a GitHub Pages (propaga en ~1 min). Antes de publicar, **bumpear `?v=N` en `index.html`** (cache-busting, los navegadores cachean los assets ~10 min).
+Copia la app al repo clonado, commitea y pushea a GitHub Pages (propaga en ~1 min).
+El deploy es automático y a prueba de olvidos:
+- **Auto-bump de caché:** sube solo `?v=N` en `index.html` (y la línea "Cache-busting" de MEMORY.md) — no se bumpea a mano.
+- **Sincroniza precios offline:** regenera `js/data/products.js` desde Supabase antes de copiar (si la DB no responde, avisa y sigue).
+- **Sincroniza fotos:** baja las fotos nuevas del bucket a `assets/img`.
+- **Verificar tras publicar:** `python scripts/verificar_deploy.py` (versión viva vs local + `cache:"no-store"` presente) y, opcional, `node scripts/_e2e_precios.mjs scripts/esperados_e2e_precios.json` con Chrome headless en el puerto 9222 (compara precios base↔DOM del sitio vivo).
 
 ---
 

@@ -212,14 +212,27 @@
         saboresPromo.push({ sabor, precio: precioPromo });
       }
       enPromo = saboresPromo.length > 0;
-      // Precio por sabor (base): solo los sabores con precio cargado; el resto usa el general.
+      // Precio por sabor: reconciliar con la lógica pura (js/core/precios.js).
+      // - Lo que el jefe tocó a mano se respeta (o se quita si lo vació).
+      // - Los sabores que estaban al precio general VIEJO siguen al NUEVO (así el
+      //   cambio de precio SIEMPRE impacta en los celulares).
+      // - Los sabores con precio propio conservan su diferencia.
+      const tocados = new Set(
+        [...fila.querySelectorAll('.in-sabor-precio[data-tocado="1"]')].map((i) => i.dataset.sabor)
+      );
+      const valoresSabor = {};
       fila.querySelectorAll(".in-sabor-precio").forEach((inp) => {
-        const s = inp.dataset.sabor;
         const raw = inp.value.trim();
-        if (raw) {
-          const v = parseInt(raw, 10);
-          if (Number.isFinite(v) && v > 0) saboresPrecios[s] = v;
-        }
+        const v = raw ? parseInt(raw, 10) : null;
+        valoresSabor[inp.dataset.sabor] = Number.isFinite(v) && v > 0 ? v : null;
+      });
+      saboresPrecios = Precios.ReconciliarPreciosSabores({
+        baseVieja: p.precio,
+        baseNueva: precio,
+        sabores: p.sabores,
+        mapaViejo: p.sabores_precios,
+        tocados,
+        valores: valoresSabor,
       });
     } else {
       enPromo = fila.querySelector(".in-promo").checked;
@@ -647,6 +660,14 @@
         const fila = e.target.closest(".fila-admin");
         if (e.target.files && e.target.files[0]) elegirFoto(fila.dataset.id, e.target.files[0]);
         e.target.value = "";
+      }
+    });
+    // Marca los campos de precio por sabor que el jefe tocó a mano: la lógica de
+    // guardado respeta lo editado y hace seguir al precio general solo lo que
+    // quedó sin tocar (Precios.ReconciliarPreciosSabores).
+    listaEl.addEventListener("input", (e) => {
+      if (e.target.classList && e.target.classList.contains("in-sabor-precio")) {
+        e.target.dataset.tocado = "1";
       }
     });
   }

@@ -189,7 +189,7 @@
     const p = selSabores.producto;
     if (!p || !opts.modalSaboresLista) return;
     const unidad = unidadTexto(p);
-    const precios = p.sabores_precios && typeof p.sabores_precios === "object" ? p.sabores_precios : null;
+    const precios = Precios.NormalizarPreciosSabores(p);
     opts.modalSaboresTitulo.textContent = p.nombre;
     const segun = p.cantidadMedio ? "presentación" : "sabor";
     opts.modalSaboresSub.textContent = precios
@@ -253,7 +253,7 @@
   function confirmarSabores() {
     const p = selSabores.producto;
     if (!p) return;
-    const precios = p.sabores_precios && typeof p.sabores_precios === "object" ? p.sabores_precios : null;
+    const precios = Precios.NormalizarPreciosSabores(p);
     const seleccion = Object.keys(selSabores.cantidades)
       .map((s) => {
         const normal = precios && precios[s] != null ? precios[s] : p.precio;
