@@ -73,5 +73,21 @@
     });
   }
 
-  return { ReconciliarPreciosSabores, NormalizarPreciosSabores, PrecioFrescoItem, AplicarPreciosFrescos };
+  // SinStockEnCarrito: nombres de las líneas del carrito cuyo producto (o sabor)
+  // quedó SIN STOCK según el catálogo fresco. Vacío = todo disponible.
+  function SinStockEnCarrito(items, mapaProductos) {
+    const nombres = [];
+    for (const item of items || []) {
+      const p = mapaProductos && mapaProductos[item.productoId];
+      if (!p) continue; // producto dado de baja: no se bloquea acá
+      const saborFuera =
+        item.sabor && Array.isArray(p.sabores_sin_stock) && p.sabores_sin_stock.indexOf(item.sabor) !== -1;
+      if (p.activo === false || saborFuera) {
+        nombres.push(item.nombre || item.productoId);
+      }
+    }
+    return nombres;
+  }
+
+  return { ReconciliarPreciosSabores, NormalizarPreciosSabores, PrecioFrescoItem, AplicarPreciosFrescos, SinStockEnCarrito };
 });

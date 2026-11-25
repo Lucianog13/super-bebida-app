@@ -462,6 +462,16 @@
           if (Precios && typeof Precios.AplicarPreciosFrescos === "function") {
             carrito = Precios.AplicarPreciosFrescos(carrito, mapa);
           }
+          // Bloquea el pedido si algo quedó sin stock (producto o sabor): lo sin
+          // stock NO se puede ordenar bajo ningún punto de vista.
+          const sinStock =
+            Precios && typeof Precios.SinStockEnCarrito === "function"
+              ? Precios.SinStockEnCarrito(carrito, mapa)
+              : [];
+          if (sinStock.length) {
+            toast("Sin stock: " + sinStock.join(", ") + ". Sacalo del carrito para continuar.", "error");
+            return;
+          }
           Storage.saveCart(carrito);
           updateContador();
         } else if (CFG) {
