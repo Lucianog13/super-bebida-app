@@ -118,7 +118,7 @@
   // Normaliza texto para comparar clientes (minúsculas, sin acentos ni puntuación).
   // Mismo criterio que la función SQL mis_pedidos.
   function normalizarTexto(s) {
-    return (s || "")
+    return String(s || "")
       .trim()
       .toLowerCase()
       .normalize("NFD")

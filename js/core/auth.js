@@ -12,7 +12,11 @@
 
   function saveSession(data) {
     data._expira = Date.now() + (data.expires_in || 3600) * 1000;
-    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    } catch {
+      // almacenamiento bloqueado/privado: la sesión vive solo en memoria del flujo
+    }
   }
 
   function getSession() {
@@ -46,7 +50,12 @@
       } catch {}
       return { ok: false, error: err || "Usuario o contraseña incorrectos" };
     }
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      return { ok: false, error: "Respuesta inválida del servidor. Probá de nuevo." };
+    }
     saveSession(data);
     return { ok: true, email: (data.user && data.user.email) || email };
   }
@@ -73,7 +82,12 @@
       if (res.status === 400) logout();
       return null;
     }
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      return null;
+    }
     saveSession(data);
     return data.access_token;
   }

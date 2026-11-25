@@ -13,6 +13,13 @@
   const ICONO_CHECK =
     '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 
+  // Escapa texto para HTML (nombres/unidades de producto vienen de la base).
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
   function filaHTML(it) {
     const alTope = it.cantidad >= Cart.MAX_POR_ITEM;
     const foto = it.imagen
@@ -22,11 +29,11 @@
       ? `<span class="precio-anterior">${Order.formatMoney(it.precioAnterior)}</span> `
       : "";
     return `
-      <div class="fila-item" data-id="${it.productoId}" data-sabor="${it.sabor || ""}">
+      <div class="fila-item" data-id="${it.productoId}" data-sabor="${esc(it.sabor || "")}">
         ${foto}
         <div class="info">
-          <div class="nombre">${it.nombre}</div>
-          <div class="detalle">${it.presentacion}${it.unidad ? " · " + it.unidad : ""}</div>
+          <div class="nombre">${esc(it.nombre)}</div>
+          <div class="detalle">${esc(it.presentacion)}${it.unidad ? " · " + esc(it.unidad) : ""}</div>
           <div class="unit">${tachado}<strong>${Order.formatMoney(it.precioUnit)}</strong> c/u</div>
         </div>
         <div class="lado">

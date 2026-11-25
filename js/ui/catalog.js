@@ -74,17 +74,24 @@
     return "Promo";
   }
 
+  // Escapa texto para HTML (nombres/descripciones de producto vienen de la base).
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
   function cardHTML(p) {
     const sinStock = p.activo === false;
     const foto = p.imagen
-      ? `<div class="foto"><img src="${p.imagen}" alt="${p.nombre}" loading="lazy" onerror="this.remove();this.parentElement.querySelector('.emoji-fallback').hidden=false"><span class="emoji-fallback" hidden>${p.emoji || "📦"}</span></div>`
+      ? `<div class="foto"><img src="${p.imagen}" alt="${esc(p.nombre)}" loading="lazy" onerror="this.remove();this.parentElement.querySelector('.emoji-fallback').hidden=false"><span class="emoji-fallback" hidden>${p.emoji || "📦"}</span></div>`
       : `<div class="foto"><span class="emoji-fallback">${p.emoji || "📦"}</span></div>`;
     const promo = p.enPromo
-      ? `<span class="badge-promo">${promoTitulo(p)}</span>
+      ? `<span class="badge-promo">${esc(promoTitulo(p))}</span>
          ${p.precioAnterior ? `<div class="precio-anterior">${Order.formatMoney(p.precioAnterior)}</div>` : ""}`
       : "";
-    const desc = p.descripcion ? `<div class="descripcion">${p.descripcion}</div>` : "";
-    const unidad = unidadTexto(p) ? `<div class="detalle">${unidadTexto(p)}</div>` : "";
+    const desc = p.descripcion ? `<div class="descripcion">${esc(p.descripcion)}</div>` : "";
+    const unidad = unidadTexto(p) ? `<div class="detalle">${esc(unidadTexto(p))}</div>` : "";
     const sinStockBadge = sinStock ? `<span class="badge-sin-stock">Sin stock</span>` : "";
     const tieneSabores = Array.isArray(p.sabores) && p.sabores.length > 0;
     const enCarrito = opts.cantidadEnCarrito ? opts.cantidadEnCarrito(p.id) : 0;
@@ -99,7 +106,7 @@
       <article class="card${sinStock ? " sin-stock" : ""}" data-id="${p.id}">
         ${foto}
         <div class="card-cuerpo">
-          <div class="nombre">${p.nombre}</div>
+          <div class="nombre">${esc(p.nombre)}</div>
           ${unidad}
           ${desc}
           ${promo}
@@ -133,10 +140,10 @@
     return `
       <article class="promo-card" data-id="${p.id}">
         ${foto}
-        <span class="badge-promo">${promoTitulo(p)}</span>
+        <span class="badge-promo">${esc(promoTitulo(p))}</span>
         ${ahorro ? `<span class="promo-ahorro">−${ahorro}%</span>` : ""}
         <div class="promo-cuerpo">
-          <div class="promo-nombre">${p.nombre}</div>
+          <div class="promo-nombre">${esc(p.nombre)}</div>
           <div class="promo-precios">${anterior}<span class="promo-precio">${Order.formatMoney(p.precio)}</span></div>
           ${boton}
         </div>
@@ -154,7 +161,7 @@
       .map((c) => {
         const label = c === "todas" ? "Todos" : c === "promociones" ? "🔥 Ofertas" : LABELS[c] || c;
         const extra = c === "promociones" ? " chip-promo" : "";
-        return `<button class="chip ${state.categoria === c ? "active" : ""}${extra}" data-categoria="${c}">${label}</button>`;
+        return `<button class="chip ${state.categoria === c ? "active" : ""}${extra}" data-categoria="${esc(c)}">${esc(label)}</button>`;
       })
       .join("");
   }
@@ -216,12 +223,12 @@
           ? `<span class="sabor-precio-anterior">${Order.formatMoney(precioNormal)}</span><span class="sabor-precio-promo">${Order.formatMoney(precioSabor)}</span>`
           : Order.formatMoney(precioSabor);
         return `<div class="sabor-fila${fuera ? " sin-stock" : ""}${esPromo ? " en-promo" : ""}">
-          <span class="sabor-nombre">${s}${tag}</span>
+          <span class="sabor-nombre">${esc(s)}${tag}</span>
           <span class="sabor-precio">${precioCol}</span>
           <div class="sabor-controles">
-            <button type="button" data-accion="sabor-menos" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Quitar ${s}">−</button>
+            <button type="button" data-accion="sabor-menos" data-sabor="${esc(s)}" ${fuera ? "disabled" : ""} aria-label="Quitar ${esc(s)}">−</button>
             <span class="sabor-qty">${n}</span>
-            <button type="button" data-accion="sabor-mas" data-sabor="${s}" ${fuera ? "disabled" : ""} aria-label="Agregar ${s}">+</button>
+            <button type="button" data-accion="sabor-mas" data-sabor="${esc(s)}" ${fuera ? "disabled" : ""} aria-label="Agregar ${esc(s)}">+</button>
           </div>
         </div>`;
       })

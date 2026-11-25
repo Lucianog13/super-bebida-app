@@ -38,7 +38,10 @@
   async function cargar() {
     const cfg = API();
     const base = `${cfg.supabaseUrl}/rest/v1/clientes?select=*&order=codigo.asc`;
-    const headers = { apikey: cfg.supabaseKey, Authorization: "Bearer " + cfg.supabaseKey };
+    // Lectura con el JWT del admin (NO la clave pública): desde el hardening 2026-11
+    // anon ya no puede leer cuit/telefono/cp, y el admin necesita ver todo.
+    const headers = await headersAuth(false);
+    if (!headers.Authorization) throw new Error("sesión vencida");
     const todos = [];
     const TAM = 1000;
     let desde = 0;
@@ -46,8 +49,13 @@
     // los que ordenan después del 1000 (ej. Nº 643) quedan invisibles en la búsqueda
     // y el listado, pero siguen existiendo en la base y bloquean el alta (409).
     while (true) {
-      const res = await fetch(base, { headers: { ...headers, Range: `${desde}-${desde + TAM - 1}` } });
-      if (!res.ok) throw new Error("HTTP " + res.status);
+    let res;
+    try {
+      res = await fetch(base, { headers: { ...headers, Range: `${desde}-${desde + TAM - 1}` } });
+    } catch {
+      throw new Error("Error de red al cargar los clientes");
+    }
+    if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if (!Array.isArray(data) || data.length === 0) break;
       todos.push(...data);
@@ -108,19 +116,25 @@
       toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
-    const res = await fetch(`${API().supabaseUrl}/rest/v1/clientes`, {
-      method: "POST",
-      headers: { ...h, Prefer: "return=minimal" },
-      body: JSON.stringify({
-        codigo,
-        nombre,
-        nombre_norm: norm(nombre),
-        direccion,
-        direccion_norm: norm(direccion),
-        numero_domicilio: numeroDomicilio,
-        telefono,
-      }),
-    });
+    let res;
+    try {
+      res = await fetch(`${API().supabaseUrl}/rest/v1/clientes`, {
+        method: "POST",
+        headers: { ...h, Prefer: "return=minimal" },
+        body: JSON.stringify({
+          codigo,
+          nombre,
+          nombre_norm: norm(nombre),
+          direccion,
+          direccion_norm: norm(direccion),
+          numero_domicilio: numeroDomicilio,
+          telefono,
+        }),
+      });
+    } catch {
+      toastFn("Error de red — no se guardó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       toastFn(
         res.status === 409
@@ -146,10 +160,16 @@
       toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
-    const res = await fetch(
-      `${API().supabaseUrl}/rest/v1/clientes?codigo=eq.${encodeURIComponent(codigo)}`,
-      { method: "DELETE", headers: { ...h, Prefer: "return=minimal" } }
-    );
+    let res;
+    try {
+      res = await fetch(
+        `${API().supabaseUrl}/rest/v1/clientes?codigo=eq.${encodeURIComponent(codigo)}`,
+        { method: "DELETE", headers: { ...h, Prefer: "return=minimal" } }
+      );
+    } catch {
+      toastFn("Error de red — no se eliminó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       toastFn("Error al eliminar (HTTP " + res.status + ")", "error");
       return;
@@ -193,21 +213,27 @@
       toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
-    const res = await fetch(
-      `${API().supabaseUrl}/rest/v1/clientes?codigo=eq.${encodeURIComponent(editandoCodigo)}`,
-      {
-        method: "PATCH",
-        headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify({
-          nombre,
-          nombre_norm: norm(nombre),
-          direccion,
-          direccion_norm: norm(direccion),
-          numero_domicilio: numeroDomicilio,
-          telefono,
-        }),
-      }
-    );
+    let res;
+    try {
+      res = await fetch(
+        `${API().supabaseUrl}/rest/v1/clientes?codigo=eq.${encodeURIComponent(editandoCodigo)}`,
+        {
+          method: "PATCH",
+          headers: { ...h, Prefer: "return=minimal" },
+          body: JSON.stringify({
+            nombre,
+            nombre_norm: norm(nombre),
+            direccion,
+            direccion_norm: norm(direccion),
+            numero_domicilio: numeroDomicilio,
+            telefono,
+          }),
+        }
+      );
+    } catch {
+      toastFn("Error de red — no se guardó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       toastFn("Error al guardar (HTTP " + res.status + ")", "error");
       return;

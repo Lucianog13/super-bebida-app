@@ -690,12 +690,20 @@
   }
 
   // ── Vista de pedido: remito + historial ──
+  // Escapa texto para HTML: los nombres/direcciones de cliente vienen del pedido
+  // (cualquier texto) y se renderizan con innerHTML — sin esc() serían XSS.
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
   function remitoHTML(p) {
     const rows = p.items
       .map(
         (it) => `
         <tr>
-          <td>${it.nombre}</td>
+          <td>${esc(it.nombre)}</td>
           <td class="num">${it.cantidad}</td>
           <td class="num">${Order.formatMoney(it.precioUnit)}</td>
           <td class="num">${Order.formatMoney(it.precioUnit * it.cantidad)}</td>
@@ -727,7 +735,7 @@
         </div>
       </div>
       <div class="remito-cliente">
-        <strong>Cliente:</strong> ${p.cliente.nombre}${p.cliente.nroCliente ? " · Nº " + p.cliente.nroCliente : ""}${p.cliente.direccion ? " · " + p.cliente.direccion : ""}
+        <strong>Cliente:</strong> ${esc(p.cliente.nombre)}${p.cliente.nroCliente ? " · Nº " + esc(p.cliente.nroCliente) : ""}${p.cliente.direccion ? " · " + esc(p.cliente.direccion) : ""}
       </div>
       <table class="remito-tabla">
         <thead>
@@ -765,7 +773,7 @@
       ? orders
           .map(
             (o) =>
-              `<li><span><strong>${o.cliente.nombre}</strong> · ${Order.formatDate(o.fecha)} · ${o.items.length} items` +
+              `<li><span><strong>${esc(o.cliente.nombre)}</strong> · ${Order.formatDate(o.fecha)} · ${o.items.length} items` +
               (o.token && Order.puedeModificarse(o.fecha)
                 ? ` <button type="button" class="btn small outline hist-modificar" data-mod-id="${o.id}">✏️ Modificar</button>`
                 : "") +
@@ -863,7 +871,7 @@
     lista.innerHTML = misPedidosActuales
       .map(
         (o) =>
-          `<li><span><strong>${o.cliente.nombre}</strong> · Nº ${o.id} · ${Order.formatDate(o.fecha)} · ${o.items.length} items` +
+          `<li><span><strong>${esc(o.cliente.nombre)}</strong> · Nº ${o.id} · ${Order.formatDate(o.fecha)} · ${o.items.length} items` +
           ` <button type="button" class="btn small outline" data-ver-id="${o.id}">👁 Ver pedido</button>` +
           (o.token && Order.puedeModificarse(o.fecha)
             ? ` <button type="button" class="btn small outline" data-mod-id="${o.id}">✏️ Modificar</button>`
@@ -901,7 +909,7 @@
     $("tab-productos").classList.toggle("active", panel === "productos");
     $("tab-reparto").classList.toggle("active", panel === "reparto");
     $("tab-clientes").classList.toggle("active", panel === "clientes");
-    if (panel === "reparto") Reparto.cargar();
+    if (panel === "reparto") Reparto.cargar().catch(() => toast("No se pudieron cargar los pedidos de reparto", "error"));
     if (panel === "clientes") {
       ClientesUI.cargar()
         .then(() => ClientesUI.render(""))

@@ -43,9 +43,15 @@
     const t = await window.Auth.token();
     if (!t) { toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error"); return; }
     await cargarZonasClientes();
-    const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?select=*&order=fecha.desc`, {
-      headers: { apikey: CFG().supabaseKey, Authorization: "Bearer " + t },
-    });
+    let res;
+    try {
+      res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?select=*&order=fecha.desc`, {
+        headers: { apikey: CFG().supabaseKey, Authorization: "Bearer " + t },
+      });
+    } catch {
+      toastFn("Error de red al cargar los pedidos — probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) { toastFn("No se pudieron cargar los pedidos (HTTP " + res.status + ")", "error"); return; }
     pedidos = await res.json();
     await preparar();
@@ -280,6 +286,13 @@
     } catch {}
   }
 
+  // Escapa texto para HTML (datos de cliente/pedido vienen de la base, sin confiar).
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
   // Fila de un pedido (la misma en la vista normal y dentro de los grupos por día).
   function filaHTML(p) {
     const z = zonaDe(p);
@@ -289,12 +302,12 @@
     <div class="rep-fila" data-id="${p.id}">
       <span class="rep-punto" style="background:${colorZona(z)}"></span>
       <div class="rep-cuerpo">
-        <div class="rep-cliente"><strong>${c.nombre || "—"}</strong>${c.nroCliente ? " · Nº " + c.nroCliente : ""}</div>
-        <div class="rep-dir">${c.direccion || "sin dirección"}${c.telefono ? " · " + c.telefono : ""}</div>
+        <div class="rep-cliente"><strong>${esc(c.nombre || "—")}</strong>${c.nroCliente ? " · Nº " + esc(c.nroCliente) : ""}</div>
+        <div class="rep-dir">${esc(c.direccion || "sin dirección")}${c.telefono ? " · " + esc(c.telefono) : ""}</div>
         <div class="rep-items">${n} item${n === 1 ? "" : "s"} · ${Order.formatMoney(p.total)}</div>
         <div class="rep-nro-editor">
           Nº de cliente
-          <input type="text" class="in-nro-cliente" value="${c.nroCliente || ""}" placeholder="—">
+          <input type="text" class="in-nro-cliente" value="${esc(c.nroCliente || "")}" placeholder="—">
           <button class="btn small outline" data-accion="guardar-nro">Guardar</button>
           <button class="btn small outline" data-accion="ver-pedido">👁 Ver pedido</button>
           <button class="btn small outline" data-accion="imprimir-boleta" title="Imprimir solo la boleta de este pedido">🖨 Imprimir</button>
@@ -387,18 +400,22 @@
     toastFn(valor ? `Pedido movido a Zona ${valor} ✔` : "Zona quitada ✔");
     const t = await window.Auth.token();
     if (!t) { toastFn("Ojo: sin sesión — la zona no se guardó en la nube", "error"); return; }
-    const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
-      method: "PATCH",
-      headers: {
-        apikey: CFG().supabaseKey,
-        Authorization: "Bearer " + t,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ zona: valor }),
-    });
-    if (!res.ok) toastFn("La zona quedó en esta pantalla pero no se guardó en la nube (HTTP " + res.status + ")", "error");
-    await guardarZonaCliente(p, zona);
+    try {
+      const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
+        method: "PATCH",
+        headers: {
+          apikey: CFG().supabaseKey,
+          Authorization: "Bearer " + t,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ zona: valor }),
+      });
+      if (!res.ok) toastFn("La zona quedó en esta pantalla pero no se guardó en la nube (HTTP " + res.status + ")", "error");
+      await guardarZonaCliente(p, zona);
+    } catch {
+      toastFn("Error de red — la zona no se guardó en la nube", "error");
+    }
   }
 
   // Guarda el Nº de cliente del pedido en la nube (misma lógica que tenía la vista "Pedidos").
@@ -413,16 +430,22 @@
       return;
     }
     const cliente = { ...(p.cliente || {}), nroCliente: valor };
-    const res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
-      method: "PATCH",
-      headers: {
-        apikey: CFG().supabaseKey,
-        Authorization: "Bearer " + t,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ cliente }),
-    });
+    let res;
+    try {
+      res = await fetch(`${CFG().supabaseUrl}/rest/v1/pedidos?id=eq.${encodeURIComponent(pid)}`, {
+        method: "PATCH",
+        headers: {
+          apikey: CFG().supabaseKey,
+          Authorization: "Bearer " + t,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ cliente }),
+      });
+    } catch {
+      toastFn("Error de red — el Nº de cliente no se guardó en la nube", "error");
+      return;
+    }
     if (!res.ok) {
       toastFn(res.status === 401 || res.status === 403 ? "No autorizado — cerrá sesión y volvé a entrar" : "Error al guardar (HTTP " + res.status + ")", "error");
       return;
@@ -490,15 +513,15 @@
         const clases = "hc-cliente" + (pi > 0 && bi === 0 ? " hc-nueva-pagina" : "");
         const filas = c.items.map((it) => `
           <tr>
-            <td>${it.nombre}</td>
+            <td>${esc(it.nombre)}</td>
             <td class="num">${it.cantidad}</td>
             <td class="num">${Order.formatMoney(it.precioUnit)}</td>
             <td class="num">${Order.formatMoney(it.total)}</td>
           </tr>`).join("");
         return `
         <div class="${clases}">
-          <div class="hc-c-nombre">${cli.nombre || "—"}${cli.nroCliente ? ' <span class="hc-nro">Nº ' + cli.nroCliente + "</span>" : ""} <span class="hc-nro">· ${zTxt}</span></div>
-          <div class="hc-c-dir">${cli.direccion || ""}${cli.telefono ? " · " + cli.telefono : ""}</div>
+          <div class="hc-c-nombre">${esc(cli.nombre || "—")}${cli.nroCliente ? ' <span class="hc-nro">Nº ' + esc(cli.nroCliente) + "</span>" : ""} <span class="hc-nro">· ${zTxt}</span></div>
+          <div class="hc-c-dir">${esc(cli.direccion || "")}${cli.telefono ? " · " + esc(cli.telefono) : ""}</div>
           <table class="hc-tabla hc-tabla-cliente">
             <thead><tr><th>Artículo</th><th class="num">Cantidad</th><th class="num">Precio U.</th><th class="num">Total</th></tr></thead>
             <tbody>${filas}</tbody>
@@ -608,7 +631,8 @@
       chip.addEventListener("click", () => {
         const val = chip.dataset.dia;
         diaTodos = val === "todos";
-        diaDias = val === "ambos" ? [0, -1] : [parseInt(val, 10)] || [0];
+        const n = parseInt(val, 10);
+        diaDias = val === "ambos" ? [0, -1] : (Number.isFinite(n) ? [n] : []);
         document.querySelectorAll("#dia-selector-reparto .chip-dia").forEach((x) => x.classList.toggle("active", x === chip));
         const txt = diaTodos
           ? "Mostrando todos los pedidos (historial)"
@@ -637,7 +661,7 @@
           modalDia.hidden = true;
           const fn = impresionPendiente;
           impresionPendiente = null;
-          if (val !== "cancelar" && fn) fn(val === "ambos" ? [0, -1] : [parseInt(val, 10)]);
+          if (val !== "cancelar" && fn) fn(val === "ambos" ? [0, -1] : [parseInt(val, 10)].filter(Number.isFinite));
           return;
         }
         if (e.target === modalDia) { modalDia.hidden = true; impresionPendiente = null; } // click fuera cancela

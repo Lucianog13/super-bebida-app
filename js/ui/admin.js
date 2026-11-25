@@ -80,6 +80,13 @@
     productos = await res.json();
   }
 
+  // Escapa texto para HTML (datos de producto vienen de la base).
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
   function filaHTML(p) {
     const foto = p.imagen
       ? `<img class="thumb" src="${p.imagen}" alt="" onerror="this.remove()">`
@@ -91,8 +98,8 @@
     <div class="fila-admin${inactivo ? " inactiva" : ""}" data-id="${p.id}">
       ${foto}
       <div class="info">
-        <div class="nombre">${p.nombre}</div>
-        <div class="detalle">${p.marca ? p.marca + " · " : ""}${p.presentacion ? p.presentacion + " · " : ""}${p.unidad}</div>
+        <div class="nombre">${esc(p.nombre)}</div>
+        <div class="detalle">${p.marca ? esc(p.marca) + " · " : ""}${p.presentacion ? esc(p.presentacion) + " · " : ""}${esc(p.unidad)}</div>
       </div>
       <div class="campos">
         <label class="campo">Precio $<input type="number" class="in-precio" value="${p.precio}" min="0" step="100"></label>
@@ -105,7 +112,7 @@
         <span class="sabores-label">Precio por sabor (vacío = usa el precio general):</span>
         ${p.sabores.map((s) => {
           const precio = p.sabores_precios && typeof p.sabores_precios === "object" && p.sabores_precios[s] != null ? p.sabores_precios[s] : "";
-          return `<label class="campo campo-precio-sabor">${s} <input type="number" class="in-sabor-precio" data-sabor="${s}" value="${precio}" min="0" step="100" placeholder="= general"></label>`;
+          return `<label class="campo campo-precio-sabor">${esc(s)} <input type="number" class="in-sabor-precio" data-sabor="${esc(s)}" value="${precio}" min="0" step="100" placeholder="= general"></label>`;
         }).join("")}
       </div>` : ""}
       ${tieneSabores ? `
@@ -114,19 +121,19 @@
         ${p.sabores.map((s) => {
           const reg = (Array.isArray(p.sabores_promo) ? p.sabores_promo : []).find((x) => (x && x.sabor != null ? x.sabor : x) === s);
           const precio = reg && reg.precio != null ? reg.precio : "";
-          return `<span class="promo-item${reg ? " activo" : ""}" data-sabor="${s}">
-            <button type="button" class="chip-sabor chip-promo" data-accion="promo-toggle" data-sabor="${s}">${s}</button>
-            ${reg ? `<input type="number" class="in-promo-precio" data-sabor="${s}" value="${precio}" min="0" step="100" placeholder="$">` : ""}
+          return `<span class="promo-item${reg ? " activo" : ""}" data-sabor="${esc(s)}">
+            <button type="button" class="chip-sabor chip-promo" data-accion="promo-toggle" data-sabor="${esc(s)}">${esc(s)}</button>
+            ${reg ? `<input type="number" class="in-promo-precio" data-sabor="${esc(s)}" value="${precio}" min="0" step="100" placeholder="$">` : ""}
           </span>`;
         }).join("")}
       </div>` : ""}
-      <label class="campo campo-desc">Descripción <input type="text" class="in-descripcion" value="${p.descripcion || ""}" placeholder="Ej: Sabores surtido, chocolate y vainilla"></label>
+      <label class="campo campo-desc">Descripción <input type="text" class="in-descripcion" value="${esc(p.descripcion || "")}" placeholder="Ej: Sabores surtido, chocolate y vainilla"></label>
       ${Array.isArray(p.sabores) && p.sabores.length ? `
       <div class="sabores-admin">
         <span class="sabores-label">Sabores (tocá para marcar sin stock):</span>
         ${p.sabores.map((s) => {
           const fuera = (Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : []).includes(s);
-          return `<button type="button" class="chip-sabor${fuera ? " sin-stock" : ""}" data-accion="sabor-stock" data-sabor="${s}">${s}</button>`;
+          return `<button type="button" class="chip-sabor${fuera ? " sin-stock" : ""}" data-accion="sabor-stock" data-sabor="${esc(s)}">${esc(s)}</button>`;
         }).join("")}
       </div>` : ""}
       <div class="acciones">
@@ -265,18 +272,25 @@
     }
 
     // 2) Guardar precio/promo/descripción.
-    const res = await fetch(
-      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
-      {
-        method: "PATCH",
-        headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify(
-          tieneSabores
-            ? { precio, en_promo: enPromo, precio_anterior: null, sabores_promo: saboresPromo, sabores_precios: saboresPrecios, descripcion }
-            : { precio, en_promo: enPromo, precio_anterior: precioAnterior, descripcion }
-        ),
-      }
-    );
+    let res;
+    try {
+      res = await fetch(
+        `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
+        {
+          method: "PATCH",
+          headers: { ...h, Prefer: "return=minimal" },
+          body: JSON.stringify(
+            tieneSabores
+              ? { precio, en_promo: enPromo, precio_anterior: null, sabores_promo: saboresPromo, sabores_precios: saboresPrecios, descripcion }
+              : { precio, en_promo: enPromo, precio_anterior: precioAnterior, descripcion }
+          ),
+        }
+      );
+    } catch {
+      marcarEstado(pid, "✘ error de red", "error");
+      toastFn("Error de red — no se guardó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       const noAuth = res.status === 401 || res.status === 403;
       marcarEstado(pid, "✘ " + (noAuth ? "no autorizado" : "error " + res.status), "error");
@@ -305,14 +319,21 @@
       toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
-    const res = await fetch(
-      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
-      {
-        method: "PATCH",
-        headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify({ activo: activar }),
-      }
-    );
+    let res;
+    try {
+      res = await fetch(
+        `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
+        {
+          method: "PATCH",
+          headers: { ...h, Prefer: "return=minimal" },
+          body: JSON.stringify({ activo: activar }),
+        }
+      );
+    } catch {
+      marcarEstado(pid, "✘ error de red", "error");
+      toastFn("Error de red — no se guardó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       const noAuth = res.status === 401 || res.status === 403;
       marcarEstado(pid, "✘ " + (noAuth ? "no autorizado" : "error " + res.status), "error");
@@ -335,11 +356,17 @@
     }
     const actual = Array.isArray(p.sabores_sin_stock) ? p.sabores_sin_stock : [];
     const nuevo = actual.includes(sabor) ? actual.filter((x) => x !== sabor) : actual.concat(sabor);
-    const res = await fetch(`${API().supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`, {
-      method: "PATCH",
-      headers: { ...h, Prefer: "return=minimal" },
-      body: JSON.stringify({ sabores_sin_stock: nuevo }),
-    });
+    let res;
+    try {
+      res = await fetch(`${API().supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`, {
+        method: "PATCH",
+        headers: { ...h, Prefer: "return=minimal" },
+        body: JSON.stringify({ sabores_sin_stock: nuevo }),
+      });
+    } catch {
+      toastFn("Error de red — no se guardó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       toastFn("Error al actualizar (HTTP " + res.status + ")", "error");
       return;
@@ -360,10 +387,16 @@
       toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
-    const res = await fetch(
-      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
-      { method: "DELETE", headers: { ...h, Prefer: "return=minimal" } }
-    );
+    let res;
+    try {
+      res = await fetch(
+        `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
+        { method: "DELETE", headers: { ...h, Prefer: "return=minimal" } }
+      );
+    } catch {
+      toastFn("Error de red — no se eliminó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       const noAuth = res.status === 401 || res.status === 403;
       toastFn(noAuth ? "No autorizado — cerrá sesión y volvé a entrar" : "Error al eliminar (HTTP " + res.status + ")", "error");
@@ -413,14 +446,20 @@
       return null;
     }
     const url = `${cfg.supabaseUrl}/storage/v1/object/public/fotos/${nombre}`;
-    const res2 = await fetch(
-      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
-      {
-        method: "PATCH",
-        headers: { ...h, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ imagen: url }),
-      }
-    );
+    let res2;
+    try {
+      res2 = await fetch(
+        `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(pid)}`,
+        {
+          method: "PATCH",
+          headers: { ...h, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ imagen: url }),
+        }
+      );
+    } catch {
+      toastFn("Error de red al asociar la foto", "error");
+      return null;
+    }
     if (!res2.ok) {
       toastFn("Foto subida, pero no se pudo asociar al producto", "error");
       return null;
@@ -500,14 +539,20 @@
       toastFn("Sesión vencida — cerrá sesión y volvé a entrar", "error");
       return;
     }
-    const res = await fetch(
-      `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(editandoPid)}`,
-      {
-        method: "PATCH",
-        headers: { ...h, Prefer: "return=minimal" },
-        body: JSON.stringify({ nombre, descripcion, sabores, sabores_sin_stock: saboresSinStock }),
-      }
-    );
+    let res;
+    try {
+      res = await fetch(
+        `${cfg.supabaseUrl}/rest/v1/productos?id=eq.${encodeURIComponent(editandoPid)}`,
+        {
+          method: "PATCH",
+          headers: { ...h, Prefer: "return=minimal" },
+          body: JSON.stringify({ nombre, descripcion, sabores, sabores_sin_stock: saboresSinStock }),
+        }
+      );
+    } catch {
+      toastFn("Error de red — no se guardó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       toastFn(
         res.status === 401 || res.status === 403
@@ -517,10 +562,11 @@
       );
       return;
     }
+    const pid = editandoPid;
     if (p) { p.nombre = nombre; p.descripcion = descripcion; p.sabores = sabores; p.sabores_sin_stock = saboresSinStock; }
     cerrarEditar();
     render(filtro);
-    marcarEstado(editandoPid, "✔ guardado", "ok");
+    marcarEstado(pid, "✔ guardado", "ok");
     toastFn("Guardado ✔ — visible para todos los dispositivos");
   }
 
@@ -600,11 +646,17 @@
       descripcion: get("nuevo-descripcion"),
       sabores,
     };
-    const res = await fetch(`${cfg.supabaseUrl}/rest/v1/productos`, {
-      method: "POST",
-      headers: { ...h, Prefer: "return=minimal" },
-      body: JSON.stringify(payload),
-    });
+    let res;
+    try {
+      res = await fetch(`${cfg.supabaseUrl}/rest/v1/productos`, {
+        method: "POST",
+        headers: { ...h, Prefer: "return=minimal" },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      toastFn("Error de red — el producto no se creó. Probá de nuevo", "error");
+      return;
+    }
     if (!res.ok) {
       toastFn(
         res.status === 401 || res.status === 403
