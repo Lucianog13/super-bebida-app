@@ -44,6 +44,7 @@
   let modificacion = null; // { id, token, fecha, cliente } — pedido en edición ("Modificar pedido")
   let catalogoListo = false; // catálogo inicial ya renderizado (lo setea initCatalog)
   let cargaEnCurso = null; // promesa de cargarCatalogo() en vuelo — refrescos idempotentes
+  let generandoPedido = false; // guard anti doble-submit mientras se re-valida el precio
 
   const VISTAS = ["vista-catalogo", "vista-carrito", "vista-checkout", "vista-pedido", "vista-mis-pedidos", "vista-admin"];
 
@@ -268,6 +269,24 @@
     }
   }
 
+  // Precios frescos recién bajados de la nube (productoId → producto) para
+  // re-validar el carrito al confirmar el pedido. null si no hay nube/conexión.
+  async function obtenerPreciosFrescos() {
+    if (!CFG) return null;
+    try {
+      const res = await fetchCatalogCloud();
+      if (!res.ok) return null;
+      const rows = await res.json();
+      if (!Array.isArray(rows) || rows.length === 0) return null;
+      const productos = aplicarOverlay(rows.map(mapProductoDb));
+      const mapa = {};
+      for (let i = 0; i < productos.length; i++) mapa[productos[i].id] = productos[i];
+      return mapa;
+    } catch {
+      return null;
+    }
+  }
+
   // ── Guardar pedido en la nube (además del localStorage) ──
   async function syncPedido(pedido) {
     if (!CFG) return false;
@@ -430,22 +449,42 @@
     saveCliente: Storage.saveCliente,
     supabaseUrl: CFG.supabaseUrl,
     supabaseKey: CFG.supabaseKey,
-    onGenerar(cliente) {
-      pedidoActual = Order.buildOrder(cliente, carrito, new Date(), generarToken());
-      Storage.saveOrder(pedidoActual);
-      // NOTA: el cliente ya NO se guarda acá — lo guarda el registro único (LoginUI)
-      // en la clave "cliente" con nombre/apellido separados. Guardarlo de nuevo pisaría
-      // el apellido con el nombre combinado.
-      carrito = [];
-      Storage.saveCart(carrito);
-      updateContador();
-      renderPedido();
-      showVista("vista-pedido");
-      toast("Pedido generado correctamente");
-      syncPedido(pedidoActual).then((ok) => {
-        if (ok) toast("Pedido guardado en la nube ✔");
-        else toast("Pedido guardado solo en este dispositivo");
-      });
+    async onGenerar(cliente) {
+      if (generandoPedido) return; // anti doble-submit mientras se re-valida
+      generandoPedido = true;
+      try {
+        // Re-valida los precios contra la nube ANTES de armar el pedido: así el
+        // pedido sale SIEMPRE con el precio actual, no con el que el carrito tenía
+        // guardado (causa raíz de los pedidos con precio viejo).
+        const mapa = await obtenerPreciosFrescos();
+        if (mapa) {
+          const Precios = window.Precios;
+          if (Precios && typeof Precios.AplicarPreciosFrescos === "function") {
+            carrito = Precios.AplicarPreciosFrescos(carrito, mapa);
+          }
+          Storage.saveCart(carrito);
+          updateContador();
+        } else if (CFG) {
+          toast("Sin conexión: no se pudieron verificar los precios", "error");
+        }
+        pedidoActual = Order.buildOrder(cliente, carrito, new Date(), generarToken());
+        Storage.saveOrder(pedidoActual);
+        // NOTA: el cliente ya NO se guarda acá — lo guarda el registro único (LoginUI)
+        // en la clave "cliente" con nombre/apellido separados. Guardarlo de nuevo pisaría
+        // el apellido con el nombre combinado.
+        carrito = [];
+        Storage.saveCart(carrito);
+        updateContador();
+        renderPedido();
+        showVista("vista-pedido");
+        toast("Pedido generado correctamente");
+        syncPedido(pedidoActual).then((ok) => {
+          if (ok) toast("Pedido guardado en la nube ✔");
+          else toast("Pedido guardado solo en este dispositivo");
+        });
+      } finally {
+        generandoPedido = false;
+      }
     },
     onRepetir(items) {
       const reemplazar =

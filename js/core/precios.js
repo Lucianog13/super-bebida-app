@@ -53,5 +53,25 @@
     return vals.every((v) => v === producto.precio) ? null : m;
   }
 
-  return { ReconciliarPreciosSabores, NormalizarPreciosSabores };
+  // PrecioFrescoItem: precio ACTUAL de la nube para una línea del carrito.
+  // Devuelve { precioUnit, precioAnterior } (o null si el producto ya no está).
+  function PrecioFrescoItem(item, mapaProductos) {
+    const p = mapaProductos && mapaProductos[item.productoId];
+    if (!p) return null;
+    let precio = p.precio;
+    const sp = NormalizarPreciosSabores(p);
+    if (item.sabor && sp && typeof sp[item.sabor] === "number") precio = sp[item.sabor];
+    return { precioUnit: precio, precioAnterior: p.precioAnterior || null };
+  }
+
+  // AplicarPreciosFrescos: pisa cada línea del carrito con su precio actual.
+  // Las líneas cuyo producto ya no existe se dejan tal cual (sin tocar).
+  function AplicarPreciosFrescos(items, mapaProductos) {
+    return (items || []).map((item) => {
+      const f = PrecioFrescoItem(item, mapaProductos);
+      return f ? { ...item, precioUnit: f.precioUnit, precioAnterior: f.precioAnterior } : item;
+    });
+  }
+
+  return { ReconciliarPreciosSabores, NormalizarPreciosSabores, PrecioFrescoItem, AplicarPreciosFrescos };
 });
